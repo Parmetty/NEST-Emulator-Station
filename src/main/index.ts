@@ -12,10 +12,11 @@ let services: Services | null = null;
 function createWindow(): BrowserWindow {
   console.log('[nest] window: constructing');
   const win = new BrowserWindow({
-    width: 1440,
-    height: 900,
+    width: 1360,
+    height: 820,
     minWidth: 1024,
     minHeight: 640,
+    center: true,
     show: false,
     backgroundColor: '#08080a',
     autoHideMenuBar: true,
