@@ -1,7 +1,9 @@
 # Third-party notices
 
-Nest itself is MIT-licensed (see `LICENSE`). It redistributes or uses the following
-components, each under its own terms.
+Nest itself is licensed under **PolyForm Strict 1.0.0** (see `LICENSE`): noncommercial
+use only, no redistribution, no modified versions. It redistributes or uses the
+following components, each under its own terms — those terms are not overridden by
+Nest's license.
 
 ## Bundled binaries
 

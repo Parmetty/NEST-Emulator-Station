@@ -125,4 +125,15 @@ npm run smoke     # 窗口 + IPC + 渲染自检
 
 ## 许可
 
-MIT（仅覆盖 Nest 自身代码），见 [LICENSE](LICENSE)。
+**PolyForm Strict License 1.0.0**（见 [LICENSE](LICENSE)）：
+
+- ✅ 可以免费用：个人、学习、研究、爱好项目、非营利组织、学校、政府机构
+- ❌ 不能商用
+- ❌ 不能分发（包括原样转发）
+- ❌ 不能修改或做衍生物
+
+这不是 OSI 意义上的开源许可，而是 source-available：源码公开供阅读和审阅，但不允许二次开发分发。
+第三方组件（mGBA 等）仍按各自许可，见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。
+
+> 以上是摘要，不是法律意见；以 LICENSE 原文为准。
+
