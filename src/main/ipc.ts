@@ -172,6 +172,11 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     args = [engine.launch.fullscreenFlag, ...args];
   }
 
+  console.log(
+    `[nest] launch system=${systemId} mode=${mode} engine=${engine.id} ` +
+      `cmd="${command}" args=${JSON.stringify(args)} cwd="${path.dirname(command)}"`,
+  );
+
   const sessionId = randomUUID();
   const started = services.supervisor.start({
     sessionId,
@@ -180,6 +185,7 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     args,
     env,
     cwd: path.dirname(command),
+    windowsHide: engine.kind === 'node',
   });
   if (!started) return { ok: false, error: 'already-running' };
 

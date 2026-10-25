@@ -1,10 +1,31 @@
 import path from 'node:path';
+import { appendFileSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { app, BrowserWindow, shell } from 'electron';
 import { CH, type LaunchEvent } from '../shared/contract';
 import { createServices, registerIpc, startLaunch, type Services } from './ipc';
 
 const SMOKE = process.argv.includes('--smoke') || process.env.NEST_SMOKE === '1';
+
+/** Everything the main process logs also lands in <userData>/nest.log. */
+function installFileLogging(): void {
+  let file = '';
+  try {
+    file = path.join(app.getPath('userData'), 'nest.log');
+  } catch {
+    return;
+  }
+  const wrap = (original: (...args: unknown[]) => void) => (...args: unknown[]) => {
+    try {
+      appendFileSync(file, `${new Date().toISOString()} ${args.map(String).join(' ')}\n`);
+    } catch {
+      /* logging must never break the app */
+    }
+    original(...args);
+  };
+  console.log = wrap(console.log.bind(console));
+  console.error = wrap(console.error.bind(console));
+}
 
 let mainWindow: BrowserWindow | null = null;
 let services: Services | null = null;
@@ -56,6 +77,7 @@ function createWindow(): BrowserWindow {
 }
 
 async function boot(): Promise<void> {
+  installFileLogging();
   console.log('[nest] boot: services');
   const events: LaunchEvent[] = [];
   services = createServices((event) => {
@@ -242,9 +264,48 @@ async function boot(): Promise<void> {
         console.log(
           `[nest] trylaunch ${running ? 'ok' : 'failed'}: ${target.fileName} ${running ? 'started' : 'never started'}`,
         );
+        if (process.argv.includes('--hold')) {
+          await new Promise((resolve) => setTimeout(resolve, 6000));
+        }
         services!.supervisor.stopAll();
         setTimeout(() => app.exit(running ? 0 : 1), 600);
       }, 1500);
+    });
+  }
+
+  if (process.argv.includes('--flow')) {
+    mainWindow.webContents.once('did-finish-load', () => {
+      setTimeout(async () => {
+        const script = `(async () => {
+          const out = { step: 'open' };
+          const enter = [...document.querySelectorAll('.key')].find((b) => b.textContent.includes('进入'));
+          if (!enter) return { ...out, error: 'no-enter-button' };
+          enter.click();
+          await new Promise((r) => setTimeout(r, 700));
+          const card = document.querySelector('.card');
+          if (!card) return { ...out, step: 'shelf', error: 'no-card' };
+          card.click();
+          await new Promise((r) => setTimeout(r, 400));
+          const ok = [...document.querySelectorAll('.dlg-btn')].find((b) => b.textContent.includes('确认'));
+          if (!ok) return { ...out, step: 'dialog', error: 'no-confirm-button' };
+          ok.click();
+          return { ...out, step: 'clicked' };
+        })()`;
+        try {
+          const result = await mainWindow!.webContents.executeJavaScript(script);
+          console.log('[nest] flow ui:', JSON.stringify(result));
+        } catch (err) {
+          console.log('[nest] flow ui error:', (err as Error).message);
+        }
+        const deadline = Date.now() + 10_000;
+        while (Date.now() < deadline && !events.some((e) => e.state === 'running')) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+        const final = events.find((e) => e.state === 'running' || e.state === 'crashed');
+        console.log('[nest] flow result:', JSON.stringify(final ?? null));
+        services!.supervisor.stopAll();
+        setTimeout(() => app.exit(final?.state === 'running' ? 0 : 1), 800);
+      }, 1600);
     });
   }
 

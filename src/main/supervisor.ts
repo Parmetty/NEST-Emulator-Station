@@ -8,6 +8,12 @@ export interface LaunchSpec {
   args: string[];
   cwd?: string;
   env?: NodeJS.ProcessEnv;
+  /**
+   * Only for console-style engines. On Windows this maps to STARTF_USESHOWWINDOW,
+   * which also hides the *first window* of a GUI app — mGBA would run with no
+   * visible window at all if we set it for native engines.
+   */
+  windowsHide?: boolean;
 }
 
 export interface SupervisorOptions {
@@ -42,7 +48,7 @@ export class Supervisor {
       child = spawn(spec.command, spec.args, {
         cwd: spec.cwd,
         env: { ...process.env, ...spec.env },
-        windowsHide: true,
+        windowsHide: spec.windowsHide ?? false,
         stdio: ['ignore', 'pipe', 'pipe'],
       });
     } catch (err) {
@@ -61,7 +67,10 @@ export class Supervisor {
       this.emit(spec, state, { code, message });
     };
 
-    child.once('spawn', () => this.emit(spec, 'running'));
+    child.once('spawn', () => {
+      console.log(`[nest] spawned ${spec.systemId} pid=${child.pid ?? '?'} cmd="${spec.command}"`);
+      this.emit(spec, 'running');
+    });
     child.once('error', (err) => finish('crashed', null, err.message));
     child.stderr?.on('data', (buf: Buffer) => {
       stderrTail = (stderrTail + buf.toString()).slice(-STDERR_TAIL);
