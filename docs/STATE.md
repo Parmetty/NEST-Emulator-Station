@@ -1,6 +1,8 @@
 # 当前状态
 
 > 新会话开场只需读这一份，再读 `PLAN.md` 与 `DECISIONS.md`。
+>
+> **发布状态：beta 0.2**（tag `v0.2.0-beta.1`）—— Windows 桌面版，GBA 全链路可玩。
 
 ## 进度
 
