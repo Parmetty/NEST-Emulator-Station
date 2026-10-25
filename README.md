@@ -4,7 +4,13 @@
 Electron 外壳里，交互按主机系统的逻辑来，而不是按桌面文件的逻辑来。
 
 当前处于 **P1（垂直切片）**：窗口、IPC、引擎清单、进程监管、扫描器、游戏库界面已经跑通；
-GBA 的「扫描 → 卡片 → 启动 → 退出 → 最近游玩」全链路可用。
+GBA 用**内置 mGBA** 跑真实 ROM 的链路已验证。
+
+## 内置引擎
+
+`resources/engines/mgba/` 里是 mGBA 0.10.5 的完整运行时（41.5 MB，MPL 2.0，`LICENSE.txt` 原样保留）。
+清单 `resources/engines/mgba.json` 优先探测 `{engines}/mgba/mGBA.exe`，找不到才回落到系统安装路径。
+Dolphin / Cemu 这类重引擎不内置，只探测。
 
 ## 快速开始
 

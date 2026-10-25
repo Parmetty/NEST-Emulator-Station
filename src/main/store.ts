@@ -1,6 +1,6 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-import type { GameRecord } from '../shared/contract';
+import type { GameRecord, Settings } from '../shared/contract';
 import { SYSTEMS } from '../shared/systems';
 import type { ScannedFile } from './scanner';
 
@@ -15,9 +15,15 @@ interface LibraryFile {
   version: 2;
   systems: Record<string, SystemStats>;
   games: GameRecord[];
+  settings: Settings;
 }
 
 const EMPTY: SystemStats = { games: 0, saves: 0, lastPlayed: null, favorite: false };
+
+export const DEFAULT_SETTINGS: Settings = {
+  minimizeOnLaunch: true,
+  fullscreen: false,
+};
 
 /** Demo numbers so an empty library still looks alive. Real scans override them. */
 const SEED: Record<string, Partial<SystemStats>> = {
@@ -38,7 +44,7 @@ function seedFile(): LibraryFile {
     if (system.state === 'locked') continue;
     systems[system.id] = { ...EMPTY, ...(SEED[system.id] ?? {}) };
   }
-  return { version: 2, systems, games: [] };
+  return { version: 2, systems, games: [], settings: { ...DEFAULT_SETTINGS } };
 }
 
 /**
@@ -46,7 +52,12 @@ function seedFile(): LibraryFile {
  * what matters, so a sqlite implementation can drop in later.
  */
 export class Store {
-  private data: LibraryFile = { version: 2, systems: {}, games: [] };
+  private data: LibraryFile = {
+    version: 2,
+    systems: {},
+    games: [],
+    settings: { ...DEFAULT_SETTINGS },
+  };
   private writing: Promise<void> = Promise.resolve();
 
   constructor(private readonly file: string) {}
@@ -60,6 +71,7 @@ export class Store {
         version: 2,
         systems: parsed.systems as Record<string, SystemStats>,
         games: Array.isArray(parsed.games) ? (parsed.games as GameRecord[]) : [],
+        settings: { ...DEFAULT_SETTINGS, ...((parsed as { settings?: Partial<Settings> }).settings ?? {}) },
       };
       if (parsed.version !== 2) await this.save();
     } catch {
@@ -70,6 +82,16 @@ export class Store {
 
   stats(systemId: string): SystemStats {
     return this.data.systems[systemId] ?? { ...EMPTY };
+  }
+
+  getSettings(): Settings {
+    return { ...this.data.settings };
+  }
+
+  async setSettings(patch: Partial<Settings>): Promise<Settings> {
+    this.data.settings = { ...this.data.settings, ...patch };
+    await this.save();
+    return this.getSettings();
   }
 
   /** Scanned games, newest first. */

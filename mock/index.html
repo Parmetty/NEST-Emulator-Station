@@ -465,11 +465,11 @@
 <script>
 /* ------------------------------------------------------------------ data */
 const CONSOLES = {
-  gba:  { name:'Game Boy Advance', short:'GBA',   year:2001, kind:'掌机',   engine:'mGBA',    games:128, saves:36,  img:'assets/processed/gba.webp',  state:'ready', note:'BIOS 开机动画可用', last:'2h' },
+  gba:  { name:'Game Boy Advance', short:'GBA',   year:2001, kind:'掌机',   engine:'mGBA',    games:128, saves:36,  img:'assets/processed/gba.webp',  state:'ready', note:'BIOS 开机动画随游戏启动', last:'2h' },
   fc:   { name:'Family Computer',  short:'FC',    year:1983, kind:'家用机', engine:'Mesen',   games:642, saves:210, img:'assets/processed/fc.webp',   state:'ready', note:'高准确度核心', last:'昨天' },
   sfc:  { name:'Super Famicom',    short:'SFC',   year:1990, kind:'家用机', engine:'bsnes',   games:517, saves:168, img:'assets/processed/sfc.webp',  state:'ready', last:'3d' },
   n64:  { name:'Nintendo 64',      short:'N64',   year:1996, kind:'家用机', engine:'ares',    games:187, saves:74,  img:'assets/processed/n64.webp',  state:'ready', last:'1w' },
-  ngc:  { name:'Nintendo GameCube',short:'NGC',   year:2001, kind:'家用机', engine:'Dolphin', games:94,  saves:52,  img:'assets/processed/ngc.webp',  state:'ready', last:'4d' },
+  ngc:  { name:'Nintendo GameCube',short:'NGC',   year:2001, kind:'家用机', engine:'Dolphin', games:94,  saves:52,  img:'assets/processed/ngc.webp',  state:'ready', note:'IPL 系统菜单可用', last:'4d' },
   nds:  { name:'Nintendo DS',      short:'NDS',   year:2004, kind:'掌机',   engine:'melonDS', games:412, saves:130, img:'assets/processed/nds.webp',  state:'ready', note:'DS 固件菜单可用', last:'1m' },
   wii:  { name:'Nintendo Wii',     short:'Wii',   year:2006, kind:'家用机', engine:'Dolphin', games:76,  saves:41,  img:'assets/processed/wii.webp',  state:'ready', note:'Wii Menu 可用', last:'2w' },
   '3ds':{ name:'Nintendo 3DS',     short:'3DS',   year:2011, kind:'掌机',   engine:'Citra',   games:168, saves:61,  img:'assets/processed/3ds.webp',  state:'ready', note:'HOME Menu 需系统文件', last:'3w' },
@@ -492,7 +492,7 @@ const FAMILIES = [
 ];
 
 const SYS_MODE = {
-  gba:  'BIOS 开机动画',
+  ngc:  'IPL 系统菜单',
   nds:  'DS 固件菜单',
   '3ds':'HOME Menu',
   wii:  'Wii Menu',
@@ -696,7 +696,7 @@ function consoleInfo(){
       </div>`;
   }
   const warn = c.state === 'warn';
-  const sysMode = ['gba','nds','3ds','wii','wiiu'].includes(state.sel.id);
+  const sysMode = ['ngc','nds','3ds','wii','wiiu'].includes(state.sel.id);
   const on = favs.has(state.sel.id);
   return `
     <div class="tag"><span class="dot ${warn ? 'warn' : ''}"></span>${warn ? '需要配置' : '引擎就绪'}</div>

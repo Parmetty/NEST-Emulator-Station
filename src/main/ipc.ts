@@ -7,6 +7,7 @@ import {
   gamesRequestSchema,
   launchRequestSchema,
   scanRequestSchema,
+  settingsSchema,
   type GameRecord,
   type HomePayload,
   type LaunchResult,
@@ -75,6 +76,14 @@ export function registerIpc(services: Services): void {
     if (!parsed.success) return { ok: false, error: 'bad-request' };
     const stats = await store.setFavorite(parsed.data.systemId, parsed.data.favorite);
     return { ok: true, stats };
+  });
+
+  ipcMain.handle(CH.settings, () => store.getSettings());
+
+  ipcMain.handle(CH.saveSettings, async (_event, raw) => {
+    const parsed = settingsSchema.safeParse(raw ?? {});
+    if (!parsed.success) return { ok: false, error: 'bad-request' };
+    return { ok: true, settings: await store.setSettings(parsed.data) };
   });
 
   ipcMain.handle(CH.games, (_event, raw): GameRecord[] => {
@@ -157,6 +166,11 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   }
 
   args = buildArgs(args, { rom: rom ?? '', system: systemId });
+
+  const settings = services.store.getSettings();
+  if (settings.fullscreen && engine.launch.fullscreenFlag) {
+    args = [engine.launch.fullscreenFlag, ...args];
+  }
 
   const sessionId = randomUUID();
   const started = services.supervisor.start({

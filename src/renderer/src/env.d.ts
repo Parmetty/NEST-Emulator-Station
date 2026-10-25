@@ -5,6 +5,7 @@ import type {
   LaunchMode,
   LaunchResult,
   ScanResult,
+  Settings,
 } from '@shared/contract';
 
 export interface NestApi {
@@ -14,6 +15,8 @@ export interface NestApi {
   scan(systemId?: string, path?: string): Promise<ScanResult>;
   launch(systemId: string, mode?: LaunchMode, rom?: string): Promise<LaunchResult>;
   stop(sessionId: string): Promise<{ ok: boolean }>;
+  settings(): Promise<Settings>;
+  saveSettings(patch: Partial<Settings>): Promise<{ ok: boolean; settings?: Settings }>;
   favorite(systemId: string, favorite: boolean): Promise<{ ok: boolean }>;
   openHomepage(url: string): Promise<{ ok: boolean }>;
   onLaunchEvent(cb: (event: LaunchEvent) => void): () => void;

@@ -7,6 +7,7 @@ import {
   type LaunchMode,
   type LaunchResult,
   type ScanResult,
+  type Settings,
 } from '../shared/contract';
 
 const api = {
@@ -24,6 +25,11 @@ const api = {
     ipcRenderer.invoke(CH.launch, { systemId, mode, rom }),
 
   stop: (sessionId: string): Promise<{ ok: boolean }> => ipcRenderer.invoke(CH.stop, { sessionId }),
+
+  settings: (): Promise<Settings> => ipcRenderer.invoke(CH.settings),
+
+  saveSettings: (patch: Partial<Settings>): Promise<{ ok: boolean; settings?: Settings }> =>
+    ipcRenderer.invoke(CH.saveSettings, patch),
 
   favorite: (systemId: string, favorite: boolean): Promise<{ ok: boolean }> =>
     ipcRenderer.invoke(CH.favorite, { systemId, favorite }),

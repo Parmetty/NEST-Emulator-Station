@@ -5,6 +5,7 @@ import type {
   HomePayload,
   LaunchEvent,
   LaunchMode,
+  Settings,
   SystemView,
 } from '@shared/contract';
 
@@ -36,6 +37,13 @@ function relativeTime(at: number | null): string {
   return `${Math.round(hours / 24)} 天前`;
 }
 
+/** Seeded demo data uses words ("昨天"), real sessions store ISO timestamps. */
+function displayLastPlayed(value: string | null): string {
+  if (!value) return '—';
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? value : relativeTime(parsed);
+}
+
 export default function App() {
   const [home, setHome] = useState<HomePayload | null>(null);
   const [sel, setSel] = useState<Selection>({ type: 'system', id: 'gba' });
@@ -51,6 +59,20 @@ export default function App() {
   );
   const [shelfIndex, setShelfIndex] = useState(0);
   const [scanning, setScanning] = useState(false);
+  const [settings, setSettings] = useState<Settings>({ minimizeOnLaunch: true, fullscreen: false });
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  useEffect(() => {
+    window.nest
+      .settings()
+      .then(setSettings)
+      .catch(() => undefined);
+  }, []);
+
+  const updateSetting = useCallback(async (patch: Partial<Settings>) => {
+    setSettings((prev) => ({ ...prev, ...patch }));
+    await window.nest.saveSettings(patch).catch(() => undefined);
+  }, []);
 
   /* ------------------------------------------------------------- data */
   useEffect(() => {
@@ -293,6 +315,14 @@ export default function App() {
     const onKey = (e: KeyboardEvent) => {
       const k = e.key;
 
+      if (settingsOpen) {
+        if (k === 'Escape' || k === 'b' || k === 'B') {
+          e.preventDefault();
+          setSettingsOpen(false);
+        }
+        return;
+      }
+
       if (dialog) {
         if (k === 'Escape' || k === 'b' || k === 'B') {
           e.preventDefault();
@@ -365,6 +395,7 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, [
     dialog,
+    settingsOpen,
     shelf,
     shelfIndex,
     move,
@@ -407,6 +438,11 @@ export default function App() {
   (window as unknown as Record<string, unknown>).__NEST_OPEN_SHELF__ = (id: string) => {
     const target = families.flatMap((f) => f.systems).find((s) => s.id === id);
     if (target) void openShelf(target);
+  };
+
+  (window as unknown as Record<string, unknown>).__NEST_SELECT__ = (id: string) => {
+    const target = families.flatMap((f) => f.systems).find((s) => s.id === id);
+    if (target) setSel({ type: 'system', id: target.id });
   };
 
   return (
@@ -490,6 +526,18 @@ export default function App() {
             ),
           )}
         </nav>
+
+        <footer className="rail-foot">
+          <button className="ghost-btn" onClick={() => setSettingsOpen(true)}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+              <path d="M4 7h16M4 12h16M4 17h16" />
+              <circle cx="9" cy="7" r="2.1" fill="#08080a" />
+              <circle cx="15" cy="12" r="2.1" fill="#08080a" />
+              <circle cx="8" cy="17" r="2.1" fill="#08080a" />
+            </svg>
+            设置
+          </button>
+        </footer>
       </aside>
 
       <section className="info" key={sel.type + sel.id} aria-live="polite">
@@ -558,7 +606,7 @@ export default function App() {
                     <span>Saves</span>
                   </div>
                   <div className="stat">
-                    <b>{selectedSystem.lastPlayed ?? '—'}</b>
+                    <b>{displayLastPlayed(selectedSystem.lastPlayed ?? null)}</b>
                     <span>Last played</span>
                   </div>
                 </div>
@@ -677,6 +725,49 @@ export default function App() {
           <div className="launch-meta">{overlay?.meta ?? ''}</div>
           <div className="bar">
             <i />
+          </div>
+        </div>
+      </div>
+
+      <div className={`dialog${settingsOpen ? ' open' : ''}`} role="dialog" aria-modal="true">
+        <div className="dialog-card settings-card">
+          <div className="dlg-tag">
+            <i />
+            设置
+          </div>
+          <h2>启动与画面</h2>
+          <p className="dlg-note">这些偏好保存在本机的库文件里，换主机不影响。</p>
+
+          <label className="toggle-row">
+            <span>
+              启动引擎时最小化主窗口
+              <small>引擎退出后自动还原并聚焦</small>
+            </span>
+            <input
+              type="checkbox"
+              checked={settings.minimizeOnLaunch}
+              onChange={(e) => void updateSetting({ minimizeOnLaunch: e.target.checked })}
+            />
+            <i className="switch" />
+          </label>
+
+          <label className="toggle-row">
+            <span>
+              全屏启动引擎
+              <small>把引擎自己支持的全屏参数传给它</small>
+            </span>
+            <input
+              type="checkbox"
+              checked={settings.fullscreen}
+              onChange={(e) => void updateSetting({ fullscreen: e.target.checked })}
+            />
+            <i className="switch" />
+          </label>
+
+          <div className="dlg-actions">
+            <button className="dlg-btn primary" onClick={() => setSettingsOpen(false)}>
+              <kbd>B</kbd>完成
+            </button>
           </div>
         </div>
       </div>

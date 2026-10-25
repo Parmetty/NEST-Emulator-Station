@@ -1,32 +1,26 @@
 {
-    "id":  "mgba",
-    "name":  "mGBA",
-    "systems":  [
-                    "gba"
-                ],
-    "kind":  "native",
-    "detect":  {
-                   "paths":  [
-                                 "%PROGRAMFILES%\\mGBA\\mGBA.exe",
-                                 "%PROGRAMFILES%\\mGBA\\mGBA.exe"
-                             ]
-               },
-    "download":  {
-                     "homepage":  "https://mgba.io/downloads.html"
-                 },
-    "launch":  {
-                   "args":  [
-                                "-f",
-                                "{rom}"
-                            ],
-                   "systemArgs":  [
-                                      "-b",
-                                      "{rom}"
-                                  ],
-                   "cwd":  "engineDir"
-               },
-    "capabilities":  {
-                         "saveStates":  true,
-                         "systemMode":  null
-                     }
+  "id": "mgba",
+  "name": "mGBA",
+  "systems": ["gba"],
+  "kind": "native",
+  "detect": {
+    "paths": [
+      "{engines}/mgba/mGBA.exe",
+      "%PROGRAMFILES%/mGBA/mGBA.exe",
+      "%LOCALAPPDATA%/mGBA/mGBA.exe"
+    ]
+  },
+  "download": {
+    "homepage": "https://mgba.io/downloads.html"
+  },
+  "launch": {
+    "args": ["{rom}"],
+    "systemArgs": [],
+    "fullscreenFlag": "-f",
+    "cwd": "engineDir"
+  },
+  "capabilities": {
+    "saveStates": true,
+    "systemMode": null
+  }
 }

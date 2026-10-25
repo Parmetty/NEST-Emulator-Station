@@ -58,7 +58,15 @@ async function boot(): Promise<void> {
   console.log('[nest] boot: services');
   const events: LaunchEvent[] = [];
   services = createServices((event) => {
-    events.push(event as LaunchEvent);
+    const e = event as LaunchEvent;
+    events.push(e);
+    if (e.state === 'starting' && services?.store.getSettings().minimizeOnLaunch) {
+      mainWindow?.minimize();
+    }
+    if (e.state === 'exited' || e.state === 'crashed') {
+      mainWindow?.restore();
+      mainWindow?.focus();
+    }
     mainWindow?.webContents.send(CH.launchEvent, event);
   });
   console.log('[nest] boot: store');
@@ -92,6 +100,11 @@ async function boot(): Promise<void> {
           await mainWindow!.webContents.executeJavaScript(
             "document.body.classList.add('still'); true",
           );
+          if (process.argv.includes('--settings')) {
+            await mainWindow!.webContents.executeJavaScript(
+              "document.querySelector('.ghost-btn')?.click(); true",
+            );
+          }
           await new Promise((resolve) => setTimeout(resolve, 350));
           const image = await mainWindow!.webContents.capturePage();
           await writeFile(shotFlag.slice('--shot='.length), image.toPNG());
@@ -102,6 +115,21 @@ async function boot(): Promise<void> {
         services?.supervisor.stopAll();
         app.exit(0);
       }, 1800);
+    });
+  }
+
+  const selectFlag = process.argv.find((arg) => arg.startsWith('--select='));
+  if (shotFlag && selectFlag) {
+    mainWindow.webContents.once('did-finish-load', () => {
+      setTimeout(async () => {
+        try {
+          await mainWindow!.webContents.executeJavaScript(
+            `window.__NEST_SELECT__ && window.__NEST_SELECT__(${JSON.stringify(selectFlag.slice('--select='.length))}); true`,
+          );
+        } catch {
+          /* best effort */
+        }
+      }, 700);
     });
   }
 
@@ -185,6 +213,36 @@ async function boot(): Promise<void> {
         );
         services?.supervisor.stopAll();
         app.exit(0);
+      }, 1500);
+    });
+  }
+
+  if (process.argv.includes('--trylaunch')) {
+    mainWindow.webContents.once('did-finish-load', () => {
+      setTimeout(async () => {
+        const games = services!.store.games('gba');
+        if (games.length === 0) {
+          console.log('[nest] trylaunch failed: no games (pass --scan=<folder>)');
+          app.exit(2);
+          return;
+        }
+        const target = games[0];
+        const result = await startLaunch(services!, { systemId: 'gba', mode: 'game', rom: target.path });
+        if (!result.ok) {
+          console.log(`[nest] trylaunch failed: ${result.error}`);
+          app.exit(3);
+          return;
+        }
+        const deadline = Date.now() + 8_000;
+        while (Date.now() < deadline && !events.some((e) => e.state === 'running')) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+        const running = events.some((e) => e.state === 'running');
+        console.log(
+          `[nest] trylaunch ${running ? 'ok' : 'failed'}: ${target.fileName} ${running ? 'started' : 'never started'}`,
+        );
+        services!.supervisor.stopAll();
+        setTimeout(() => app.exit(running ? 0 : 1), 600);
       }, 1500);
     });
   }

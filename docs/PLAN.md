@@ -28,8 +28,8 @@
 | FC | 1983 | Mesen | — | v1 |
 | SFC | 1990 | bsnes | — | v1 |
 | N64 | 1996 | ares | 64DD IPL（实验） | v1 |
-| GBA | 2001 | mGBA | BIOS 开机动画 | v1 |
-| NGC | 2001 | Dolphin | IPL（实验） | v1 |
+| GBA | 2001 | mGBA（随包内置） | —（BIOS 开机动画随游戏启动，不是独立系统） | ✅ 可玩 |
+| NGC | 2001 | Dolphin | IPL 系统菜单 | v1 |
 | NDS | 2004 | melonDS | DS 固件菜单 | v1 |
 | Wii | 2006 | Dolphin | Wii Menu（需 NAND） | v1 |
 | 3DS | 2011 | Citra | HOME Menu（需系统文件） | v1 |

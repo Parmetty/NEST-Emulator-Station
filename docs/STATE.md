@@ -8,8 +8,24 @@
 | --- | --- |
 | P0 骨架 | ✅ 完成 |
 | P1 扫描器 + GBA 全链路 | ✅ 完成 |
+| P1.1 内置 mGBA + 启动设置 | ✅ 完成 |
 | P2 多系统闭环 | 下一步 |
 | P3–P5 | 未开始 |
+
+## P1.1 交付
+
+- mGBA 0.10.5 随包内置（`resources/engines/mgba/`，41.5 MB，MPL 2.0，LICENSE 原样保留）
+- GBA 用真实 ROM 跑通：`--trylaunch` 会启动内置 mGBA 并确认进程起来了
+- 系统模式校正：GBA 移除、NGC 增加（`SYSTEMS[].systemMode` 是唯一开关）
+- 设置面板：启动时最小化主窗口（默认开）、全屏启动引擎
+- 视觉修正：`Last played` 从 ISO 时间戳转成相对时间
+
+验证：
+
+```powershell
+node tools/run.mjs . --no-sandbox --user-data-dir=.profile --scan=.roms --trylaunch
+# -> [nest] trylaunch ok: pokemon-firered-cn.gba started
+```
 
 ## P1 交付
 

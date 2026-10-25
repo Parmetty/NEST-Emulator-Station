@@ -8,6 +8,8 @@ export const CH = {
   engines: 'nest:engines',
   games: 'nest:games',
   scan: 'nest:scan',
+  settings: 'nest:settings',
+  saveSettings: 'nest:settings-save',
   launch: 'nest:launch',
   stop: 'nest:stop',
   favorite: 'nest:favorite',
@@ -35,6 +37,11 @@ export const gamesRequestSchema = z.object({
   systemId: z.string().min(1).max(32),
 });
 
+export const settingsSchema = z.object({
+  minimizeOnLaunch: z.boolean().optional(),
+  fullscreen: z.boolean().optional(),
+});
+
 export const favoriteRequestSchema = z.object({
   systemId: z.string().min(1).max(32),
   favorite: z.boolean(),
@@ -53,6 +60,8 @@ export const engineManifestSchema = z.object({
     args: z.array(z.string()).default([]),
     /** Extra args used when booting the real system menu instead of a game. */
     systemArgs: z.array(z.string()).default([]),
+    /** Flag prepended when the user asks for fullscreen, e.g. "-f" for mGBA. */
+    fullscreenFlag: z.string().optional(),
     cwd: z.enum(['engineDir', 'appDir']).default('engineDir'),
   }),
   capabilities: z
@@ -126,6 +135,11 @@ export interface ScanResult {
   skipped?: number;
   total?: number;
   error?: string;
+}
+
+export interface Settings {
+  minimizeOnLaunch: boolean;
+  fullscreen: boolean;
 }
 
 export interface LaunchEvent {

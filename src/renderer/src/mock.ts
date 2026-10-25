@@ -97,6 +97,8 @@ export function installMockApi(): void {
       return { ok: true, sessionId: 'mock' };
     },
     stop: async () => ({ ok: true }),
+    settings: async () => ({ minimizeOnLaunch: true, fullscreen: false }),
+    saveSettings: async () => ({ ok: true }),
     favorite: async (systemId, favorite) => {
       if (favorite) favorites.add(systemId);
       else favorites.delete(systemId);
