@@ -204,8 +204,15 @@ export default function App() {
 
   const say = useCallback((text: string) => {
     setToast(text);
-    window.setTimeout(() => setToast((current) => (current === text ? null : current)), 1800);
   }, []);
+
+  // Single owner of "how long a toast lives". Every producer (say(), launch
+  // events, load errors) just sets a string; this effect clears it.
+  useEffect(() => {
+    if (!toast) return;
+    const timer = window.setTimeout(() => setToast(null), 2200);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
 
   /* ------------------------------------------------------ navigation */
   const select = useCallback((type: Selection['type'], id: string) => {
@@ -502,6 +509,8 @@ export default function App() {
     const target = families.flatMap((f) => f.systems).find((s) => s.id === id);
     if (target) setSel({ type: 'system', id: target.id });
   };
+
+  (window as unknown as Record<string, unknown>).__NEST_SAY__ = (text: string) => say(text);
 
   return (
     <div

@@ -314,21 +314,26 @@ async function boot(): Promise<void> {
   const dumpFlag = process.argv.find((arg) => arg.startsWith('--dump='));
   if (dumpFlag) {
     mainWindow.webContents.once('did-finish-load', () => {
+      const delayArg = process.argv.find((arg) => arg.startsWith('--dump-after='));
+      const dumpDelay = delayArg ? Number(delayArg.split('=')[1]) || 1600 : 1600;
+      if (process.argv.includes('--toast-probe')) {
+        void mainWindow!.webContents.executeJavaScript("window.__NEST_SAY__ && window.__NEST_SAY__('已退出，返回 Nest'); true");
+      }
       setTimeout(async () => {
         try {
           const state = await mainWindow!.webContents.executeJavaScript(
             'JSON.stringify(window.__NEST_STATE__ ?? null)',
           );
           const info = await mainWindow!.webContents.executeJavaScript(
-            'document.querySelector(".info")?.outerHTML ?? "NO_INFO_ELEMENT"',
+            'document.querySelector(".toast")?.className ?? "NO_INFO_ELEMENT"',
           );
-          await writeFile(dumpFlag.slice('--dump='.length), `${String(state)}\n\n${String(info)}`);
+          await writeFile(dumpFlag.slice('--dump='.length), `${String(state)}\n\ntoast: ${String(info)}`);
           console.log('[nest] dump saved');
         } catch (err) {
           console.error('[nest] dump failed', (err as Error).message);
         }
         app.exit(0);
-      }, 1600);
+      }, dumpDelay);
     });
   }
 

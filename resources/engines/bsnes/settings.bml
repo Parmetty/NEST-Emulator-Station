@@ -196,7 +196,7 @@ Path
   States
   Screenshots
   Recent
-    SuperFamicom: E:/workstop/
+    SuperFamicom: E:/workstop/nest/.roms-fc-sfc/
     GameBoy
     BSMemory
     SufamiTurboA
@@ -281,4 +281,5 @@ Hotkey
   TogglePseudo-Fullscreen
 Game
   Recent
-    1: Auto;E:/workstop/tmnt-iv-turtles-in-time-cn.smc
+    1: Auto;E:/workstop/nest/.roms-fc-sfc/tmnt-iv-turtles-in-time-cn.smc
+    2: Auto;E:/workstop/tmnt-iv-turtles-in-time-cn.smc
