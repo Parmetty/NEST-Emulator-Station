@@ -15,6 +15,18 @@ Nest's license.
 - Redistributed unmodified. If you ship a modified build, MPL 2.0 requires publishing
   the source of the modified files.
 
+### FCEUX 2.6.6 — `resources/engines/fceux/`
+
+- Project: https://fceux.com/ · Source: https://github.com/TASEmulators/fceux
+- License: **GPLv2** — full text at `resources/engines/fceux/LICENSE.txt`
+- Redistributed unmodified. Corresponding source is available at the upstream URL above.
+
+### bsnes v115 — `resources/engines/bsnes/`
+
+- Project: https://bsnes.dev/ · Source: https://github.com/bsnes-emu/bsnes
+- License: **GPLv3** — full text at `resources/engines/bsnes/LICENSE.txt`
+- Redistributed unmodified. Corresponding source is available at the upstream URL above.
+
 ## Runtime dependencies (installed via npm, not vendored here)
 
 | Package | License |

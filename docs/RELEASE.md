@@ -139,6 +139,8 @@ fileAssociations:
 | 引擎 | 放哪 | 为什么 |
 | --- | --- | --- |
 | mGBA（内置，MPL 2.0） | 安装目录 `resources/engines/mgba/` | 随版本走，开箱即用 |
+| FCEUX（内置，GPLv2） | 安装目录 `resources/engines/fceux/` | 同上，约 7.5 MB |
+| bsnes（内置，GPLv3） | 安装目录 `resources/engines/bsnes/` | 同上，约 4.4 MB |
 | Dolphin / Cemu（重，闭源/大） | 用户目录 `%APPDATA%\Nest\engines\` | 不随包分发，避开许可和体积 |
 | 用户指定路径 | 记在 `library.json` 的 settings 里 | 兜底 |
 
@@ -177,8 +179,10 @@ npm run dist               # 产出 release\Nest-<version>-Setup.exe
 | --- | --- |
 | Electron 运行时 | ~90 MB |
 | mGBA 0.10.5 | 41.5 MB |
+| FCEUX 2.6.6 | 7.5 MB |
+| bsnes v115 | 4.4 MB |
 | 应用代码 + 资源 | ~5 MB |
-| **安装包（LZMA 压缩后）** | **约 100–120 MB** |
+| **安装包（LZMA 压缩后）** | **约 105–125 MB** |
 
 如果嫌大：mGBA 的 `shaders/`、`scripts/`、`licenses/` 只有几 MB，可精简；但 `licenses/` **不能删**（MPL 2.0 要求保留）。
 

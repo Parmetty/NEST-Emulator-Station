@@ -28,7 +28,7 @@ export interface SystemDef {
 }
 
 export const SYSTEMS: SystemDef[] = [
-  { id: 'fc',    name: 'Family Computer',   short: 'FC',    year: 1983, kind: '家用机', family: 'nintendo', engine: 'mesen',    image: 'consoles/fc.webp',   state: 'ready' },
+  { id: 'fc',    name: 'Family Computer',   short: 'FC',    year: 1983, kind: '家用机', family: 'nintendo', engine: 'fceux',    image: 'consoles/fc.webp',   state: 'ready' },
   { id: 'sfc',   name: 'Super Famicom',     short: 'SFC',   year: 1990, kind: '家用机', family: 'nintendo', engine: 'bsnes',    image: 'consoles/sfc.webp',  state: 'ready' },
   { id: 'n64',   name: 'Nintendo 64',       short: 'N64',   year: 1996, kind: '家用机', family: 'nintendo', engine: 'ares',     image: 'consoles/n64.webp',  state: 'ready' },
   { id: 'gba',   name: 'Game Boy Advance',  short: 'GBA',   year: 2001, kind: '掌机',   family: 'nintendo', engine: 'mgba',     image: 'consoles/gba.webp',  state: 'ready', note: 'BIOS 开机动画随游戏启动' },

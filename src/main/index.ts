@@ -43,7 +43,6 @@ let services: Services | null = null;
  * PowerShell helper presses F12 every few seconds while the game runs.
  */
 const captureHelpers = new Map<string, ChildProcess>();
-const sessionSystems = new Map<string, string>();
 
 async function clearShots(): Promise<void> {
   const dir = shotsDir();
@@ -78,25 +77,16 @@ async function newestShot(): Promise<string | null> {
   }
 }
 
-/** Native screen aspect per system. The emulator anchors the game at the client top. */
-const SYSTEM_ASPECT: Record<string, number> = {
-  gba: 240 / 160,
-  fc: 4 / 3,
-  sfc: 4 / 3,
-  n64: 4 / 3,
-  nds: 4 / 3,
-  '3ds': 5 / 3,
-  ngc: 4 / 3,
-  wii: 16 / 9,
-  wiiu: 16 / 9,
-};
-
+/**
+ * Aspect comes from the engine manifest (`captureAspect`): every frontend adds
+ * a different amount of chrome, so this is a property of the engine, not of the
+ * console. Omitted means "the client area is already the screen" (e.g. FCEUX).
+ */
 function captureToolPath(): string {
   return path.join(app.getAppPath(), 'resources', 'tools', 'nest-capture.exe');
 }
 
-function startShotHelper(sessionId: string, pid: number, systemId: string): void {
-  const aspect = SYSTEM_ASPECT[systemId] ?? 0;
+function startShotHelper(sessionId: string, pid: number, aspect: number): void {
   const exe = captureToolPath();
   const args = [
     '--pid',
@@ -214,10 +204,12 @@ async function boot(): Promise<void> {
       mainWindow?.minimize();
     }
     if (e.state === 'running') {
-      sessionSystems.set(e.sessionId, e.systemId);
+      const system = systemById.get(e.systemId as SystemId);
+      const engine = system ? services?.engines.get(system.engine) : undefined;
       const pid = services?.supervisor.pid(e.sessionId);
       if (pid) {
-        void clearShots().then(() => startShotHelper(e.sessionId, pid, e.systemId));
+        const aspect = engine?.captureAspect ?? 0;
+        void clearShots().then(() => startShotHelper(e.sessionId, pid, aspect));
       }
     }
     if (e.state === 'exited' || e.state === 'crashed') {
@@ -388,17 +380,21 @@ async function boot(): Promise<void> {
     });
   }
 
-  if (process.argv.includes('--trylaunch')) {
+  const tryFlag = process.argv.find(
+    (arg) => arg === '--trylaunch' || arg.startsWith('--trylaunch='),
+  );
+  if (tryFlag) {
     mainWindow.webContents.once('did-finish-load', () => {
+      const systemId = tryFlag.includes('=') ? tryFlag.split('=')[1] : 'gba';
       setTimeout(async () => {
-        const games = services!.store.games('gba');
+        const games = services!.store.games(systemId);
         if (games.length === 0) {
           console.log('[nest] trylaunch failed: no games (pass --scan=<folder>)');
           app.exit(2);
           return;
         }
         const target = games[0];
-        const result = await startLaunch(services!, { systemId: 'gba', mode: 'game', rom: target.path });
+        const result = await startLaunch(services!, { systemId, mode: 'game', rom: target.path });
         if (!result.ok) {
           console.log(`[nest] trylaunch failed: ${result.error}`);
           app.exit(3);

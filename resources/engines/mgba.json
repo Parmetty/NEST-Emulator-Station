@@ -21,6 +21,7 @@
     "screenshotPathOption": "screenshotPath",
     "cwd": "engineDir"
   },
+  "captureAspect": 1.5,
   "capabilities": {
     "saveStates": true,
     "systemMode": null

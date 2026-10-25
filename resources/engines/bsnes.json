@@ -1,29 +1,26 @@
 {
-    "id":  "bsnes",
-    "name":  "bsnes",
-    "systems":  [
-                    "sfc"
-                ],
-    "kind":  "native",
-    "detect":  {
-                   "paths":  [
-                                 "%PROGRAMFILES%\\bsnes\\bsnes.exe"
-                             ]
-               },
-    "download":  {
-                     "homepage":  "https://bsnes.dev/"
-                 },
-    "launch":  {
-                   "args":  [
-                                "{rom}"
-                            ],
-                   "systemArgs":  [
-
-                                  ],
-                   "cwd":  "engineDir"
-               },
-    "capabilities":  {
-                         "saveStates":  true,
-                         "systemMode":  null
-                     }
+  "id": "bsnes",
+  "name": "bsnes",
+  "systems": ["sfc"],
+  "kind": "native",
+  "detect": {
+    "paths": [
+      "{engines}/bsnes/bsnes.exe",
+      "%PROGRAMFILES%/bsnes/bsnes.exe"
+    ]
+  },
+  "download": {
+    "homepage": "https://bsnes.dev/"
+  },
+  "launch": {
+    "args": ["{rom}"],
+    "systemArgs": [],
+    "fullscreenFlag": "--fullscreen",
+    "cwd": "engineDir"
+  },
+  "captureAspect": 1.142857,
+  "capabilities": {
+    "saveStates": true,
+    "systemMode": null
+  }
 }

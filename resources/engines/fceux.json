@@ -1,0 +1,25 @@
+{
+  "id": "fceux",
+  "name": "FCEUX",
+  "systems": ["fc"],
+  "kind": "native",
+  "detect": {
+    "paths": [
+      "{engines}/fceux/fceux64.exe",
+      "%PROGRAMFILES%/FCEUX/fceux64.exe",
+      "%PROGRAMFILES%/FCEUX/fceux.exe"
+    ]
+  },
+  "download": {
+    "homepage": "https://fceux.com/web/download.html"
+  },
+  "launch": {
+    "args": ["{rom}"],
+    "systemArgs": [],
+    "cwd": "engineDir"
+  },
+  "capabilities": {
+    "saveStates": true,
+    "systemMode": null
+  }
+}

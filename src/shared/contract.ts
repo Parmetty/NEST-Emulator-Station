@@ -75,6 +75,13 @@ export const engineManifestSchema = z.object({
       systemMode: z.string().nullable().default(null),
     })
     .default({ saveStates: false, systemMode: null }),
+
+  /**
+   * Width/height of the emulated screen inside the window, used to crop cover
+   * captures. Omit when the emulator already fills its client area exactly
+   * (FCEUX stretches to fit), so no cropping happens.
+   */
+  captureAspect: z.number().positive().optional(),
 });
 
 export type EngineManifest = z.infer<typeof engineManifestSchema>;

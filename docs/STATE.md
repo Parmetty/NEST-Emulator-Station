@@ -12,7 +12,34 @@
 | P1 扫描器 + GBA 全链路 | ✅ 完成 |
 | P1.1 内置 mGBA + 启动设置 | ✅ 完成 |
 | P1.2 封面 / 右键移除 / 运行中高亮 | ✅ 完成 |
-| P2 多系统闭环 | 下一步 |
+| P2 FC + SFC 闭环 | ✅ 完成（N64 未做） |
+| P3 NGC + Wii | 未开始 |
+
+## P2 已完成的部分
+
+- **FC**：FCEUX 2.6.6 内置（`resources/engines/fceux/`，~7.5 MB），`fceux64.exe "{rom}"` 直接启动
+- **SFC**：bsnes v115 内置（`resources/engines/bsnes/`，~4.4 MB），`bsnes.exe "{rom}"`，`--fullscreen` 已实测生效
+- **封面裁剪改为按引擎配置**（`captureAspect` 写进清单）：
+  - mGBA `1.5`（3:2，去掉窗口顶部 Qt 菜单）
+  - bsnes `1.142857`（8:7，去掉顶部 24px 菜单）
+  - FCEUX 不裁剪（它把画面拉伸铺满客户区，实测 320×256 无 chrome）
+- **抓屏工具加前台 + 遮挡检查**：只有窗口在前台且抓取点确实属于它时才落帧，避免存下别的窗口
+- 许可证：FCEUX 是 GPLv2、bsnes 是 GPLv3，许可证全文已随包，源码地址写在 THIRD-PARTY-NOTICES
+
+验证方式（`NEST` 需要游戏窗口在前台，真实使用时 Nest 会最小化、游戏自然在前台）：
+
+```powershell
+node tools/run.mjs . --no-sandbox --user-data-dir=.profile --scan=.roms-fc-sfc --trylaunch=fc --hold=6000
+node tools/run.mjs . --no-sandbox --user-data-dir=.profile --scan=.roms-fc-sfc --trylaunch=sfc --hold=6000
+```
+
+实测封面：FC → 320×256（超级马里奥兄弟 3 标题），SFC → 512×448（忍者神龟标题）。
+
+## 下一步（P2 剩余）
+
+1. N64：ares 或 mupen64plus，需确认 CLI 与控制器配置
+2. DAT 匹配（No-Intro SHA-1）与标题修正
+3. 每游戏覆盖设置、存档备份
 
 ## P1.2 交付
 
@@ -74,14 +101,13 @@ NEST_FAKE_ENGINE=1 node tools/run.mjs . --no-sandbox --user-data-dir=.profile \
 - 首页：四区布局、时间线排序、平台切换标尺、确认框、键鼠双通道（接真实 IPC）
 - 诊断开关：`--smoke`、`--shot`、`--dump`
 - 视觉基准：`docs/mock-v1/`
-- 测试 10 条 + 类型检查 + 构建
+- 测试 15 条 + 类型检查 + 构建
 
-## 下一步（P2）
+## 更远的路
 
-1. FC / SFC / N64 的扫描与启动闭环（引擎清单已就绪，缺固件校验）
+1. N64：ares / mupen64plus，需确认 CLI 与控制器配置
 2. DAT 匹配（No-Intro SHA-1）与标题修正
-3. 每游戏覆盖设置（分辨率 / 滤镜 / 控制器）
-4. 存档备份：电池存档与即时存档的目录约定
+3. 每游戏覆盖设置、存档备份、手柄映射
 
 ## 环境坑（本机）
 

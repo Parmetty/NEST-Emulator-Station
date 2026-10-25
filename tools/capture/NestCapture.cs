@@ -49,6 +49,17 @@ internal static class Program
     [DllImport("user32.dll")]
     private static extern bool SetProcessDPIAware();
 
+    [DllImport("user32.dll")]
+    private static extern IntPtr WindowFromPoint(Point point);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetAncestor(IntPtr hWnd, uint flags);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetForegroundWindow();
+
+    private const uint GA_ROOT = 2;
+
     private static string _log;
 
     private static void Log(string message)
@@ -72,6 +83,7 @@ internal static class Program
         int maxFiles = 60;
         double aspect = 0;
         bool once = false;
+        bool allowBackground = false;
 
         for (int i = 0; i < args.Length; i++)
         {
@@ -95,6 +107,9 @@ internal static class Program
                     break;
                 case "--once":
                     once = true;
+                    break;
+                case "--allow-background":
+                    allowBackground = true;
                     break;
                 case "--log":
                     _log = args[++i];
@@ -155,7 +170,7 @@ internal static class Program
 
             try
             {
-                if (Capture(handle, outDir, aspect, written + 1))
+                if (Capture(handle, outDir, aspect, written + 1, allowBackground))
                 {
                     written++;
                     Prune(outDir, maxFiles);
@@ -176,7 +191,7 @@ internal static class Program
         }
     }
 
-    private static bool Capture(IntPtr handle, string outDir, double aspect, int index)
+    private static bool Capture(IntPtr handle, string outDir, double aspect, int index, bool allowBackground)
     {
         Rect rect;
         if (!GetClientRect(handle, out rect)) return false;
@@ -189,6 +204,25 @@ internal static class Program
         origin.X = 0;
         origin.Y = 0;
         if (!ClientToScreen(handle, ref origin)) return false;
+
+        // Screen capture only sees what is on top, and a window that just
+        // appeared can already own its rectangle while still showing whatever
+        // was underneath. Require the emulator to be the foreground window.
+        if (!allowBackground && GetForegroundWindow() != handle)
+        {
+            Log("skipped frame: window is not in the foreground");
+            return false;
+        }
+
+        Point center = new Point();
+        center.X = origin.X + width / 2;
+        center.Y = origin.Y + height / 2;
+        IntPtr covered = WindowFromPoint(center);
+        if (!allowBackground && covered != IntPtr.Zero && GetAncestor(covered, GA_ROOT) != handle)
+        {
+            Log("skipped frame: window is occluded");
+            return false;
+        }
 
         int cropHeight = height;
         int cropTop = 0;
