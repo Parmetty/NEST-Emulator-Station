@@ -105,7 +105,8 @@ npm run smoke     # 窗口 + IPC + 渲染自检
 | P4 | Cemu、MLC/keys、Wii U Menu | |
 | P5 | 手柄导航、滤镜、首次启动向导、安装包 | |
 
-细节在 [docs/PLAN.md](docs/PLAN.md)，决策记录在 [docs/DECISIONS.md](docs/DECISIONS.md)。
+细节在 [docs/PLAN.md](docs/PLAN.md)，决策记录在 [docs/DECISIONS.md](docs/DECISIONS.md)，
+打包发布清单在 [docs/RELEASE.md](docs/RELEASE.md)（还没打包，那是动手那天的 checklist）。
 
 ## 已知限制
 

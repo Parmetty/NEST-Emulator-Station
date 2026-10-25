@@ -106,4 +106,4 @@ npm run shot         # 产出 shots/app.png
 
 - 系统模式启动参数（Dolphin `-b`、Cemu 菜单）尚未在真引擎上验证，等有 NAND/MLC 的机器
 - 封面抓取源（ScreenScraper / IGDB）未选型，P5 再定
-- 打包与自动更新（P5）：NSIS + 便携版，注意引擎不随包
+- 打包与发布：清单已写好在 [RELEASE.md](RELEASE.md)，动手前先修两处 asar 路径问题
