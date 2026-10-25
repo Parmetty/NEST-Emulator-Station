@@ -4,7 +4,7 @@
   "private": true,
   "description": "Nest - a console-style emulator launcher",
   "main": "./out/main/index.js",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "MIT",
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
