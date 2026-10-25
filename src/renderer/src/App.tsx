@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { FamilyView, HomePayload, LaunchEvent, LaunchMode, SystemView } from '@shared/contract';
+import type {
+  FamilyView,
+  GameRecord,
+  HomePayload,
+  LaunchEvent,
+  LaunchMode,
+  SystemView,
+} from '@shared/contract';
 
 type Row =
   | { kind: 'family'; family: FamilyView }
@@ -7,10 +14,26 @@ type Row =
 
 type Selection = { type: 'family' | 'system'; id: string };
 
-const NON_NINTENDO = new Set(['xbox', 'xbox360', 'ps1', 'ps2', 'psp', 'ps3']);
+const SHELF_COLUMNS = 5;
 
 function relpath(image: string): string {
   return image ? `./${image.replace(/^\/+/, '')}` : '';
+}
+
+function formatSize(bytes: number): string {
+  if (bytes >= 1024 * 1024 * 1024) return `${(bytes / 1024 ** 3).toFixed(1)} GB`;
+  if (bytes >= 1024 * 1024) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
+  return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
+
+function relativeTime(at: number | null): string {
+  if (!at) return '从未游玩';
+  const mins = Math.round((Date.now() - at) / 60000);
+  if (mins < 1) return '刚刚';
+  if (mins < 60) return `${mins} 分钟前`;
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return `${hours} 小时前`;
+  return `${Math.round(hours / 24)} 天前`;
 }
 
 export default function App() {
@@ -20,7 +43,14 @@ export default function App() {
   const [favorites, setFavorites] = useState<Set<string>>(() => new Set());
   const [toast, setToast] = useState<string | null>(null);
   const [overlay, setOverlay] = useState<{ name: string; meta: string } | null>(null);
-  const [dialog, setDialog] = useState<{ system: SystemView; mode: LaunchMode } | null>(null);
+  const [dialog, setDialog] = useState<{ system: SystemView; mode: LaunchMode; game?: GameRecord } | null>(
+    null,
+  );
+  const [shelf, setShelf] = useState<{ system: SystemView; games: GameRecord[]; loading: boolean } | null>(
+    null,
+  );
+  const [shelfIndex, setShelfIndex] = useState(0);
+  const [scanning, setScanning] = useState(false);
 
   /* ------------------------------------------------------------- data */
   useEffect(() => {
@@ -33,7 +63,9 @@ export default function App() {
         const nintendo = payload.families.find((f) => f.id === 'nintendo');
         const first = nintendo?.systems.find((s) => s.id === 'gba') ?? nintendo?.systems[0];
         if (first) setSel({ type: 'system', id: first.id });
-        setFavorites(new Set(payload.families.flatMap((f) => f.systems.filter((s) => s.favorite).map((s) => s.id))));
+        setFavorites(
+          new Set(payload.families.flatMap((f) => f.systems.filter((s) => s.favorite).map((s) => s.id))),
+        );
         window.__NEST_READY__ = true;
       })
       .catch((err: Error) => setToast(`加载失败：${err.message}`));
@@ -42,13 +74,28 @@ export default function App() {
     };
   }, []);
 
+  const refreshHome = useCallback(async () => {
+    try {
+      const payload = await window.nest.home();
+      setHome(payload);
+    } catch {
+      /* keep old data */
+    }
+  }, []);
+
   useEffect(() => {
     const off = window.nest.onLaunchEvent((event: LaunchEvent) => {
-      if (event.state === 'exited') setToast('已退出，返回 Nest');
-      if (event.state === 'crashed') setToast(`引擎异常退出${event.code ? `（${event.code}）` : ''}`);
+      if (event.state === 'exited') {
+        setToast('已退出，返回 Nest');
+        void refreshHome();
+      }
+      if (event.state === 'crashed') {
+        setToast(`引擎异常退出${event.code ? `（${event.code}）` : ''}`);
+        void refreshHome();
+      }
     });
     return off;
-  }, []);
+  }, [refreshHome]);
 
   /* ---------------------------------------------------------- derived */
   const families = home?.families ?? [];
@@ -68,7 +115,9 @@ export default function App() {
     sel.type === 'system'
       ? families.flatMap((f) => f.systems).find((s) => s.id === sel.id) ?? null
       : null;
-  const selectedFamily = families.find((f) => f.id === (sel.type === 'family' ? sel.id : selectedSystem?.family));
+  const selectedFamily = families.find(
+    (f) => f.id === (sel.type === 'family' ? sel.id : selectedSystem?.family),
+  );
   const locked = selectedSystem ? selectedSystem.state === 'locked' : false;
   const empty = !selectedSystem || locked || !selectedSystem.image;
 
@@ -121,25 +170,84 @@ export default function App() {
   }, []);
 
   const askEnter = useCallback(
-    (system: SystemView, mode: LaunchMode) => {
+    (system: SystemView, mode: LaunchMode, game?: GameRecord) => {
       if (system.state === 'locked') {
         say(`${system.engine} 尚未接入`);
         return;
       }
-      setDialog({ system, mode });
+      setDialog({ system, mode, game });
     },
     [say],
   );
 
+  /* --------------------------------------------------------- library */
+  const openShelf = useCallback(
+    async (system: SystemView) => {
+      if (system.state === 'locked') {
+        say(`${system.engine} 尚未接入`);
+        return;
+      }
+      setShelf({ system, games: [], loading: true });
+      setShelfIndex(0);
+      try {
+        const games = await window.nest.games(system.id);
+        setShelf({ system, games, loading: false });
+      } catch {
+        setShelf({ system, games: [], loading: false });
+      }
+    },
+    [say],
+  );
+
+  const closeShelf = useCallback(() => setShelf(null), []);
+
+  const scan = useCallback(async () => {
+    if (!shelf || scanning) return;
+    setScanning(true);
+    try {
+      const result = await window.nest.scan(shelf.system.id);
+      if (!result.ok) {
+        if (result.error !== 'cancelled') say(`扫描失败：${result.error}`);
+      } else {
+        const games = await window.nest.games(shelf.system.id);
+        setShelf({ ...shelf, games, loading: false });
+        setShelfIndex(0);
+        say(`新增 ${result.added ?? 0} 个，重复 ${result.skipped ?? 0} 个`);
+        void refreshHome();
+      }
+    } finally {
+      setScanning(false);
+    }
+  }, [shelf, scanning, say, refreshHome]);
+
+  const moveShelf = useCallback(
+    (dx: number, dy: number) => {
+      if (!shelf || shelf.games.length === 0) return;
+      setShelfIndex((prev) => {
+        const total = shelf.games.length;
+        if (dx !== 0) return (prev + dx + total) % total;
+        const next = prev + dy * SHELF_COLUMNS;
+        if (next < 0 || next >= total) return prev;
+        return next;
+      });
+    },
+    [shelf],
+  );
+
+  /* --------------------------------------------------------- launching */
   const confirmDialog = useCallback(async () => {
     if (!dialog) return;
-    const { system, mode } = dialog;
+    const { system, mode, game } = dialog;
     setDialog(null);
     setOverlay({
-      name: system.name,
-      meta: mode === 'system' ? `正在开机 · ${system.systemMode ?? '系统模式'}` : `正在启动 · ${system.engine}`,
+      name: game ? game.title : system.name,
+      meta: game
+        ? `正在启动 · ${system.engine}`
+        : mode === 'system'
+          ? `正在开机 · ${system.systemMode ?? '系统模式'}`
+          : `正在启动 · ${system.engine}`,
     });
-    const result = await window.nest.launch(system.id, mode);
+    const result = await window.nest.launch(system.id, mode, game?.path);
     if (!result.ok) {
       setOverlay(null);
       const map: Record<string, string> = {
@@ -196,6 +304,30 @@ export default function App() {
         return;
       }
 
+      if (shelf) {
+        if (k === 'Escape' || k === 'b' || k === 'B') {
+          e.preventDefault();
+          closeShelf();
+        } else if (k === 'ArrowRight') {
+          e.preventDefault();
+          moveShelf(1, 0);
+        } else if (k === 'ArrowLeft') {
+          e.preventDefault();
+          moveShelf(-1, 0);
+        } else if (k === 'ArrowDown') {
+          e.preventDefault();
+          moveShelf(0, 1);
+        } else if (k === 'ArrowUp') {
+          e.preventDefault();
+          moveShelf(0, -1);
+        } else if (k === 'Enter' || k === ' ' || k === 'a' || k === 'A') {
+          e.preventDefault();
+          const game = shelf.games[shelfIndex];
+          if (game) askEnter(shelf.system, 'game', game);
+        }
+        return;
+      }
+
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', ' '].includes(k)) e.preventDefault();
 
       const onButton = (e.target as HTMLElement | null)?.tagName === 'BUTTON';
@@ -210,17 +342,15 @@ export default function App() {
           toggleFamily(sel.id);
         }
       } else if (k === 'ArrowRight') {
-        if (sel.type === 'family') {
-          if (!expanded.has(sel.id)) {
-            toggleFamily(sel.id);
-            const family = families.find((f) => f.id === sel.id);
-            if (family?.systems[0]) select('system', family.systems[0].id);
-          }
+        if (sel.type === 'family' && !expanded.has(sel.id)) {
+          toggleFamily(sel.id);
+          const family = families.find((f) => f.id === sel.id);
+          if (family?.systems[0]) select('system', family.systems[0].id);
         }
       } else if (k === 'Enter' || k === ' ' || k === 'a' || k === 'A') {
         if (onButton && (k === 'Enter' || k === ' ')) return;
         if (sel.type === 'family') toggleFamily(sel.id);
-        else if (selectedSystem) askEnter(selectedSystem, 'game');
+        else if (selectedSystem) void openShelf(selectedSystem);
       } else if (k === 'x' || k === 'X') {
         if (selectedSystem?.systemMode) askEnter(selectedSystem, 'system');
         else if (selectedSystem) say(`${selectedSystem.name} 没有系统模式`);
@@ -233,11 +363,33 @@ export default function App() {
 
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [dialog, move, sel, expanded, families, rows, selectedSystem, askEnter, confirmDialog, overlay, say, toggleFav, toggleFamily, select]);
+  }, [
+    dialog,
+    shelf,
+    shelfIndex,
+    move,
+    sel,
+    expanded,
+    families,
+    rows,
+    selectedSystem,
+    askEnter,
+    confirmDialog,
+    overlay,
+    say,
+    toggleFav,
+    toggleFamily,
+    select,
+    moveShelf,
+    closeShelf,
+    openShelf,
+  ]);
 
   /* ----------------------------------------------------------- render */
   const year = selectedSystem?.year;
-  const ghostLabel = (sel.type === 'family' ? selectedFamily?.name ?? '' : selectedSystem?.name ?? '').toUpperCase();
+  const ghostLabel = (
+    sel.type === 'family' ? selectedFamily?.name ?? '' : selectedSystem?.name ?? ''
+  ).toUpperCase();
 
   // Debug hook: the `--dump` switch in main reads this to verify what the
   // renderer actually received from IPC.
@@ -248,17 +400,21 @@ export default function App() {
     engine: selectedSystem?.engine ?? null,
     families: families.length,
     systems: families.reduce((n, f) => n + f.systems.length, 0),
-    hasInfo: Boolean(selectedSystem || selectedFamily),
+    shelf: shelf ? shelf.games.length : null,
   };
-  const ghostHint =
-    sel.type === 'family'
-      ? '预留平台 · 适配器就位后启用'
-      : selectedSystem
-        ? `预留入口 · ${selectedSystem.engine}`
-        : '';
+
+  // Used by `--shelf=<id>` screenshots: opens a library without touching the UI.
+  (window as unknown as Record<string, unknown>).__NEST_OPEN_SHELF__ = (id: string) => {
+    const target = families.flatMap((f) => f.systems).find((s) => s.id === id);
+    if (target) void openShelf(target);
+  };
 
   return (
-    <div className={`stage${empty ? ' empty' : ''}`} ref={stageRef} onPointerMove={onPointerMove}>
+    <div
+      className={`stage${empty ? ' empty' : ''}${shelf ? ' shelf-open' : ''}`}
+      ref={stageRef}
+      onPointerMove={onPointerMove}
+    >
       <div className="dragbar" />
 
       <div className="photo-stage">
@@ -275,7 +431,7 @@ export default function App() {
         </div>
         <div className="ghost">
           {ghostLabel}
-          <small>{ghostHint}</small>
+          <small>{sel.type === 'family' ? '预留平台 · 适配器就位后启用' : `预留入口 · ${selectedSystem?.engine ?? ''}`}</small>
         </div>
       </div>
 
@@ -323,7 +479,7 @@ export default function App() {
                 }`}
                 onPointerEnter={() => select('system', row.system.id)}
                 onClick={() => select('system', row.system.id)}
-                onDoubleClick={() => askEnter(row.system, 'game')}
+                onDoubleClick={() => void openShelf(row.system)}
               >
                 <span className="label">{row.system.name}</span>
                 <span className="short">
@@ -407,7 +563,7 @@ export default function App() {
                   </div>
                 </div>
                 <div className="keys">
-                  <button className="key" onClick={() => askEnter(selectedSystem, 'game')}>
+                  <button className="key" onClick={() => void openShelf(selectedSystem)}>
                     <kbd>A</kbd>进入
                   </button>
                   {selectedSystem.systemMode ? (
@@ -415,7 +571,10 @@ export default function App() {
                       <kbd>X</kbd>系统模式
                     </button>
                   ) : null}
-                  <button className={`key${favorites.has(selectedSystem.id) ? ' is-on' : ''}`} onClick={() => void toggleFav()}>
+                  <button
+                    className={`key${favorites.has(selectedSystem.id) ? ' is-on' : ''}`}
+                    onClick={() => void toggleFav()}
+                  >
                     <kbd>Y</kbd>
                     {favorites.has(selectedSystem.id) ? '已收藏' : '收藏'}
                   </button>
@@ -430,9 +589,7 @@ export default function App() {
         <div className="tl-cap">TIMELINE / {selectedFamily?.name.toUpperCase() ?? 'NINTENDO'}</div>
         <div
           className="tl-track"
-          style={{
-            maxWidth: `${Math.max(240, (selectedFamily?.systems.length ?? 0) * 82)}px`,
-          }}
+          style={{ maxWidth: `${Math.max(240, (selectedFamily?.systems.length ?? 0) * 82)}px` }}
         >
           <div className="tl-rule" />
           {(selectedFamily?.systems ?? []).map((system, i, list) => {
@@ -451,6 +608,66 @@ export default function App() {
           })}
         </div>
       </div>
+
+      {shelf ? (
+        <section className="shelf" aria-label={`${shelf.system.name} 游戏库`}>
+          <header className="shelf-head">
+            <button className="shelf-back" onClick={closeShelf}>
+              <kbd>B</kbd>返回
+            </button>
+            <div className="shelf-title">
+              <h2>{shelf.system.name}</h2>
+              <span>
+                {shelf.loading ? '读取中…' : `${shelf.games.length} 个游戏`} · {shelf.system.engine}
+              </span>
+            </div>
+            <button className="shelf-scan" onClick={() => void scan()} disabled={scanning}>
+              {scanning ? '扫描中…' : '扫描文件夹'}
+            </button>
+          </header>
+
+          <div className={`shelf-grid${shelf.games.length === 0 ? ' empty' : ''}`}>
+            {shelf.games.map((game, index) => (
+              <button
+                key={game.id}
+                className={`card${index === shelfIndex ? ' on' : ''}`}
+                onPointerEnter={() => setShelfIndex(index)}
+                onClick={() => askEnter(shelf.system, 'game', game)}
+              >
+                <span className="card-art">
+                  <i>{(game.title[0] ?? '?').toUpperCase()}</i>
+                </span>
+                <span className="card-title">{game.title}</span>
+                <span className="card-meta">
+                  {formatSize(game.size)} · {relativeTime(game.lastPlayed)}
+                </span>
+              </button>
+            ))}
+
+            {!shelf.loading && shelf.games.length === 0 ? (
+              <div className="shelf-empty">
+                <p>这个主机还没有游戏</p>
+                <span>把 ROM 放进一个文件夹，点右上角「扫描文件夹」</span>
+              </div>
+            ) : null}
+          </div>
+
+          <footer className="shelf-foot">
+            <span>
+              <kbd>↑</kbd>
+              <kbd>↓</kbd>
+              <kbd>←</kbd>
+              <kbd>→</kbd> 选择
+            </span>
+            <span>
+              <kbd>A</kbd> 启动
+            </span>
+            <span>
+              <kbd>B</kbd> 返回
+            </span>
+          </footer>
+        </section>
+      ) : null}
 
       <div className={`toast${toast ? ' on' : ''}`}>{toast ?? ''}</div>
 
@@ -472,12 +689,20 @@ export default function App() {
           </div>
           <h2>注意！</h2>
           <p>
-            您即将进入 <b>{dialog?.system.name}</b>
+            {dialog?.game ? (
+              <>
+                您即将启动 <b>{dialog.game.title}</b>
+              </>
+            ) : (
+              <>
+                您即将进入 <b>{dialog?.system.name}</b>
+              </>
+            )}
           </p>
           <p className="dlg-note">
             {dialog?.mode === 'system'
               ? `系统模式：${dialog.system.systemMode ?? '系统菜单'} · 需要对应的固件 / 系统文件`
-              : `启动引擎：${dialog?.system.engine} · 结束后自动返回 Nest`}
+              : `${dialog?.system.name ?? ''} · ${dialog?.system.engine ?? ''} · 结束后自动返回 Nest`}
           </p>
           <div className="dlg-actions">
             <button className="dlg-btn" onClick={() => setDialog(null)}>
@@ -485,7 +710,7 @@ export default function App() {
             </button>
             <button className="dlg-btn primary" onClick={() => void confirmDialog()}>
               <kbd>A</kbd>
-              {dialog?.mode === 'system' ? '确认开机' : '确认进入'}
+              {dialog?.mode === 'system' ? '确认开机' : '确认启动'}
             </button>
           </div>
         </div>
@@ -493,5 +718,3 @@ export default function App() {
     </div>
   );
 }
-
-export { NON_NINTENDO };

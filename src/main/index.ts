@@ -1,8 +1,8 @@
 import path from 'node:path';
 import { writeFile } from 'node:fs/promises';
 import { app, BrowserWindow, shell } from 'electron';
-import { CH } from '../shared/contract';
-import { createServices, registerIpc, type Services } from './ipc';
+import { CH, type LaunchEvent } from '../shared/contract';
+import { createServices, registerIpc, startLaunch, type Services } from './ipc';
 
 const SMOKE = process.argv.includes('--smoke') || process.env.NEST_SMOKE === '1';
 
@@ -56,13 +56,23 @@ function createWindow(): BrowserWindow {
 
 async function boot(): Promise<void> {
   console.log('[nest] boot: services');
+  const events: LaunchEvent[] = [];
   services = createServices((event) => {
+    events.push(event as LaunchEvent);
     mainWindow?.webContents.send(CH.launchEvent, event);
   });
   console.log('[nest] boot: store');
   await services.store.load();
   console.log('[nest] boot: engines');
   await services.engines.load();
+
+  const preloadScan = process.argv.find((arg) => arg.startsWith('--scan='));
+  if (preloadScan) {
+    const { scanFolder } = await import('./scanner');
+    const files = await scanFolder(preloadScan.slice('--scan='.length));
+    const result = await services.store.upsertGames(files);
+    console.log(`[nest] preload scan: +${result.added} (${result.skipped} duplicates)`);
+  }
   console.log('[nest] boot: ipc');
   registerIpc(services);
 
@@ -95,6 +105,21 @@ async function boot(): Promise<void> {
     });
   }
 
+  const shelfFlag = process.argv.find((arg) => arg.startsWith('--shelf='));
+  if (shotFlag && shelfFlag) {
+    mainWindow.webContents.once('did-finish-load', () => {
+      setTimeout(async () => {
+        try {
+          await mainWindow!.webContents.executeJavaScript(
+            `window.__NEST_OPEN_SHELF__ && window.__NEST_OPEN_SHELF__(${JSON.stringify(shelfFlag.slice('--shelf='.length))}); true`,
+          );
+        } catch {
+          /* best effort */
+        }
+      }, 800);
+    });
+  }
+
   const dumpFlag = process.argv.find((arg) => arg.startsWith('--dump='));
   if (dumpFlag) {
     mainWindow.webContents.once('did-finish-load', () => {
@@ -113,6 +138,54 @@ async function boot(): Promise<void> {
         }
         app.exit(0);
       }, 1600);
+    });
+  }
+
+  if (process.argv.includes('--selftest')) {
+    mainWindow.webContents.once('did-finish-load', () => {
+      setTimeout(async () => {
+        const games = services!.store.games('gba');
+        if (games.length === 0) {
+          console.log('[nest] selftest failed: no games (pass --scan=<folder>)');
+          app.exit(2);
+          return;
+        }
+        const target = games[0];
+        const result = await startLaunch(services!, { systemId: 'gba', mode: 'game', rom: target.path });
+        if (!result.ok) {
+          console.log(`[nest] selftest failed: launch ${result.error}`);
+          app.exit(3);
+          return;
+        }
+        const deadline = Date.now() + 12_000;
+        while (Date.now() < deadline) {
+          if (events.some((e) => e.state === 'exited' || e.state === 'crashed')) break;
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+        const final = events.find((e) => e.state === 'exited' || e.state === 'crashed');
+        const recorded = services!.store.games('gba').find((g) => g.id === target.id)?.lastPlayed ?? null;
+
+        if (!final) {
+          console.log('[nest] selftest failed: engine never exited');
+          app.exit(4);
+          return;
+        }
+        if (final.state !== 'exited' || final.code !== 0) {
+          console.log(`[nest] selftest failed: engine ${final.state} code=${final.code}`);
+          app.exit(5);
+          return;
+        }
+        if (!recorded) {
+          console.log('[nest] selftest failed: game was not marked as played');
+          app.exit(6);
+          return;
+        }
+        console.log(
+          `[nest] selftest ok: launched "${target.title}", engine exited 0, lastPlayed recorded`,
+        );
+        services?.supervisor.stopAll();
+        app.exit(0);
+      }, 1500);
     });
   }
 

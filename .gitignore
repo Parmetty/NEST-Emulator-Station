@@ -9,3 +9,4 @@ diag/
 coverage/
 *.log
 .DS_Store
+.testroms/

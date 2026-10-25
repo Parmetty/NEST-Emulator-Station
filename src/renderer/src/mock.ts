@@ -1,12 +1,10 @@
 import { FAMILIES, systemsOf } from '@shared/systems';
-import type { HomePayload, LaunchEvent, LaunchMode } from '@shared/contract';
+import type { GameRecord, HomePayload, LaunchEvent, LaunchMode } from '@shared/contract';
 import type { NestApi } from './env';
 
 /**
  * Browser-only fallback: lets the real renderer run without Electron, which is
- * how we review the UI (and how `vite dev` works on machines where the window
- * can't start). The Electron build always provides the real IPC bridge, so this
- * is never used there.
+ * how we review the UI. The Electron build always provides the real IPC bridge.
  */
 const STATS: Record<string, { games: number; saves: number; lastPlayed: string | null }> = {
   fc: { games: 642, saves: 210, lastPlayed: '昨天' },
@@ -20,9 +18,33 @@ const STATS: Record<string, { games: number; saves: number; lastPlayed: string |
   wiiu: { games: 41, saves: 18, lastPlayed: null },
 };
 
+function demoGames(): Record<string, GameRecord[]> {
+  const mk = (id: string, systemId: string, title: string, size: number, minutesAgo: number): GameRecord => ({
+    id,
+    systemId,
+    path: `C:\\ROMs\\${systemId}\\${title}.gba`,
+    fileName: `${title}.gba`,
+    title,
+    size,
+    sha1: id.padEnd(40, '0'),
+    addedAt: Date.now() - 86_400_000,
+    lastPlayed: minutesAgo > 0 ? Date.now() - minutesAgo * 60_000 : null,
+  });
+  return {
+    gba: [
+      mk('a1', 'gba', 'Golden Sun', 8_388_608, 120),
+      mk('a2', 'gba', 'Metroid Fusion', 8_388_608, 2880),
+      mk('a3', 'gba', 'Advance Wars', 4_194_304, 0),
+      mk('a4', 'gba', 'Fire Emblem', 8_388_608, 0),
+      mk('a5', 'gba', 'Mario Kart Super Circuit', 4_194_304, 10080),
+    ],
+  };
+}
+
 export function installMockApi(): void {
   let listener: ((event: LaunchEvent) => void) | null = null;
   const favorites = new Set<string>();
+  const games = demoGames();
 
   const payload = (): HomePayload => ({
     version: '0.1.0-mock',
@@ -32,7 +54,7 @@ export function installMockApi(): void {
       locked: family.locked,
       systems: systemsOf(family.id).map((system) => ({
         ...system,
-        games: STATS[system.id]?.games ?? 0,
+        games: games[system.id]?.length ?? STATS[system.id]?.games ?? 0,
         saves: STATS[system.id]?.saves ?? 0,
         lastPlayed: STATS[system.id]?.lastPlayed ?? null,
         favorite: favorites.has(system.id),
@@ -44,13 +66,34 @@ export function installMockApi(): void {
   const api: NestApi = {
     info: async () => ({ version: '0.1.0-mock', platform: 'browser', electron: '-', node: '-' }),
     home: async () => payload(),
-    launch: async (systemId: string, mode: LaunchMode = 'game') => {
+    games: async (systemId) => games[systemId] ?? [],
+    scan: async (systemId) => {
+      if (!systemId) return { ok: false, error: 'cancelled' };
+      const list = games[systemId] ?? (games[systemId] = []);
+      const before = list.length;
+      list.unshift({
+        id: `s${Math.random().toString(36).slice(2, 8)}`,
+        systemId,
+        path: `C:\\ROMs\\${systemId}\\Demo ${before + 1}.gba`,
+        fileName: `Demo ${before + 1}.gba`,
+        title: `Demo ${before + 1}`,
+        size: 4_194_304,
+        sha1: 'f'.repeat(40),
+        addedAt: Date.now(),
+        lastPlayed: null,
+      });
+      return { ok: true, root: 'C:\\ROMs', added: 1, skipped: 0, total: 1 };
+    },
+    launch: async (systemId: string, _mode: LaunchMode = 'game', rom?: string) => {
       const emit = (state: LaunchEvent['state'], code: number | null = null) =>
         listener?.({ sessionId: 'mock', systemId, state, code, at: Date.now() });
       emit('starting');
       setTimeout(() => emit('running'), 120);
-      setTimeout(() => emit('exited', 0), 2200);
-      void mode;
+      setTimeout(() => {
+        const played = (games[systemId] ?? []).find((g) => g.path === rom);
+        if (played) played.lastPlayed = Date.now();
+        emit('exited', 0);
+      }, 2200);
       return { ok: true, sessionId: 'mock' };
     },
     stop: async () => ({ ok: true }),

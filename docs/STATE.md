@@ -7,8 +7,26 @@
 | 阶段 | 状态 |
 | --- | --- |
 | P0 骨架 | ✅ 完成 |
-| P1 扫描器 + GBA 全链路 | 进行中 |
-| P2–P5 | 未开始 |
+| P1 扫描器 + GBA 全链路 | ✅ 完成 |
+| P2 多系统闭环 | 下一步 |
+| P3–P5 | 未开始 |
+
+## P1 交付
+
+- `src/main/scanner.ts`：递归扫描、扩展名映射、sha1 流式计算、标题清洗
+- `Store`：`games[]`、按哈希去重、`recordSession(systemId, at, gameId)`
+- IPC：`nest:games`、`nest:scan`（可选目录对话框）、`launch` 带 `rom`
+- 游戏库界面：卡片墙、键盘网格导航、空状态、扫描按钮
+- 端到端自检：`--selftest`（扫描 → 启动 → 引擎退出 0 → 最近游玩写入）
+
+验收命令：
+
+```bash
+npm run build
+NEST_FAKE_ENGINE=1 node tools/run.mjs . --no-sandbox --user-data-dir=.profile \
+  --scan=.testroms --selftest
+# -> [nest] selftest ok: launched "Advance Wars", engine exited 0, lastPlayed recorded
+```
 
 ## 已完成
 
@@ -21,12 +39,12 @@
 - 视觉基准：`docs/mock-v1/`
 - 测试 10 条 + 类型检查 + 构建
 
-## 下一步（P1 收尾）
+## 下一步（P2）
 
-1. 扫描器：选目录 → 递归找 ROM → 计算 sha1/size → 去重入库
-2. 游戏库界面：系统页里的卡片墙（封面占位、标题、大小、最近游玩）
-3. 带 ROM 启动：`launch(systemId, mode, rom)` → 参数模板填入 `{rom}`
-4. 验收：放几个 `.gba` → 扫描 → 卡片 → 启动假引擎 → 退出 → 最近游玩更新
+1. FC / SFC / N64 的扫描与启动闭环（引擎清单已就绪，缺固件校验）
+2. DAT 匹配（No-Intro SHA-1）与标题修正
+3. 每游戏覆盖设置（分辨率 / 滤镜 / 控制器）
+4. 存档备份：电池存档与即时存档的目录约定
 
 ## 环境坑（本机）
 

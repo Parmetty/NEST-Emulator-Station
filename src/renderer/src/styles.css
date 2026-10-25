@@ -510,6 +510,220 @@ button {
   color: #fff;
 }
 
+/* ---------- game shelf ---------- */
+.shelf {
+  position: fixed;
+  inset: 0;
+  z-index: 14;
+  display: flex;
+  flex-direction: column;
+  padding: 60px 56px 26px;
+  background: rgba(6, 6, 8, 0.82);
+  backdrop-filter: blur(26px) saturate(0.4);
+  animation: shelfIn 0.28s var(--ease);
+}
+
+/* The home screen stays behind the shelf as texture, not as content. */
+.stage.shelf-open .info,
+.stage.shelf-open .timeline {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s var(--ease);
+}
+
+@keyframes shelfIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.shelf-head {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--hair);
+}
+
+.shelf-back,
+.shelf-scan {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 11px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  transition: all 0.16s var(--ease);
+}
+
+.shelf-back:hover,
+.shelf-scan:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.shelf-scan:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.shelf-scan {
+  background: #fff;
+  color: #08080a;
+  border-color: #fff;
+}
+
+.shelf-scan:hover:not(:disabled) {
+  background: #e9e9ef;
+  color: #08080a;
+}
+
+.shelf-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.shelf-title h2 {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.shelf-title span {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.shelf-grid {
+  flex: 1;
+  overflow-y: auto;
+  margin-top: 24px;
+  padding-bottom: 12px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 22px 20px;
+  align-content: start;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.card {
+  position: relative;
+  display: block;
+  width: 100%;
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: transform 0.18s var(--ease);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.card-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  border-radius: 14px;
+  overflow: hidden;
+  background: linear-gradient(150deg, #1b1b23 0%, #0c0c11 100%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  transition: border-color 0.18s var(--ease), box-shadow 0.18s var(--ease);
+}
+
+.card-art i {
+  font-style: normal;
+  font-size: 46px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.13);
+  letter-spacing: 0.02em;
+}
+
+.card.on .card-art {
+  border-color: #fff;
+  box-shadow: 0 0 0 1px #fff, 0 18px 44px rgba(0, 0, 0, 0.55);
+}
+
+.card-title {
+  display: block;
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.card.on .card-title {
+  color: #fff;
+}
+
+.card-meta {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.32);
+}
+
+.shelf-empty {
+  grid-column: 1 / -1;
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  padding: 90px 0;
+  text-align: center;
+}
+
+.shelf-empty p {
+  font-size: 18px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.shelf-empty span {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.34);
+}
+
+.shelf-foot {
+  display: flex;
+  gap: 26px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hair);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.shelf-foot span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.shelf-foot kbd {
+  margin-right: 0;
+}
+
 /* ---------- info panel ---------- */
 .info {
   position: absolute;
@@ -663,7 +877,7 @@ button {
 }
 
 kbd {
-  display: grid;
+  display: inline-grid;
   place-items: center;
   min-width: 22px;
   height: 22px;

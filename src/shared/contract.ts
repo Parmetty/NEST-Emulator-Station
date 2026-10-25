@@ -6,6 +6,8 @@ export const CH = {
   info: 'nest:info',
   home: 'nest:home',
   engines: 'nest:engines',
+  games: 'nest:games',
+  scan: 'nest:scan',
   launch: 'nest:launch',
   stop: 'nest:stop',
   favorite: 'nest:favorite',
@@ -19,6 +21,18 @@ export const launchModeSchema = z.enum(['game', 'system']);
 export const launchRequestSchema = z.object({
   systemId: z.string().min(1).max(32),
   mode: launchModeSchema.default('game'),
+  /** Absolute path of the ROM to boot. Empty means "boot the engine as-is". */
+  rom: z.string().max(4096).optional(),
+});
+
+export const scanRequestSchema = z.object({
+  systemId: z.string().min(1).max(32).optional(),
+  /** When omitted the main process opens a folder picker. */
+  path: z.string().max(4096).optional(),
+});
+
+export const gamesRequestSchema = z.object({
+  systemId: z.string().min(1).max(32),
 });
 
 export const favoriteRequestSchema = z.object({
@@ -91,6 +105,28 @@ export interface LaunchResult {
 }
 
 export type LaunchState = 'starting' | 'running' | 'exited' | 'crashed' | 'refused';
+
+export interface GameRecord {
+  /** sha1 of the file, first 16 chars. Stable id across scans. */
+  id: string;
+  systemId: string;
+  path: string;
+  fileName: string;
+  title: string;
+  size: number;
+  sha1: string;
+  addedAt: number;
+  lastPlayed: number | null;
+}
+
+export interface ScanResult {
+  ok: boolean;
+  root?: string;
+  added?: number;
+  skipped?: number;
+  total?: number;
+  error?: string;
+}
 
 export interface LaunchEvent {
   sessionId: string;

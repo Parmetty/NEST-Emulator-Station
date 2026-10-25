@@ -1,10 +1,12 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import {
   CH,
+  type GameRecord,
   type HomePayload,
   type LaunchEvent,
   type LaunchMode,
   type LaunchResult,
+  type ScanResult,
 } from '../shared/contract';
 
 const api = {
@@ -13,11 +15,15 @@ const api = {
 
   home: (): Promise<HomePayload> => ipcRenderer.invoke(CH.home),
 
-  launch: (systemId: string, mode: LaunchMode = 'game'): Promise<LaunchResult> =>
-    ipcRenderer.invoke(CH.launch, { systemId, mode }),
+  games: (systemId: string): Promise<GameRecord[]> => ipcRenderer.invoke(CH.games, { systemId }),
 
-  stop: (sessionId: string): Promise<{ ok: boolean }> =>
-    ipcRenderer.invoke(CH.stop, { sessionId }),
+  scan: (systemId?: string, path?: string): Promise<ScanResult> =>
+    ipcRenderer.invoke(CH.scan, { systemId, path }),
+
+  launch: (systemId: string, mode: LaunchMode = 'game', rom?: string): Promise<LaunchResult> =>
+    ipcRenderer.invoke(CH.launch, { systemId, mode, rom }),
+
+  stop: (sessionId: string): Promise<{ ok: boolean }> => ipcRenderer.invoke(CH.stop, { sessionId }),
 
   favorite: (systemId: string, favorite: boolean): Promise<{ ok: boolean }> =>
     ipcRenderer.invoke(CH.favorite, { systemId, favorite }),
