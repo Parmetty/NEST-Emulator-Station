@@ -25,8 +25,12 @@ npm run shot           # 把窗口截成 shots/app.png（不依赖桌面）
 端到端自检（扫描测试 ROM → 用假引擎启动 → 校验最近游玩）：
 
 ```bash
-NEST_FAKE_ENGINE=1 node tools/run.mjs . --no-sandbox --user-data-dir=.profile \
-  --scan=.testroms --selftest
+# PowerShell
+$env:NEST_FAKE_ENGINE='1'
+node tools/run.mjs . --no-sandbox --user-data-dir=.profile --scan=.testroms --selftest
+
+# bash
+NEST_FAKE_ENGINE=1 node tools/run.mjs . --no-sandbox --user-data-dir=.profile --scan=.testroms --selftest
 ```
 
 ## 目录
