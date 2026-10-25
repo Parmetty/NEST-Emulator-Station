@@ -1,0 +1,29 @@
+{
+    "id":  "citra",
+    "name":  "Citra",
+    "systems":  [
+                    "3ds"
+                ],
+    "kind":  "native",
+    "detect":  {
+                   "paths":  [
+                                 "%PROGRAMFILES%\\Citra\\citra-qt.exe"
+                             ]
+               },
+    "download":  {
+                     "homepage":  "https://citra-emu.org/"
+                 },
+    "launch":  {
+                   "args":  [
+                                "{rom}"
+                            ],
+                   "systemArgs":  [
+
+                                  ],
+                   "cwd":  "engineDir"
+               },
+    "capabilities":  {
+                         "saveStates":  true,
+                         "systemMode":  null
+                     }
+}

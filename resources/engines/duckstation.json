@@ -1,0 +1,29 @@
+{
+    "id":  "duckstation",
+    "name":  "DuckStation",
+    "systems":  [
+                    "ps1"
+                ],
+    "kind":  "native",
+    "detect":  {
+                   "paths":  [
+                                 "%PROGRAMFILES%\\DuckStation\\duckstation-qt-x64-ReleaseLTCG.exe"
+                             ]
+               },
+    "download":  {
+                     "homepage":  "https://www.duckstation.org/"
+                 },
+    "launch":  {
+                   "args":  [
+                                "{rom}"
+                            ],
+                   "systemArgs":  [
+
+                                  ],
+                   "cwd":  "engineDir"
+               },
+    "capabilities":  {
+                         "saveStates":  true,
+                         "systemMode":  null
+                     }
+}

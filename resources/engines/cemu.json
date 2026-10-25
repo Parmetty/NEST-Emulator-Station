@@ -1,0 +1,30 @@
+{
+    "id":  "cemu",
+    "name":  "Cemu",
+    "systems":  [
+                    "wiiu"
+                ],
+    "kind":  "native",
+    "detect":  {
+                   "paths":  [
+                                 "%PROGRAMFILES%\\Cemu\\Cemu.exe"
+                             ]
+               },
+    "download":  {
+                     "homepage":  "https://cemu.info/"
+                 },
+    "launch":  {
+                   "args":  [
+                                "-g",
+                                "{rom}"
+                            ],
+                   "systemArgs":  [
+                                      "-b"
+                                  ],
+                   "cwd":  "engineDir"
+               },
+    "capabilities":  {
+                         "saveStates":  true,
+                         "systemMode":  null
+                     }
+}

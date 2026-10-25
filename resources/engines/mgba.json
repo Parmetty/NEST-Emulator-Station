@@ -1,0 +1,32 @@
+{
+    "id":  "mgba",
+    "name":  "mGBA",
+    "systems":  [
+                    "gba"
+                ],
+    "kind":  "native",
+    "detect":  {
+                   "paths":  [
+                                 "%PROGRAMFILES%\\mGBA\\mGBA.exe",
+                                 "%PROGRAMFILES%\\mGBA\\mGBA.exe"
+                             ]
+               },
+    "download":  {
+                     "homepage":  "https://mgba.io/downloads.html"
+                 },
+    "launch":  {
+                   "args":  [
+                                "-f",
+                                "{rom}"
+                            ],
+                   "systemArgs":  [
+                                      "-b",
+                                      "{rom}"
+                                  ],
+                   "cwd":  "engineDir"
+               },
+    "capabilities":  {
+                         "saveStates":  true,
+                         "systemMode":  null
+                     }
+}

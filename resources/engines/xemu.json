@@ -1,0 +1,30 @@
+{
+    "id":  "xemu",
+    "name":  "xemu",
+    "systems":  [
+                    "xbox"
+                ],
+    "kind":  "native",
+    "detect":  {
+                   "paths":  [
+                                 "%PROGRAMFILES%\\xemu\\xemu.exe"
+                             ]
+               },
+    "download":  {
+                     "homepage":  "https://xemu.app/"
+                 },
+    "launch":  {
+                   "args":  [
+                                "-dvd_path",
+                                "{rom}"
+                            ],
+                   "systemArgs":  [
+
+                                  ],
+                   "cwd":  "engineDir"
+               },
+    "capabilities":  {
+                         "saveStates":  true,
+                         "systemMode":  null
+                     }
+}

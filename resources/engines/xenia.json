@@ -1,0 +1,29 @@
+{
+    "id":  "xenia",
+    "name":  "Xenia",
+    "systems":  [
+                    "xbox360"
+                ],
+    "kind":  "native",
+    "detect":  {
+                   "paths":  [
+                                 "%PROGRAMFILES%\\Xenia\\xenia.exe"
+                             ]
+               },
+    "download":  {
+                     "homepage":  "https://xenia.jp/"
+                 },
+    "launch":  {
+                   "args":  [
+                                "{rom}"
+                            ],
+                   "systemArgs":  [
+
+                                  ],
+                   "cwd":  "engineDir"
+               },
+    "capabilities":  {
+                         "saveStates":  true,
+                         "systemMode":  null
+                     }
+}

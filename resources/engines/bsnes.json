@@ -1,0 +1,29 @@
+{
+    "id":  "bsnes",
+    "name":  "bsnes",
+    "systems":  [
+                    "sfc"
+                ],
+    "kind":  "native",
+    "detect":  {
+                   "paths":  [
+                                 "%PROGRAMFILES%\\bsnes\\bsnes.exe"
+                             ]
+               },
+    "download":  {
+                     "homepage":  "https://bsnes.dev/"
+                 },
+    "launch":  {
+                   "args":  [
+                                "{rom}"
+                            ],
+                   "systemArgs":  [
+
+                                  ],
+                   "cwd":  "engineDir"
+               },
+    "capabilities":  {
+                         "saveStates":  true,
+                         "systemMode":  null
+                     }
+}

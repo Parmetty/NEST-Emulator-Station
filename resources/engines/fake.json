@@ -1,0 +1,38 @@
+{
+    "id":  "fake",
+    "name":  "Fake Engine (dev)",
+    "systems":  [
+                    "gba",
+                    "fc",
+                    "sfc",
+                    "n64",
+                    "ngc",
+                    "nds",
+                    "wii",
+                    "3ds",
+                    "wiiu"
+                ],
+    "kind":  "node",
+    "script":  "tools/fake-engine.mjs",
+    "detect":  {
+                   "paths":  [
+
+                             ]
+               },
+    "launch":  {
+                   "args":  [
+                                "--rom",
+                                "{rom}"
+                            ],
+                   "systemArgs":  [
+                                      "--rom",
+                                      "{rom}",
+                                      "--system"
+                                  ],
+                   "cwd":  "engineDir"
+               },
+    "capabilities":  {
+                         "saveStates":  true,
+                         "systemMode":  null
+                     }
+}

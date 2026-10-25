@@ -1,0 +1,20 @@
+﻿[
+    {
+        "system":  "gba",
+        "file":  "gba.png",
+        "title":  "File:Nintendo-Game-Boy-Advance-Purple-FL.png",
+        "source":  "https://commons.wikimedia.org/wiki/File:Nintendo-Game-Boy-Advance-Purple-FL.png",
+        "artist":  "Evan-Amos",
+        "license":  "Public domain",
+        "bytes":  2412011
+    },
+    {
+        "system":  "fc",
+        "file":  "fc.jpg",
+        "title":  "File:NES-Console-Set.jpg",
+        "source":  "https://commons.wikimedia.org/wiki/File:NES-Console-Set.jpg",
+        "artist":  "Evan-Amos",
+        "license":  "Public domain",
+        "bytes":  146393
+    }
+]

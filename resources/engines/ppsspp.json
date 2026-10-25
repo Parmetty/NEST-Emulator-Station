@@ -1,0 +1,29 @@
+{
+    "id":  "ppsspp",
+    "name":  "PPSSPP",
+    "systems":  [
+                    "psp"
+                ],
+    "kind":  "native",
+    "detect":  {
+                   "paths":  [
+                                 "%PROGRAMFILES%\\PPSSPP\\PPSSPPWindows64.exe"
+                             ]
+               },
+    "download":  {
+                     "homepage":  "https://www.ppsspp.org/"
+                 },
+    "launch":  {
+                   "args":  [
+                                "{rom}"
+                            ],
+                   "systemArgs":  [
+
+                                  ],
+                   "cwd":  "engineDir"
+               },
+    "capabilities":  {
+                         "saveStates":  true,
+                         "systemMode":  null
+                     }
+}

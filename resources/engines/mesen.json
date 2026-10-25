@@ -1,0 +1,29 @@
+{
+    "id":  "mesen",
+    "name":  "Mesen",
+    "systems":  [
+                    "fc"
+                ],
+    "kind":  "native",
+    "detect":  {
+                   "paths":  [
+                                 "%PROGRAMFILES%\\Mesen\\Mesen.exe"
+                             ]
+               },
+    "download":  {
+                     "homepage":  "https://www.mesen.ca/"
+                 },
+    "launch":  {
+                   "args":  [
+                                "{rom}"
+                            ],
+                   "systemArgs":  [
+
+                                  ],
+                   "cwd":  "engineDir"
+               },
+    "capabilities":  {
+                         "saveStates":  true,
+                         "systemMode":  null
+                     }
+}

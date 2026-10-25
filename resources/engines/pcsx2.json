@@ -1,0 +1,29 @@
+{
+    "id":  "pcsx2",
+    "name":  "PCSX2",
+    "systems":  [
+                    "ps2"
+                ],
+    "kind":  "native",
+    "detect":  {
+                   "paths":  [
+                                 "%PROGRAMFILES%\\PCSX2\\pcsx2-qt.exe"
+                             ]
+               },
+    "download":  {
+                     "homepage":  "https://pcsx2.net/"
+                 },
+    "launch":  {
+                   "args":  [
+                                "{rom}"
+                            ],
+                   "systemArgs":  [
+
+                                  ],
+                   "cwd":  "engineDir"
+               },
+    "capabilities":  {
+                         "saveStates":  true,
+                         "systemMode":  null
+                     }
+}

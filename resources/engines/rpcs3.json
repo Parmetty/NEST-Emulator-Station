@@ -1,0 +1,29 @@
+{
+    "id":  "rpcs3",
+    "name":  "RPCS3",
+    "systems":  [
+                    "ps3"
+                ],
+    "kind":  "native",
+    "detect":  {
+                   "paths":  [
+                                 "%PROGRAMFILES%\\RPCS3\\rpcs3.exe"
+                             ]
+               },
+    "download":  {
+                     "homepage":  "https://rpcs3.net/"
+                 },
+    "launch":  {
+                   "args":  [
+                                "{rom}"
+                            ],
+                   "systemArgs":  [
+
+                                  ],
+                   "cwd":  "engineDir"
+               },
+    "capabilities":  {
+                         "saveStates":  true,
+                         "systemMode":  null
+                     }
+}
