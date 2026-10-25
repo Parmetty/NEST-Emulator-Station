@@ -117,7 +117,7 @@ npm run smoke     # 窗口 + IPC + 渲染自检
 ## 法律
 
 - 本仓库**不含**任何 ROM、BIOS、NAND 或密钥；只启动你提供的模拟器、扫描你已有的文件。
-- 内置的 mGBA 0.10.5 以 MPL 2.0 分发，许可证随包附带（`resources/engines/mgba/LICENSE.txt`）。
+- 内置的 mGBA 0.10.5 以 MPL 2.0 分发，许可证见 [resources/engines/mgba/LICENSE.txt](resources/engines/mgba/LICENSE.txt)。
 - 主机照片来自 Wikimedia Commons 的公有领域素材（Evan-Amos），已做裁切/去色/模糊处理；可被用户替换。
 - 各主机商标归各自权利人所有，本项目与任天堂、微软、索尼无关联。
 
