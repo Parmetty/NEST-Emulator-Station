@@ -17,6 +17,8 @@
     "args": ["{rom}"],
     "systemArgs": [],
     "fullscreenFlag": "-f",
+    "configFlag": "-C",
+    "screenshotPathOption": "screenshotPath",
     "cwd": "engineDir"
   },
   "capabilities": {

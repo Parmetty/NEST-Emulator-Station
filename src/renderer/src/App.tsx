@@ -61,6 +61,9 @@ export default function App() {
   const [scanning, setScanning] = useState(false);
   const [settings, setSettings] = useState<Settings>({ minimizeOnLaunch: true, fullscreen: false });
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [runningSystems, setRunningSystems] = useState<Record<string, number>>({});
+  const [runningGames, setRunningGames] = useState<Record<string, number>>({});
+  const [menu, setMenu] = useState<{ x: number; y: number; game: GameRecord } | null>(null);
 
   useEffect(() => {
     window.nest
@@ -105,19 +108,46 @@ export default function App() {
     }
   }, []);
 
+  const refreshShelf = useCallback(async (systemId: string) => {
+    try {
+      const games = await window.nest.games(systemId);
+      setShelf((prev) => (prev && prev.system.id === systemId ? { ...prev, games } : prev));
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const bump = useCallback(
+    (setter: React.Dispatch<React.SetStateAction<Record<string, number>>>, key: string | null | undefined, delta: number) => {
+      if (!key) return;
+      setter((prev) => {
+        const next = { ...prev };
+        const value = (next[key] ?? 0) + delta;
+        if (value > 0) next[key] = value;
+        else delete next[key];
+        return next;
+      });
+    },
+    [],
+  );
+
   useEffect(() => {
     const off = window.nest.onLaunchEvent((event: LaunchEvent) => {
-      if (event.state === 'exited') {
-        setToast('已退出，返回 Nest');
-        void refreshHome();
+      if (event.state === 'starting') {
+        bump(setRunningSystems, event.systemId, 1);
+        bump(setRunningGames, event.gameId ?? null, 1);
       }
-      if (event.state === 'crashed') {
-        setToast(`引擎异常退出${event.code ? `（${event.code}）` : ''}`);
+      if (event.state === 'exited' || event.state === 'crashed') {
+        bump(setRunningSystems, event.systemId, -1);
+        bump(setRunningGames, event.gameId ?? null, -1);
+        void refreshShelf(event.systemId);
         void refreshHome();
+        if (event.state === 'exited') setToast('已退出，返回 Nest');
+        else setToast(`引擎异常退出${event.code ? `（${event.code}）` : ''}`);
       }
     });
     return off;
-  }, [refreshHome]);
+  }, [bump, refreshHome, refreshShelf]);
 
   /* ---------------------------------------------------------- derived */
   const families = home?.families ?? [];
@@ -242,6 +272,25 @@ export default function App() {
     }
   }, [shelf, scanning, say, refreshHome]);
 
+  const removeGame = useCallback(
+    async (game: GameRecord) => {
+      setMenu(null);
+      const result = await window.nest.removeGame(game.id);
+      if (!result.ok) {
+        say('移除失败');
+        return;
+      }
+      say(`已从库中移除 ${game.title}`);
+      if (shelf) {
+        const games = await window.nest.games(shelf.system.id);
+        setShelf({ ...shelf, games });
+        setShelfIndex(0);
+      }
+      void refreshHome();
+    },
+    [say, shelf, refreshHome],
+  );
+
   const moveShelf = useCallback(
     (dx: number, dy: number) => {
       if (!shelf || shelf.games.length === 0) return;
@@ -314,6 +363,14 @@ export default function App() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const k = e.key;
+
+      if (menu) {
+        if (k === 'Escape') {
+          e.preventDefault();
+          setMenu(null);
+        }
+        return;
+      }
 
       if (settingsOpen) {
         if (k === 'Escape' || k === 'b' || k === 'B') {
@@ -396,6 +453,7 @@ export default function App() {
   }, [
     dialog,
     settingsOpen,
+    menu,
     shelf,
     shelfIndex,
     move,
@@ -512,12 +570,13 @@ export default function App() {
                 key={`s-${row.system.id}`}
                 className={`row console${sel.type === 'system' && sel.id === row.system.id ? ' sel' : ''}${
                   row.system.state === 'locked' ? ' locked' : ''
-                }`}
+                }${runningSystems[row.system.id] ? ' running' : ''}`}
                 onPointerEnter={() => select('system', row.system.id)}
                 onClick={() => select('system', row.system.id)}
                 onDoubleClick={() => void openShelf(row.system)}
               >
                 <span className="label">{row.system.name}</span>
+                {runningSystems[row.system.id] ? <span className="run-dot" title="运行中" /> : null}
                 <span className="short">
                   {favorites.has(row.system.id) ? '★ ' : ''}
                   {row.system.short}
@@ -580,6 +639,12 @@ export default function App() {
                   : '引擎就绪'}
             </div>
             <h1>{selectedSystem.name}</h1>
+            {runningSystems[selectedSystem.id] ? (
+              <p className="run-line">
+                <span className="run-dot" />
+                运行中{runningSystems[selectedSystem.id] > 1 ? ` ×${runningSystems[selectedSystem.id]}` : ''}
+              </p>
+            ) : null}
             <p className="sub">
               {selectedSystem.year} · {selectedSystem.kind} · {selectedSystem.engine}
             </p>
@@ -678,12 +743,27 @@ export default function App() {
             {shelf.games.map((game, index) => (
               <button
                 key={game.id}
-                className={`card${index === shelfIndex ? ' on' : ''}`}
+                className={`card${index === shelfIndex ? ' on' : ''}${runningGames[game.id] ? ' running' : ''}`}
                 onPointerEnter={() => setShelfIndex(index)}
                 onClick={() => askEnter(shelf.system, 'game', game)}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  const menuWidth = 208;
+                  const menuHeight = 92;
+                  setMenu({
+                    x: Math.min(e.clientX, window.innerWidth - menuWidth - 12),
+                    y: Math.min(e.clientY, window.innerHeight - menuHeight - 12),
+                    game,
+                  });
+                }}
               >
                 <span className="card-art">
-                  <i>{(game.title[0] ?? '?').toUpperCase()}</i>
+                  {game.coverUrl ? (
+                    <img src={game.coverUrl} alt="" draggable={false} />
+                  ) : (
+                    <i>{(game.title[0] ?? '?').toUpperCase()}</i>
+                  )}
+                  {runningGames[game.id] ? <span className="run-badge">运行中</span> : null}
                 </span>
                 <span className="card-title">{game.title}</span>
                 <span className="card-meta">
@@ -715,6 +795,24 @@ export default function App() {
             </span>
           </footer>
         </section>
+      ) : null}
+
+      {menu ? (
+        <div
+          className="ctx-layer"
+          onClick={() => setMenu(null)}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            setMenu(null);
+          }}
+        >
+          <div className="ctx-menu" style={{ left: menu.x, top: menu.y }} onClick={(e) => e.stopPropagation()}>
+            <button className="ctx-item" onClick={() => void removeGame(menu.game)}>
+              <span className="ctx-label">从库中移除</span>
+              <span className="ctx-hint">不删除磁盘上的文件</span>
+            </button>
+          </div>
+        </div>
       ) : null}
 
       <div className={`toast${toast ? ' on' : ''}`}>{toast ?? ''}</div>

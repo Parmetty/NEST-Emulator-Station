@@ -96,6 +96,12 @@ export function installMockApi(): void {
       }, 2200);
       return { ok: true, sessionId: 'mock' };
     },
+    removeGame: async (gameId) => {
+      for (const key of Object.keys(games)) {
+        games[key] = games[key].filter((g) => g.id !== gameId);
+      }
+      return { ok: true };
+    },
     stop: async () => ({ ok: true }),
     settings: async () => ({ minimizeOnLaunch: true, fullscreen: false }),
     saveSettings: async () => ({ ok: true }),

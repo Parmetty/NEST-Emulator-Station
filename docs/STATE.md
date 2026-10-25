@@ -9,7 +9,26 @@
 | P0 骨架 | ✅ 完成 |
 | P1 扫描器 + GBA 全链路 | ✅ 完成 |
 | P1.1 内置 mGBA + 启动设置 | ✅ 完成 |
+| P1.2 封面 / 右键移除 / 运行中高亮 | ✅ 完成 |
 | P2 多系统闭环 | 下一步 |
+
+## P1.2 交付
+
+- **抓屏工具**：`resources/tools/nest-capture.exe`（7.6 KB，独立 exe，CLI 见 README）
+  - 抓客户区 → 按主机比例从底部裁掉 Qt 菜单栏 → 每 5 秒落一帧（保留最近 60 帧）
+  - 引擎退出时（`close` 事件）把最新帧提升为 `covers/<gameId>.png`
+- **右键移除**：游戏卡片右键 → 从库中移除（不删文件），IPC `nest:remove-game`
+- **运行中高亮**：事件驱动（starting +1 / exited·crashed -1），主机行呼吸点、信息卡「运行中 ×N」、卡片角标；切窗口不会丢失；支持多开
+- `Last played` 从 ISO 字符串转相对时间（修显示溢出）
+
+验证：
+
+```powershell
+node tools/run.mjs . --no-sandbox --user-data-dir=.profile --scan=.roms --trylaunch --hold=7000
+# -> [nest] capture tool started for pid=...
+# -> [nest] cover saved for <id> from shot-....png
+# 封面尺寸 480x320（GBA 3:2，无窗口边框/菜单栏）
+```
 | P3–P5 | 未开始 |
 
 ## P1.1 交付

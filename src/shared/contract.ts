@@ -8,6 +8,7 @@ export const CH = {
   engines: 'nest:engines',
   games: 'nest:games',
   scan: 'nest:scan',
+  removeGame: 'nest:remove-game',
   settings: 'nest:settings',
   saveSettings: 'nest:settings-save',
   launch: 'nest:launch',
@@ -62,6 +63,10 @@ export const engineManifestSchema = z.object({
     systemArgs: z.array(z.string()).default([]),
     /** Flag prepended when the user asks for fullscreen, e.g. "-f" for mGBA. */
     fullscreenFlag: z.string().optional(),
+    /** Flag used for one-shot config overrides, e.g. "-C" for mGBA. */
+    configFlag: z.string().optional(),
+    /** Config key that redirects screenshots, e.g. "screenshotPath". */
+    screenshotPathOption: z.string().optional(),
     cwd: z.enum(['engineDir', 'appDir']).default('engineDir'),
   }),
   capabilities: z
@@ -126,6 +131,11 @@ export interface GameRecord {
   sha1: string;
   addedAt: number;
   lastPlayed: number | null;
+  /** File name inside <userData>/covers, captured from the last session. */
+  cover?: string | null;
+  coverAt?: number | null;
+  /** data: URL injected by the main process when the cover exists on disk. */
+  coverUrl?: string | null;
 }
 
 export interface ScanResult {
@@ -145,6 +155,8 @@ export interface Settings {
 export interface LaunchEvent {
   sessionId: string;
   systemId: string;
+  /** Set when the session was started for a specific library game. */
+  gameId?: string | null;
   state: LaunchState;
   code?: number | null;
   message?: string;

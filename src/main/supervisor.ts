@@ -4,6 +4,8 @@ import type { LaunchEvent, LaunchState } from '../shared/contract';
 export interface LaunchSpec {
   sessionId: string;
   systemId: string;
+  /** Library game this session belongs to, when launched from the shelf. */
+  gameId?: string | null;
   command: string;
   args: string[];
   cwd?: string;
@@ -37,6 +39,11 @@ export class Supervisor {
 
   has(sessionId: string): boolean {
     return this.children.has(sessionId);
+  }
+
+  /** OS process id of a running session, used for window-level tooling. */
+  pid(sessionId: string): number | undefined {
+    return this.children.get(sessionId)?.pid;
   }
 
   start(spec: LaunchSpec): boolean {
@@ -107,6 +114,7 @@ export class Supervisor {
     this.opts.emit({
       sessionId: spec.sessionId,
       systemId: spec.systemId,
+      gameId: spec.gameId ?? null,
       state,
       code: extra.code ?? null,
       message: extra.message,

@@ -13,6 +13,7 @@ export interface NestApi {
   home(): Promise<HomePayload>;
   games(systemId: string): Promise<GameRecord[]>;
   scan(systemId?: string, path?: string): Promise<ScanResult>;
+  removeGame(gameId: string): Promise<{ ok: boolean; error?: string }>;
   launch(systemId: string, mode?: LaunchMode, rom?: string): Promise<LaunchResult>;
   stop(sessionId: string): Promise<{ ok: boolean }>;
   settings(): Promise<Settings>;

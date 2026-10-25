@@ -1,9 +1,11 @@
 import path from 'node:path';
+import { spawn, type ChildProcess } from 'node:child_process';
 import { appendFileSync } from 'node:fs';
-import { writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readdir, stat, unlink, writeFile } from 'node:fs/promises';
 import { app, BrowserWindow, shell } from 'electron';
 import { CH, type LaunchEvent } from '../shared/contract';
-import { createServices, registerIpc, startLaunch, type Services } from './ipc';
+import { systemById, type SystemId } from '../shared/systems';
+import { coversDir, createServices, registerIpc, shotsDir, startLaunch, type Services } from './ipc';
 
 const SMOKE = process.argv.includes('--smoke') || process.env.NEST_SMOKE === '1';
 
@@ -29,6 +31,130 @@ function installFileLogging(): void {
 
 let mainWindow: BrowserWindow | null = null;
 let services: Services | null = null;
+
+/* ---------------------------------------------------- cover screenshots */
+/**
+ * Covers come from the emulator itself, not from a screen grab: mGBA writes a
+ * native-resolution PNG of the emulated screen (240x160 for GBA) when it gets
+ * its screenshot hotkey. That is the only faithful "what the console showed"
+ * without guessing about window chrome or letterboxing.
+ *
+ * mGBA is launched with `-C screenshotPath=<userData>/shots`, and a tiny
+ * PowerShell helper presses F12 every few seconds while the game runs.
+ */
+const captureHelpers = new Map<string, ChildProcess>();
+const sessionSystems = new Map<string, string>();
+
+async function clearShots(): Promise<void> {
+  const dir = shotsDir();
+  try {
+    const entries = await readdir(dir);
+    await Promise.all(
+      entries.filter((name) => name.toLowerCase().endsWith('.png')).map((name) => unlink(path.join(dir, name))),
+    );
+  } catch {
+    /* directory may not exist yet */
+  }
+}
+
+async function newestShot(): Promise<string | null> {
+  const dir = shotsDir();
+  try {
+    const entries = await readdir(dir);
+    const files = await Promise.all(
+      entries
+        .filter((name) => name.toLowerCase().endsWith('.png'))
+        .map(async (name) => {
+          const full = path.join(dir, name);
+          const info = await stat(full);
+          return { full, at: info.mtimeMs };
+        }),
+    );
+    if (files.length === 0) return null;
+    files.sort((a, b) => b.at - a.at);
+    return files[0].full;
+  } catch {
+    return null;
+  }
+}
+
+/** Native screen aspect per system. The emulator anchors the game at the client top. */
+const SYSTEM_ASPECT: Record<string, number> = {
+  gba: 240 / 160,
+  fc: 4 / 3,
+  sfc: 4 / 3,
+  n64: 4 / 3,
+  nds: 4 / 3,
+  '3ds': 5 / 3,
+  ngc: 4 / 3,
+  wii: 16 / 9,
+  wiiu: 16 / 9,
+};
+
+function captureToolPath(): string {
+  return path.join(app.getAppPath(), 'resources', 'tools', 'nest-capture.exe');
+}
+
+function startShotHelper(sessionId: string, pid: number, systemId: string): void {
+  const aspect = SYSTEM_ASPECT[systemId] ?? 0;
+  const exe = captureToolPath();
+  const args = [
+    '--pid',
+    String(pid),
+    '--out',
+    shotsDir(),
+    '--interval',
+    '5000',
+    '--max',
+    '60',
+    '--log',
+    path.join(shotsDir(), 'capture.log'),
+  ];
+  if (aspect > 0) args.push('--aspect', String(aspect));
+
+  const helper = spawn(exe, args, { windowsHide: true, stdio: 'ignore' });
+  captureHelpers.set(sessionId, helper);
+  helper.once('exit', () => captureHelpers.delete(sessionId));
+  console.log(`[nest] capture tool started for pid=${pid} aspect=${aspect || '-'}`);
+}
+
+async function finishCoverCapture(sessionId: string, gameId?: string | null): Promise<void> {
+  const helper = captureHelpers.get(sessionId);
+  if (helper) {
+    helper.kill();
+    captureHelpers.delete(sessionId);
+  }
+  if (!gameId || !services) {
+    await clearShots();
+    return;
+  }
+
+  try {
+    // The emulator writes screenshots asynchronously; give it a moment before
+    // deciding that nothing was captured.
+    let shot = await newestShot();
+    if (!shot) {
+      await new Promise((resolve) => setTimeout(resolve, 900));
+      shot = await newestShot();
+    }
+    if (!shot) {
+      const entries = await readdir(shotsDir()).catch(() => [] as string[]);
+      console.log(`[nest] no screenshot captured; shots dir has ${entries.length} entries`);
+      return;
+    }
+    const dir = coversDir();
+    await mkdir(dir, { recursive: true });
+    const name = `${gameId}.png`;
+    // The capture tool already cropped to the console's screen ratio.
+    await copyFile(shot, path.join(dir, name));
+    await services.store.updateGame(gameId, { cover: name, coverAt: Date.now() });
+    console.log(`[nest] cover saved for ${gameId} from ${path.basename(shot)}`);
+  } catch (err) {
+    console.error('[nest] cover save failed:', (err as Error).message);
+  } finally {
+    await clearShots();
+  }
+}
 
 function createWindow(): BrowserWindow {
   console.log('[nest] window: constructing');
@@ -83,10 +209,19 @@ async function boot(): Promise<void> {
   services = createServices((event) => {
     const e = event as LaunchEvent;
     events.push(e);
+
     if (e.state === 'starting' && services?.store.getSettings().minimizeOnLaunch) {
       mainWindow?.minimize();
     }
+    if (e.state === 'running') {
+      sessionSystems.set(e.sessionId, e.systemId);
+      const pid = services?.supervisor.pid(e.sessionId);
+      if (pid) {
+        void clearShots().then(() => startShotHelper(e.sessionId, pid, e.systemId));
+      }
+    }
     if (e.state === 'exited' || e.state === 'crashed') {
+      void finishCoverCapture(e.sessionId, e.gameId);
       mainWindow?.restore();
       mainWindow?.focus();
     }
@@ -126,6 +261,19 @@ async function boot(): Promise<void> {
           if (process.argv.includes('--settings')) {
             await mainWindow!.webContents.executeJavaScript(
               "document.querySelector('.ghost-btn')?.click(); true",
+            );
+          }
+          if (process.argv.includes('--menu')) {
+            await mainWindow!.webContents.executeJavaScript(
+              `(() => {
+                 const card = document.querySelector('.card');
+                 if (!card) return false;
+                 const r = card.getBoundingClientRect();
+                 card.dispatchEvent(new MouseEvent('contextmenu', {
+                   bubbles: true, cancelable: true, clientX: r.left + 40, clientY: r.top + 40,
+                 }));
+                 return true;
+               })(); true`,
             );
           }
           await new Promise((resolve) => setTimeout(resolve, 350));
@@ -264,11 +412,13 @@ async function boot(): Promise<void> {
         console.log(
           `[nest] trylaunch ${running ? 'ok' : 'failed'}: ${target.fileName} ${running ? 'started' : 'never started'}`,
         );
-        if (process.argv.includes('--hold')) {
-          await new Promise((resolve) => setTimeout(resolve, 6000));
+        if (process.argv.includes('--hold') || process.argv.some((a) => a.startsWith('--hold='))) {
+          const holdArg = process.argv.find((a) => a.startsWith('--hold='));
+          const ms = holdArg ? Number(holdArg.split('=')[1]) || 6000 : 6000;
+          await new Promise((resolve) => setTimeout(resolve, ms));
         }
         services!.supervisor.stopAll();
-        setTimeout(() => app.exit(running ? 0 : 1), 600);
+        setTimeout(() => app.exit(running ? 0 : 1), 2500);
       }, 1500);
     });
   }

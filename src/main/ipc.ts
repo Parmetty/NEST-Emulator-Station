@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
+import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
-import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, nativeImage, shell } from 'electron';
 import {
   CH,
   favoriteRequestSchema,
@@ -30,6 +31,27 @@ export function enginesDir(): string {
   return app.isPackaged
     ? path.join(process.resourcesPath, 'engines')
     : path.join(app.getAppPath(), 'resources', 'engines');
+}
+
+export function coversDir(): string {
+  return path.join(app.getPath('userData'), 'covers');
+}
+
+/** mGBA writes its screenshots here (redirected via -C screenshotPath). */
+export function shotsDir(): string {
+  return path.join(app.getPath('userData'), 'shots');
+}
+
+/** Attaches the saved cover as a data URL, so the renderer needs no protocol handler. */
+function withCover(record: GameRecord): GameRecord {
+  if (!record.cover) return record;
+  try {
+    const image = nativeImage.createFromPath(path.join(coversDir(), record.cover));
+    if (image.isEmpty()) return record;
+    return { ...record, coverUrl: image.toDataURL() };
+  } catch {
+    return record;
+  }
 }
 
 export function createServices(onEvent: (payload: unknown) => void): Services {
@@ -89,7 +111,14 @@ export function registerIpc(services: Services): void {
   ipcMain.handle(CH.games, (_event, raw): GameRecord[] => {
     const parsed = gamesRequestSchema.safeParse(raw);
     if (!parsed.success) return [];
-    return store.games(parsed.data.systemId);
+    return store.games(parsed.data.systemId).map(withCover);
+  });
+
+  ipcMain.handle(CH.removeGame, async (_event, raw) => {
+    const gameId = String((raw as { gameId?: unknown })?.gameId ?? '');
+    if (!gameId) return { ok: false, error: 'bad-request' };
+    const removed = await store.removeGame(gameId);
+    return removed ? { ok: true } : { ok: false, error: 'not-found' };
   });
 
   ipcMain.handle(CH.scan, async (event, raw): Promise<ScanResult> => {
@@ -167,10 +196,19 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
 
   args = buildArgs(args, { rom: rom ?? '', system: systemId });
 
+  // mGBA (and most Qt frontends) only parse options that come before the ROM,
+  // so everything we add goes in front of the argument list.
+  const extras: string[] = [];
   const settings = services.store.getSettings();
   if (settings.fullscreen && engine.launch.fullscreenFlag) {
-    args = [engine.launch.fullscreenFlag, ...args];
+    extras.push(engine.launch.fullscreenFlag);
   }
+  if (engine.launch.configFlag && engine.launch.screenshotPathOption) {
+    const dir = shotsDir();
+    await mkdir(dir, { recursive: true });
+    extras.push(engine.launch.configFlag, `${engine.launch.screenshotPathOption}=${dir}`);
+  }
+  args = [...extras, ...args];
 
   console.log(
     `[nest] launch system=${systemId} mode=${mode} engine=${engine.id} ` +
@@ -178,9 +216,11 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   );
 
   const sessionId = randomUUID();
+  const game = rom ? services.store.games().find((g) => g.path === rom) : undefined;
   const started = services.supervisor.start({
     sessionId,
     systemId,
+    gameId: game?.id ?? null,
     command,
     args,
     env,
@@ -189,7 +229,6 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   });
   if (!started) return { ok: false, error: 'already-running' };
 
-  const game = rom ? services.store.games().find((g) => g.path === rom) : undefined;
   await services.store.recordSession(systemId, Date.now(), game?.id);
   return { ok: true, sessionId };
 }

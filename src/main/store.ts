@@ -108,6 +108,23 @@ export class Store {
     return this.data.games.find((g) => g.id === gameId);
   }
 
+  async updateGame(gameId: string, patch: Partial<GameRecord>): Promise<GameRecord | undefined> {
+    const index = this.data.games.findIndex((g) => g.id === gameId);
+    if (index < 0) return undefined;
+    this.data.games[index] = { ...this.data.games[index], ...patch };
+    await this.save();
+    return this.data.games[index];
+  }
+
+  /** Removes the library entry. The ROM file on disk is never touched. */
+  async removeGame(gameId: string): Promise<boolean> {
+    const before = this.data.games.length;
+    this.data.games = this.data.games.filter((g) => g.id !== gameId);
+    if (this.data.games.length === before) return false;
+    await this.save();
+    return true;
+  }
+
   async upsertGames(files: ScannedFile[]): Promise<{ added: number; skipped: number }> {
     let added = 0;
     let skipped = 0;
@@ -128,6 +145,8 @@ export class Store {
         sha1: file.sha1,
         addedAt: Date.now(),
         lastPlayed: null,
+        cover: null,
+        coverAt: null,
       };
       byId.set(id, record);
       added += 1;

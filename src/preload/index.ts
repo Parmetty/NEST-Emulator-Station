@@ -21,6 +21,9 @@ const api = {
   scan: (systemId?: string, path?: string): Promise<ScanResult> =>
     ipcRenderer.invoke(CH.scan, { systemId, path }),
 
+  removeGame: (gameId: string): Promise<{ ok: boolean; error?: string }> =>
+    ipcRenderer.invoke(CH.removeGame, { gameId }),
+
   launch: (systemId: string, mode: LaunchMode = 'game', rom?: string): Promise<LaunchResult> =>
     ipcRenderer.invoke(CH.launch, { systemId, mode, rom }),
 

@@ -1,0 +1,238 @@
+using System;
+using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Threading;
+
+/// <summary>
+/// Nest capture tool.
+///
+/// Grabs the *client area* of a window owned by a process — for an emulator that
+/// is exactly the emulated screen — and writes PNG frames while the process is
+/// alive. Deliberately standalone: no PowerShell, no Electron, no focus stealing.
+///
+///   nest-capture.exe --pid 1234 --out C:\shots [--interval 5000] [--max 60]
+///                    [--aspect 1.5] [--once] [--log C:\shots\capture.log]
+///
+/// --aspect crops the client area to the console's screen ratio from the top,
+/// which drops emulator status bars without guessing about pixel content.
+/// </summary>
+internal static class Program
+{
+    [StructLayout(LayoutKind.Sequential)]
+    private struct Rect
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct Point
+    {
+        public int X;
+        public int Y;
+    }
+
+    [DllImport("user32.dll")]
+    private static extern bool GetClientRect(IntPtr hWnd, out Rect rect);
+
+    [DllImport("user32.dll")]
+    private static extern bool ClientToScreen(IntPtr hWnd, ref Point point);
+
+    [DllImport("user32.dll")]
+    private static extern bool IsIconic(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    private static extern bool SetProcessDPIAware();
+
+    private static string _log;
+
+    private static void Log(string message)
+    {
+        if (_log == null) return;
+        try
+        {
+            File.AppendAllText(_log, DateTime.Now.ToString("o") + " " + message + Environment.NewLine);
+        }
+        catch
+        {
+            // logging must never break capture
+        }
+    }
+
+    private static int Main(string[] args)
+    {
+        int pid = 0;
+        string outDir = null;
+        int intervalMs = 5000;
+        int maxFiles = 60;
+        double aspect = 0;
+        bool once = false;
+
+        for (int i = 0; i < args.Length; i++)
+        {
+            switch (args[i])
+            {
+                case "--pid":
+                    int.TryParse(args[++i], out pid);
+                    break;
+                case "--out":
+                    outDir = args[++i];
+                    break;
+                case "--interval":
+                    int.TryParse(args[++i], out intervalMs);
+                    break;
+                case "--max":
+                    int.TryParse(args[++i], out maxFiles);
+                    break;
+                case "--aspect":
+                    double.TryParse(args[++i], System.Globalization.NumberStyles.Float,
+                        System.Globalization.CultureInfo.InvariantCulture, out aspect);
+                    break;
+                case "--once":
+                    once = true;
+                    break;
+                case "--log":
+                    _log = args[++i];
+                    break;
+                default:
+                    Console.Error.WriteLine("unknown argument: " + args[i]);
+                    return 2;
+            }
+        }
+
+        if (pid == 0 || string.IsNullOrEmpty(outDir))
+        {
+            Console.Error.WriteLine("usage: nest-capture --pid <pid> --out <dir> [--interval ms] [--max n] [--aspect r] [--once] [--log file]");
+            return 2;
+        }
+
+        Directory.CreateDirectory(outDir);
+        try
+        {
+            SetProcessDPIAware();
+        }
+        catch
+        {
+            // older systems: DPI awareness is best-effort
+        }
+
+        Log("start pid=" + pid + " out=" + outDir + " aspect=" + aspect);
+        int written = 0;
+
+        while (true)
+        {
+            Process process;
+            try
+            {
+                process = Process.GetProcessById(pid);
+            }
+            catch
+            {
+                Log("process gone");
+                return 0;
+            }
+
+            IntPtr handle = IntPtr.Zero;
+            try
+            {
+                handle = process.MainWindowHandle;
+            }
+            catch
+            {
+                // window may still be creating
+            }
+
+            if (handle == IntPtr.Zero || IsIconic(handle))
+            {
+                Thread.Sleep(400);
+                continue;
+            }
+
+            try
+            {
+                if (Capture(handle, outDir, aspect, written + 1))
+                {
+                    written++;
+                    Prune(outDir, maxFiles);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log("capture failed: " + ex.Message);
+            }
+
+            if (once)
+            {
+                Log("captured " + written + " frame(s)");
+                return 0;
+            }
+
+            Thread.Sleep(intervalMs);
+        }
+    }
+
+    private static bool Capture(IntPtr handle, string outDir, double aspect, int index)
+    {
+        Rect rect;
+        if (!GetClientRect(handle, out rect)) return false;
+
+        int width = rect.Right - rect.Left;
+        int height = rect.Bottom - rect.Top;
+        if (width <= 0 || height <= 0) return false;
+
+        Point origin = new Point();
+        origin.X = 0;
+        origin.Y = 0;
+        if (!ClientToScreen(handle, ref origin)) return false;
+
+        int cropHeight = height;
+        int cropTop = 0;
+        if (aspect > 0)
+        {
+            int target = (int)Math.Round(width / aspect);
+            if (target > 0 && target < height)
+            {
+                cropHeight = target;
+                // Qt draws its menu bar inside the client area; the emulated
+                // screen sits at the bottom of it, so anchor the crop there.
+                cropTop = height - target;
+            }
+        }
+
+        using (Bitmap bitmap = new Bitmap(width, cropHeight))
+        {
+            using (Graphics graphics = Graphics.FromImage(bitmap))
+            {
+                graphics.CopyFromScreen(origin.X, origin.Y + cropTop, 0, 0, new Size(width, cropHeight));
+            }
+
+            string name = string.Format("shot-{0:yyyyMMdd-HHmmss}-{1:000}.png", DateTime.Now, index);
+            bitmap.Save(Path.Combine(outDir, name), ImageFormat.Png);
+            Log("saved " + name + " " + width + "x" + cropHeight);
+        }
+
+        return true;
+    }
+
+    private static void Prune(string outDir, int maxFiles)
+    {
+        try
+        {
+            string[] files = Directory.GetFiles(outDir, "shot-*.png");
+            if (files.Length <= maxFiles) return;
+
+            Array.Sort(files, StringComparer.OrdinalIgnoreCase);
+            int remove = files.Length - maxFiles;
+            for (int i = 0; i < remove; i++) File.Delete(files[i]);
+        }
+        catch
+        {
+            // pruning is housekeeping only
+        }
+    }
+}

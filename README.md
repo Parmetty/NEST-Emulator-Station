@@ -45,6 +45,21 @@ node tools/run.mjs . --no-sandbox --user-data-dir=.profile --scan=.testroms --se
 NEST_FAKE_ENGINE=1 node tools/run.mjs . --no-sandbox --user-data-dir=.profile --scan=.testroms --selftest
 ```
 
+## 抓屏工具
+
+`resources/tools/nest-capture.exe`（源码 `tools/capture/NestCapture.cs`，7.6 KB，只用 .NET Framework 自带的 `csc` 编译）：
+
+```
+nest-capture.exe --pid <pid> --out <dir> [--interval 5000] [--max 60]
+                 [--aspect 1.5] [--once] [--log <file>]
+```
+
+- 抓的是目标进程窗口的**客户区**——对模拟器来说就是它渲染的画面，不含 Windows 边框。
+- `--aspect` 按主机屏幕比例裁掉模拟器自己的菜单栏（Qt 把它画在客户区里，锚定在底部）。
+- 退出检测由主进程负责（子进程 `close` 事件），工具只管持续落帧；游戏退出后主进程把最新一帧提升为封面。
+
+重新编译：`npm run build:capture`（需要 .NET Framework 4.x 的 `csc.exe`）。
+
 ## 目录
 
 ```
