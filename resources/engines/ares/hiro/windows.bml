@@ -1,0 +1,16 @@
+extendedFrameBounds
+  popup
+    x:0
+    y:0
+    width:0
+    height:0
+  fixed
+    x:0
+    y:0
+    width:0
+    height:0
+  resizable
+    x:8
+    y:0
+    width:16
+    height:8

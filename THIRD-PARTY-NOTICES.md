@@ -15,17 +15,15 @@ Nest's license.
 - Redistributed unmodified. If you ship a modified build, MPL 2.0 requires publishing
   the source of the modified files.
 
-### FCEUX 2.6.6 — `resources/engines/fceux/`
+### ares v148 — `resources/engines/ares/`
 
-- Project: https://fceux.com/ · Source: https://github.com/TASEmulators/fceux
-- License: **GPLv2** — full text at `resources/engines/fceux/LICENSE.txt`
-- Redistributed unmodified. Corresponding source is available at the upstream URL above.
-
-### bsnes v115 — `resources/engines/bsnes/`
-
-- Project: https://bsnes.dev/ · Source: https://github.com/bsnes-emu/bsnes
-- License: **GPLv3** — full text at `resources/engines/bsnes/LICENSE.txt`
-- Redistributed unmodified. Corresponding source is available at the upstream URL above.
+- Project: https://ares-emu.net/ · Source: https://github.com/ares-emulator/ares
+- License: **ISC** — full text at `resources/engines/ares/LICENSE.txt`
+- One executable covers FC (NES), SFC (SNES) and N64.
+- Redistributed unmodified, except two deliberate changes:
+  - the bundled `settings.bml` disables the status bar and overscan, so the window
+    is exactly the emulated screen (no chrome in cover captures);
+  - the unused `Shaders/` directory was removed to cut 63 MB of CRT filter assets.
 
 ## Runtime dependencies (installed via npm, not vendored here)
 

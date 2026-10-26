@@ -8,6 +8,7 @@ import type {
   Settings,
   SystemView,
 } from '@shared/contract';
+import { engineLabel } from '@shared/systems';
 
 type Row =
   | { kind: 'family'; family: FamilyView }
@@ -231,7 +232,7 @@ export default function App() {
   const askEnter = useCallback(
     (system: SystemView, mode: LaunchMode, game?: GameRecord) => {
       if (system.state === 'locked') {
-        say(`${system.engine} 尚未接入`);
+        say(`${engineLabel(system.engine)} 尚未接入`);
         return;
       }
       setDialog({ system, mode, game });
@@ -243,7 +244,7 @@ export default function App() {
   const openShelf = useCallback(
     async (system: SystemView) => {
       if (system.state === 'locked') {
-        say(`${system.engine} 尚未接入`);
+        say(`${engineLabel(system.engine)} 尚未接入`);
         return;
       }
       setShelf({ system, games: [], loading: true });
@@ -320,17 +321,17 @@ export default function App() {
     setOverlay({
       name: game ? game.title : system.name,
       meta: game
-        ? `正在启动 · ${system.engine}`
+        ? `正在启动 · ${engineLabel(system.engine)}`
         : mode === 'system'
           ? `正在开机 · ${system.systemMode ?? '系统模式'}`
-          : `正在启动 · ${system.engine}`,
+          : `正在启动 · ${engineLabel(system.engine)}`,
     });
     const result = await window.nest.launch(system.id, mode, game?.path);
     if (!result.ok) {
       setOverlay(null);
       const map: Record<string, string> = {
-        'engine-not-installed': `未找到 ${system.engine}，请先安装或指定路径`,
-        'engine-manifest-missing': `缺少 ${system.engine} 的引擎清单`,
+        'engine-not-installed': `未找到 ${engineLabel(system.engine)}，请先安装或指定路径`,
+        'engine-manifest-missing': `缺少 ${engineLabel(system.engine)} 的引擎清单`,
         'not-supported': '该主机尚未接入',
         'already-running': '已有一个会话在运行',
       };
@@ -534,7 +535,7 @@ export default function App() {
         </div>
         <div className="ghost">
           {ghostLabel}
-          <small>{sel.type === 'family' ? '预留平台 · 适配器就位后启用' : `预留入口 · ${selectedSystem?.engine ?? ''}`}</small>
+          <small>{sel.type === 'family' ? '预留平台 · 适配器就位后启用' : `预留入口 · ${engineLabel(selectedSystem?.engine)}`}</small>
         </div>
       </div>
 
@@ -655,7 +656,7 @@ export default function App() {
               </p>
             ) : null}
             <p className="sub">
-              {selectedSystem.year} · {selectedSystem.kind} · {selectedSystem.engine}
+              {selectedSystem.year} · {selectedSystem.kind} · {engineLabel(selectedSystem.engine)}
             </p>
             {selectedSystem.note ? <p className="note">{selectedSystem.note}</p> : null}
 
@@ -740,7 +741,7 @@ export default function App() {
             <div className="shelf-title">
               <h2>{shelf.system.name}</h2>
               <span>
-                {shelf.loading ? '读取中…' : `${shelf.games.length} 个游戏`} · {shelf.system.engine}
+                {shelf.loading ? '读取中…' : `${shelf.games.length} 个游戏`} · {engineLabel(shelf.system.engine)}
               </span>
             </div>
             <button className="shelf-scan" onClick={() => void scan()} disabled={scanning}>
@@ -900,7 +901,7 @@ export default function App() {
           <p className="dlg-note">
             {dialog?.mode === 'system'
               ? `系统模式：${dialog.system.systemMode ?? '系统菜单'} · 需要对应的固件 / 系统文件`
-              : `${dialog?.system.name ?? ''} · ${dialog?.system.engine ?? ''} · 结束后自动返回 Nest`}
+              : `${dialog?.system.name ?? ''} · ${engineLabel(dialog?.system.engine)} · 结束后自动返回 Nest`}
           </p>
           <div className="dlg-actions">
             <button className="dlg-btn" onClick={() => setDialog(null)}>

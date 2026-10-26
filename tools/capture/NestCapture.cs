@@ -84,6 +84,7 @@ internal static class Program
         double aspect = 0;
         bool once = false;
         bool allowBackground = false;
+        bool anchorTop = false;
 
         for (int i = 0; i < args.Length; i++)
         {
@@ -110,6 +111,9 @@ internal static class Program
                     break;
                 case "--allow-background":
                     allowBackground = true;
+                    break;
+                case "--anchor":
+                    anchorTop = args[++i] == "top";
                     break;
                 case "--log":
                     _log = args[++i];
@@ -170,7 +174,7 @@ internal static class Program
 
             try
             {
-                if (Capture(handle, outDir, aspect, written + 1, allowBackground))
+                if (Capture(handle, outDir, aspect, written + 1, allowBackground, anchorTop))
                 {
                     written++;
                     Prune(outDir, maxFiles);
@@ -191,7 +195,7 @@ internal static class Program
         }
     }
 
-    private static bool Capture(IntPtr handle, string outDir, double aspect, int index, bool allowBackground)
+    private static bool Capture(IntPtr handle, string outDir, double aspect, int index, bool allowBackground, bool anchorTop)
     {
         Rect rect;
         if (!GetClientRect(handle, out rect)) return false;
@@ -232,9 +236,10 @@ internal static class Program
             if (target > 0 && target < height)
             {
                 cropHeight = target;
-                // Qt draws its menu bar inside the client area; the emulated
-                // screen sits at the bottom of it, so anchor the crop there.
-                cropTop = height - target;
+                // Emulators put their chrome on different edges: Qt frontends
+                // keep a menu bar at the top (crop from the top, anchor bottom),
+                // ares keeps a status bar at the bottom (anchor top).
+                cropTop = anchorTop ? 0 : height - target;
             }
         }
 

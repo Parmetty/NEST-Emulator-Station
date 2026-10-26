@@ -12,34 +12,38 @@
 | P1 扫描器 + GBA 全链路 | ✅ 完成 |
 | P1.1 内置 mGBA + 启动设置 | ✅ 完成 |
 | P1.2 封面 / 右键移除 / 运行中高亮 | ✅ 完成 |
-| P2 FC + SFC 闭环 | ✅ 完成（N64 未做） |
+| P2 FC + SFC + N64 闭环 | ✅ 完成 |
 | P3 NGC + Wii | 未开始 |
 
 ## P2 已完成的部分
 
-- **FC**：FCEUX 2.6.6 内置（`resources/engines/fceux/`，~7.5 MB），`fceux64.exe "{rom}"` 直接启动
-- **SFC**：bsnes v115 内置（`resources/engines/bsnes/`，~4.4 MB），`bsnes.exe "{rom}"`，`--fullscreen` 已实测生效
-- **封面裁剪改为按引擎配置**（`captureAspect` 写进清单）：
-  - mGBA `1.5`（3:2，去掉窗口顶部 Qt 菜单）
-  - bsnes `1.142857`（8:7，去掉顶部 24px 菜单）
-  - FCEUX 不裁剪（它把画面拉伸铺满客户区，实测 320×256 无 chrome）
-- **抓屏工具加前台 + 遮挡检查**：只有窗口在前台且抓取点确实属于它时才落帧，避免存下别的窗口
-- 许可证：FCEUX 是 GPLv2、bsnes 是 GPLv3，许可证全文已随包，源码地址写在 THIRD-PARTY-NOTICES
+- **引擎合并**：FC / SFC / N64 统一走 **ares v148**（ISC 许可，`resources/engines/ares/`）
+  - 原计划 FCEUX（FC）+ bsnes（SFC）已删除，三台主机一个引擎，引擎总数 3 → 2
+  - 体积：ares 105.7 MB → **42.6 MB**（砍掉 `Shaders/` 63 MB 的 CRT 滤镜贴图）
+  - 启动：`ares.exe "{rom}"`，实测《超级马里奥兄弟 3》《忍者神龟》《姆吉拉的假面》均满速
+- **ares 配置就位**（随包 `settings.bml`）：`ShowStatusBar: false`、`Overscan: false`
+  - 客户区因此就是纯画面，**不需要裁剪**，`captureAspect` 从 ares 清单里移除
+  - 教训：按 4:3 硬裁会在窗口留黑边时切掉画面底部
+- **抓屏工具**：新增 `--anchor top|bottom`（当前只有 mGBA 用 `aspect 1.5` 且默认 bottom）
+- **界面引擎名**：新增 `engineLabel()` 映射，显示 `mGBA` / `ares` 而不是原始 id
+- 许可证：ares 是 ISC，源码 https://github.com/ares-emulator/ares
 
-验证方式（`NEST` 需要游戏窗口在前台，真实使用时 Nest 会最小化、游戏自然在前台）：
+验证命令：
 
 ```powershell
-node tools/run.mjs . --no-sandbox --user-data-dir=.profile --scan=.roms-fc-sfc --trylaunch=fc --hold=6000
-node tools/run.mjs . --no-sandbox --user-data-dir=.profile --scan=.roms-fc-sfc --trylaunch=sfc --hold=6000
+node tools/run.mjs . --no-sandbox --user-data-dir=.profile --scan=.roms-fc-sfc --trylaunch=fc --hold=10000
+node tools/run.mjs . --no-sandbox --user-data-dir=.profile --scan=.roms-fc-sfc --trylaunch=sfc --hold=10000
+node tools/run.mjs . --no-sandbox --user-data-dir=.profile --scan=.roms-fc-sfc --trylaunch=n64 --hold=12000
 ```
 
-实测封面：FC → 320×256（超级马里奥兄弟 3 标题），SFC → 512×448（忍者神龟标题）。
+实测封面尺寸：FC 800×576、SFC 750×576、N64 768×576（均为游戏画面本身）。
 
-## 下一步（P2 剩余）
+## 下一步
 
-1. N64：ares 或 mupen64plus，需确认 CLI 与控制器配置
-2. DAT 匹配（No-Intro SHA-1）与标题修正
-3. 每游戏覆盖设置、存档备份
+1. DAT 匹配（No-Intro SHA-1）与标题修正
+2. 每游戏覆盖设置、存档备份
+3. P3：Dolphin + NAND
+4. P5：打包发布（清单见 `RELEASE.md`）
 
 ## P1.2 交付
 

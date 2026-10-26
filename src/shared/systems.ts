@@ -28,8 +28,8 @@ export interface SystemDef {
 }
 
 export const SYSTEMS: SystemDef[] = [
-  { id: 'fc',    name: 'Family Computer',   short: 'FC',    year: 1983, kind: '家用机', family: 'nintendo', engine: 'fceux',    image: 'consoles/fc.webp',   state: 'ready' },
-  { id: 'sfc',   name: 'Super Famicom',     short: 'SFC',   year: 1990, kind: '家用机', family: 'nintendo', engine: 'bsnes',    image: 'consoles/sfc.webp',  state: 'ready' },
+  { id: 'fc',    name: 'Family Computer',   short: 'FC',    year: 1983, kind: '家用机', family: 'nintendo', engine: 'ares',     image: 'consoles/fc.webp',   state: 'ready' },
+  { id: 'sfc',   name: 'Super Famicom',     short: 'SFC',   year: 1990, kind: '家用机', family: 'nintendo', engine: 'ares',     image: 'consoles/sfc.webp',  state: 'ready' },
   { id: 'n64',   name: 'Nintendo 64',       short: 'N64',   year: 1996, kind: '家用机', family: 'nintendo', engine: 'ares',     image: 'consoles/n64.webp',  state: 'ready' },
   { id: 'gba',   name: 'Game Boy Advance',  short: 'GBA',   year: 2001, kind: '掌机',   family: 'nintendo', engine: 'mgba',     image: 'consoles/gba.webp',  state: 'ready', note: 'BIOS 开机动画随游戏启动' },
   { id: 'ngc',   name: 'Nintendo GameCube', short: 'NGC',   year: 2001, kind: '家用机', family: 'nintendo', engine: 'dolphin',  image: 'consoles/ngc.webp',  state: 'ready', systemMode: 'IPL 系统菜单', note: 'IPL 系统菜单可用' },
@@ -57,4 +57,29 @@ export const systemById = new Map(SYSTEMS.map((s) => [s.id, s]));
 
 export function systemsOf(family: FamilyId): SystemDef[] {
   return SYSTEMS.filter((s) => s.family === family).sort((a, b) => a.year - b.year);
+}
+
+/**
+ * Display names for engines. Manifests carry a name too, but the renderer needs
+ * a label before the engine list is fetched (and for systems with no engine).
+ */
+export const ENGINE_LABEL: Record<string, string> = {
+  mgba: 'mGBA',
+  ares: 'ares',
+  dolphin: 'Dolphin',
+  melonds: 'melonDS',
+  citra: 'Citra',
+  cemu: 'Cemu',
+  duckstation: 'DuckStation',
+  pcsx2: 'PCSX2',
+  ppsspp: 'PPSSPP',
+  rpcs3: 'RPCS3',
+  xemu: 'xemu',
+  xenia: 'Xenia',
+  fake: '测试引擎',
+};
+
+export function engineLabel(id: string | null | undefined): string {
+  if (!id) return '';
+  return ENGINE_LABEL[id] ?? id;
 }

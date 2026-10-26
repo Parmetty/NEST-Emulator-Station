@@ -82,6 +82,13 @@ export const engineManifestSchema = z.object({
    * (FCEUX stretches to fit), so no cropping happens.
    */
   captureAspect: z.number().positive().optional(),
+
+  /**
+   * Which edge the emulated screen is anchored to when captureAspect crops
+   * chrome: qt-style frontends keep a menu bar at the top (default "bottom"),
+   * ares keeps a status bar at the bottom ("top").
+   */
+  captureAnchor: z.enum(['top', 'bottom']).optional(),
 });
 
 export type EngineManifest = z.infer<typeof engineManifestSchema>;

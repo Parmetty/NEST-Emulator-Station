@@ -1,31 +1,24 @@
 {
-    "id":  "ares",
-    "name":  "ares",
-    "systems":  [
-                    "n64",
-                    "sfc",
-                    "gba"
-                ],
-    "kind":  "native",
-    "detect":  {
-                   "paths":  [
-                                 "%PROGRAMFILES%\\ares\\ares.exe"
-                             ]
-               },
-    "download":  {
-                     "homepage":  "https://ares-emu.net/"
-                 },
-    "launch":  {
-                   "args":  [
-                                "{rom}"
-                            ],
-                   "systemArgs":  [
-
-                                  ],
-                   "cwd":  "engineDir"
-               },
-    "capabilities":  {
-                         "saveStates":  true,
-                         "systemMode":  null
-                     }
+  "id": "ares",
+  "name": "ares",
+  "systems": ["fc", "sfc", "n64"],
+  "kind": "native",
+  "detect": {
+    "paths": [
+      "{engines}/ares/ares.exe",
+      "%PROGRAMFILES%/ares/ares.exe"
+    ]
+  },
+  "download": {
+    "homepage": "https://ares-emu.net/"
+  },
+  "launch": {
+    "args": ["{rom}"],
+    "systemArgs": [],
+    "cwd": "engineDir"
+  },
+  "capabilities": {
+    "saveStates": true,
+    "systemMode": null
+  }
 }

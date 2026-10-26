@@ -86,7 +86,7 @@ function captureToolPath(): string {
   return path.join(app.getAppPath(), 'resources', 'tools', 'nest-capture.exe');
 }
 
-function startShotHelper(sessionId: string, pid: number, aspect: number): void {
+function startShotHelper(sessionId: string, pid: number, aspect: number, anchor?: 'top' | 'bottom'): void {
   const exe = captureToolPath();
   const args = [
     '--pid',
@@ -101,6 +101,7 @@ function startShotHelper(sessionId: string, pid: number, aspect: number): void {
     path.join(shotsDir(), 'capture.log'),
   ];
   if (aspect > 0) args.push('--aspect', String(aspect));
+  if (anchor) args.push('--anchor', anchor);
 
   const helper = spawn(exe, args, { windowsHide: true, stdio: 'ignore' });
   captureHelpers.set(sessionId, helper);
@@ -209,7 +210,8 @@ async function boot(): Promise<void> {
       const pid = services?.supervisor.pid(e.sessionId);
       if (pid) {
         const aspect = engine?.captureAspect ?? 0;
-        void clearShots().then(() => startShotHelper(e.sessionId, pid, aspect));
+        const anchor = engine?.captureAnchor;
+        void clearShots().then(() => startShotHelper(e.sessionId, pid, aspect, anchor));
       }
     }
     if (e.state === 'exited' || e.state === 'crashed') {
