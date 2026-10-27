@@ -46,11 +46,18 @@ internal static class Program
     private static extern IntPtr GetForegroundWindow();
 
     [DllImport("user32.dll")]
+    private static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool attach);
+
+    [DllImport("kernel32.dll")]
+    private static extern uint GetCurrentThreadId();
+
+    [DllImport("user32.dll")]
     private static extern void keybd_event(byte vk, byte scan, uint flags, UIntPtr extra);
 
     private delegate bool EnumProc(IntPtr hWnd, IntPtr param);
 
     private const int SW_RESTORE = 9;
+    private const int SW_MINIMIZE = 6;
     private const uint KEYUP = 2;
 
     private static string _log;
@@ -147,6 +154,7 @@ internal static class Program
         string keys = null;
         int delayMs = 8000;
         int stepMs = 800;
+        bool minimize = false;
 
         for (int i = 0; i < args.Length; i++)
         {
@@ -157,6 +165,7 @@ internal static class Program
                 case "--keys": keys = args[++i]; break;
                 case "--delay": int.TryParse(args[++i], out delayMs); break;
                 case "--step": int.TryParse(args[++i], out stepMs); break;
+                case "--minimize": minimize = true; break;
                 case "--log": _log = args[++i]; break;
                 default:
                     Console.Error.WriteLine("unknown argument: " + args[i]);
@@ -189,16 +198,43 @@ internal static class Program
 
         Thread.Sleep(delayMs);
         if (IsIconic(window)) ShowWindow(window, SW_RESTORE);
-        SetForegroundWindow(window);
-        Thread.Sleep(400);
 
-        if (GetForegroundWindow() != window)
+        // Windows only lets the foreground process steal focus. Attaching to the
+        // current foreground thread sidesteps that lock, which is what makes this
+        // work when Nest itself is the active window.
+        bool focused = false;
+        for (int attempt = 0; attempt < 10 && !focused; attempt++)
         {
-            Log("warning: could not take foreground; keys may go elsewhere");
+            SetForegroundWindow(window);
+            Thread.Sleep(150);
+            if (GetForegroundWindow() == window) { focused = true; break; }
+
+            uint foregroundPid;
+            IntPtr foreground = GetForegroundWindow();
+            uint foregroundThread = GetWindowThreadProcessId(foreground, out foregroundPid);
+            uint ownThread = GetCurrentThreadId();
+            if (foregroundThread != 0 && AttachThreadInput(ownThread, foregroundThread, true))
+            {
+                SetForegroundWindow(window);
+                AttachThreadInput(ownThread, foregroundThread, false);
+                Thread.Sleep(150);
+                focused = GetForegroundWindow() == window;
+            }
         }
+        if (!focused) Log("warning: could not take foreground; keys may go elsewhere");
+        else Log("foreground acquired");
 
         try { SendSequence(keys, stepMs); }
         catch (Exception ex) { Log("send failed: " + ex.Message); return 1; }
+
+        if (minimize)
+        {
+            // Hide the launcher once the engine opens its own render window; the
+            // user should only ever see the emulated machine.
+            Thread.Sleep(1200);
+            ShowWindow(window, SW_MINIMIZE);
+            Log("launcher minimized");
+        }
 
         Log("sequence sent");
         return 0;

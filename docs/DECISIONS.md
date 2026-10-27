@@ -153,7 +153,7 @@ GameCube 确实有 IPL（Boot ROM）菜单，虽然少见但真实存在。3DS /
 
 
 
-## D19 · 系统模式通过 GUI 按键自动化实现（Dolphin / NGC）
+## D19 · 系统模式：能走命令行就不碰 GUI（Dolphin / NGC + Wii）
 
 **结论**：引擎若只能用图形界面进入系统模式，就在清单里用 `systemBoot` 描述一段按键序列，
 由 `resources/tools/nest-input.exe` 在窗口出现后置前并发送，Nest 不嵌入 UI 自动化框架。
@@ -165,3 +165,6 @@ GameCube 确实有 IPL（Boot ROM）菜单，虽然少见但真实存在。3DS /
 - 序列绑死 Dolphin 版本与界面语言（我们随包固定 2609a；若改界面语言，助记键可能变）
 - 只在 system 模式下触发，且失败不影响直读
 - 若 Dolphin 将来提供命令行入口，`systemBoot` 直接删掉即可
+**后续变更（Wii）**：Dolphin 可以直接把 System Menu 的 WAD 当启动目标——-b -e <wii-menu.wad> 即可进 Wii 菜单，完全静默、零打扰，比 GC 那条路干净得多。因此清单新增 systemArgsBySystem：Wii 走 WAD 直启，GC 保留 UIA 菜单（实验性）。
+
+**UIA 的副作用（实测）**：Qt 菜单展开的瞬间会抓鼠标/键盘，用户此时操作会感到被抢。助手已改为单次尝试、异常不外泄、失败必收起菜单；但根本上这是 GUI 自动化，NGC 的入口标注为实验性，直到 Dolphin 提供命令行入口。

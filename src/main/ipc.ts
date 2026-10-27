@@ -192,7 +192,7 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     const detected = services.engines.detect(engine);
     if (!detected) return { ok: false, error: 'engine-not-installed' };
     command = detected;
-    args = mode === 'system' ? engine.launch.systemArgs : engine.launch.args;
+    args = mode === 'system' ? (engine.systemArgsBySystem?.[systemId] ?? engine.launch.systemArgs) : engine.launch.args;
   }
 
   args = buildArgs(args, {
@@ -238,32 +238,54 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   await services.store.recordSession(systemId, Date.now(), game?.id);
 
   // Some engines expose "system mode" only through their GUI (Dolphin: Tools →
-  // Load GameCube Main Menu). A manifest entry describes the key sequence; the
-  // helper waits for the window, focuses it and plays the keys for us.
-  if (mode === 'system' && engine.systemBoot) {
+  // Load GameCube Main Menu). The manifest describes how to get there; a helper
+  // either drives the menu through UI Automation (no focus needed, preferred) or
+  // replays a key sequence. A watcher ends the session when the emulation window
+  // closes, because the launcher process outlives it.
+  if (mode === 'system' && engine.systemBoot && !engine.systemArgsBySystem?.[systemId]) {
     const pid = services.supervisor.pid(sessionId);
     if (pid) {
-      const helper = spawn(
-        path.join(app.getAppPath(), 'resources', 'tools', 'nest-input.exe'),
-        [
-          '--pid',
-          String(pid),
-          '--keys',
-          engine.systemBoot.keys,
-          '--delay',
-          String(engine.systemBoot.delay ?? 9000),
-          '--step',
-          String(engine.systemBoot.step ?? 800),
-          ...(engine.systemBoot.title ? ['--title', engine.systemBoot.title] : []),
-          '--log',
-          path.join(app.getPath('userData'), 'shots', 'input.log'),
-        ],
+      const boot = engine.systemBoot;
+      const tools = path.join(app.getAppPath(), 'resources', 'tools');
+      const logDir = path.join(app.getPath('userData'), 'shots');
+      const useMenu = Boolean(boot.menu && boot.item);
+
+      const args = [
+        '--pid',
+        String(pid),
+        '--delay',
+        String(boot.delay ?? 9000),
+        ...(boot.title ? ['--title', boot.title] : []),
+        ...(boot.minimize ? ['--minimize'] : []),
+        '--log',
+        path.join(logDir, useMenu ? 'menu.log' : 'input.log'),
+      ];
+      if (useMenu) {
+        args.push('--menu', boot.menu!, '--item', boot.item!);
+      } else {
+        args.push('--keys', boot.keys!, '--step', String(boot.step ?? 800));
+      }
+
+      const helperName = useMenu ? 'nest-menu.exe' : 'nest-input.exe';
+      const helper = spawn(path.join(tools, helperName), args, {
+        windowsHide: true,
+        stdio: 'ignore',
+      });
+      helper.once('exit', (code) => {
+        console.log(`[nest] ${helperName} finished (code ${code}) for system=${systemId}`);
+      });
+      console.log(`[nest] ${helperName} armed for mode=system system=${systemId}`);
+
+      const watcher = spawn(
+        path.join(tools, 'nest-window.exe'),
+        ['--pid', String(pid), '--log', path.join(logDir, 'window.log')],
         { windowsHide: true, stdio: 'ignore' },
       );
-      helper.once('exit', (code) => {
-        console.log(`[nest] input helper finished (code ${code}) for system=${systemId}`);
+      watcher.once('exit', (code) => {
+        console.log(`[nest] window watcher finished (code ${code}) for system=${systemId}`);
+        if (code === 0) services.supervisor.stop(sessionId);
       });
-      console.log(`[nest] input helper armed for mode=system system=${systemId}`);
+      console.log(`[nest] window watcher armed for mode=system system=${systemId}`);
     }
   }
 

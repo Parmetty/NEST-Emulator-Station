@@ -94,12 +94,24 @@ export const engineManifestSchema = z.object({
    * System mode reached through the engine's own GUI: wait for the window, then
    * play this key sequence (Dolphin: Tools → Load GameCube Main Menu → region).
    */
+  /** System-mode launch arguments that differ per console (Dolphin: GC via GUI, Wii via WAD). */
+  systemArgsBySystem: z.record(z.array(z.string())).optional(),
+
   systemBoot: z
     .object({
-      keys: z.string(),
+      /** Keyboard path (needs foreground; used when UI Automation is not an option). */
+      keys: z.string().optional(),
+      /** UI Automation path: open the menu whose label contains this text … */
+      menu: z.string().optional(),
+      /** … then invoke the item whose label contains this text. */
+      item: z.string().optional(),
       title: z.string().optional(),
       delay: z.number().int().nonnegative().optional(),
       step: z.number().int().nonnegative().optional(),
+      minimize: z.boolean().optional(),
+    })
+    .refine((value) => value.keys || (value.menu && value.item), {
+      message: 'systemBoot needs keys or menu+item',
     })
     .optional(),
 });

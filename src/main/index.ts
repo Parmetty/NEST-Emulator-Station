@@ -42,7 +42,7 @@ let services: Services | null = null;
  * Automated runs (`--smoke`, `--shot=`, `--trylaunch=`, …) skip the lock so a
  * stray window never blocks the test harness.
  */
-const DEV_FLAG = /^--(smoke|flow|selftest|trylaunch|shot=|dump=|scan=|shelf=|select=|settings|hold)/;
+const DEV_FLAG = /^--(smoke|flow|selftest|trylaunch|trysystem|shot=|dump=|scan=|shelf=|select=|settings|hold)/;
 const DEV_RUN = process.argv.slice(1).some((arg) => DEV_FLAG.test(arg));
 if (DEV_RUN) console.log('[nest] dev run: single instance lock bypassed');
 

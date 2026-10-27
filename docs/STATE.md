@@ -55,7 +55,12 @@ node tools/run.mjs . --no-sandbox --user-data-dir=.profile --scan=.roms-fc-sfc -
 - **IPL 校验**：Dolphin 只认下列 CRC32，用 `zlib.crc32` 可自查
   - NTSC: `6DAC1F2A` / `D5E6FEEA` / `D235E3F9` / `86573808`；PAL: `4F319F43` / `AD1B7F16`；MPAL `667D0B64`；Triforce `D1883221`
   - 用户自备，放 `<userData>/dolphin/GC/USA/IPL.bin`（PAL 放 EUR），**绝不进仓库**
-- 待办：拿到 GC 游戏镜像后验证直读 + 封面裁剪
+- **直读已用真实镜像验证**：`红侠乔伊_CN.火热乱斗.gcm`（1.4 GB）→ `-b -e` 启动成功，窗口标题进入 JIT64/D3D11 渲染态，封面已生成
+- **Wii 系统模式（纯命令行，零打扰）**：Dolphin 支持直接把 System Menu WAD 当启动目标
+  - `Dolphin.exe -u <dir> -b -e <wii-menu.wad>` → 窗口标题出现 `Wii 菜单 (0000000100000002)`，无需安装 WAD
+  - 用户自备 WAD 放 `<userData>/dolphin/wii-menu.wad`（**不进仓库**）
+  - 清单用 `systemArgsBySystem.wii` 按主机覆盖参数，GC 仍走 GUI 自动化
+- **GC 系统模式（实验性）**：UIA 助手已加防护（单次尝试、异常不外泄、失败必收起菜单），但 Qt 菜单展开瞬间会抓输入，属已知副作用；NGC 暂时保留为实验入口
 
 ## 下一步
 

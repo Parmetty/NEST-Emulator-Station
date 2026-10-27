@@ -6,6 +6,7 @@
 $ErrorActionPreference = 'Stop'
 
 $root = Split-Path -Parent $PSScriptRoot
+$wpf = 'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\WPF'
 $csc = 'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe'
 if (-not (Test-Path $csc)) {
   $csc = 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe'
@@ -19,7 +20,9 @@ New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 
 $targets = @(
   @{ Source = 'capture\NestCapture.cs'; Exe = 'nest-capture.exe'; Extra = @('/reference:System.Drawing.dll') },
-  @{ Source = 'input\NestInput.cs';     Exe = 'nest-input.exe';   Extra = @() }
+  @{ Source = 'input\NestInput.cs';     Exe = 'nest-input.exe';   Extra = @() },
+  @{ Source = 'window\NestWindow.cs';   Exe = 'nest-window.exe';  Extra = @() },
+  @{ Source = 'menu\NestMenu.cs';       Exe = 'nest-menu.exe';    Extra = @("/reference:$wpf\UIAutomationClient.dll", "/reference:$wpf\UIAutomationTypes.dll", "/reference:$wpf\WindowsBase.dll") }
 )
 
 foreach ($target in $targets) {
