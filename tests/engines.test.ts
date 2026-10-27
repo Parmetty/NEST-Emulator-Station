@@ -42,6 +42,15 @@ describe('argument building', () => {
     expect(buildArgs(['{missing}'], {})).toEqual(['{missing}']);
   });
 
+  it('substitutes launch placeholders for engine, user data and rom', () => {
+    expect(
+      buildArgs(['-u', '{userData}/dolphin', '-b', '-e', '{rom}'], {
+        userData: 'C:/appdata',
+        rom: 'game.rvz',
+      }),
+    ).toEqual(['-u', 'C:/appdata/dolphin', '-b', '-e', 'game.rvz']);
+  });
+
   it('expands windows style env placeholders', () => {
     expect(expandPath('%PROGRAMFILES%/mGBA/mGBA.exe', { PROGRAMFILES: 'C:/Program Files' })).toBe(
       'C:/Program Files/mGBA/mGBA.exe',

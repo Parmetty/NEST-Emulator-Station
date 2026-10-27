@@ -18,6 +18,12 @@
     "systemArgs": ["-u", "{userData}/dolphin"],
     "cwd": "engineDir"
   },
+  "systemBoot": {
+    "keys": "alt+t,g,u",
+    "title": "Dolphin",
+    "delay": 9000,
+    "step": 800
+  },
   "capabilities": {
     "saveStates": true,
     "systemMode": null

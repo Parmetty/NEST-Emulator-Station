@@ -47,11 +47,15 @@ node tools/run.mjs . --no-sandbox --user-data-dir=.profile --scan=.roms-fc-sfc -
   - 用户目录隔离：`Dolphin.exe -u <userData>/dolphin`，存档/NAND 不落到用户文档目录
   - 直读参数：`-u <dir> -b -e "<game>"`；应用已按此拉起 Dolphin（用假 ISO 验证过 spawn 与参数）
 - **扫描扩展名**：`gcm / iso / rvz → ngc`，`wbfs → wii`（`.iso` 有歧义，PS 系平台锁定时风险可控）
-- **系统模式受阻**：Dolphin 只接受 GCM/ISO，**IPL 没有命令行入口**，唯一路径是 GUI 菜单「载入 GameCube 主菜单 → 区域」
-  - 自动化序列已摸清：`Alt+T → G → U`（NTSC-U），能触发引导
-  - 但现有 IPL 被 Dolphin 拒绝：**「此 IPL 文件不是已知的正确转储。(CRC32: 6d740ae7)」** → 需要实机重新 dump
-  - 因此 `systems.ts` 里 NGC/Wii 的 `systemMode` 暂时移除，入口不显示
-- 待办：拿到有效 IPL 后接入系统模式；拿到 GC 镜像后验证直读 + 封面裁剪
+- **系统模式已打通**（NGC）：
+  - Dolphin 只接受 GCM/ISO，IPL 没有命令行入口；唯一路径是 GUI 菜单「载入 GameCube 主菜单 → 区域」
+  - 新增 `resources/tools/nest-input.exe`：等窗口出现 → 置前 → 发送按键序列；清单里用 `systemBoot` 描述
+  - `dolphin.json`: `{"keys":"alt+t,g,u","title":"Dolphin","delay":9000,"step":800}`
+  - 实测：`--trysystem=ngc` → 启动 Dolphin GUI → 自动按键 → **GC 系统引导动画/主菜单出现**
+- **IPL 校验**：Dolphin 只认下列 CRC32，用 `zlib.crc32` 可自查
+  - NTSC: `6DAC1F2A` / `D5E6FEEA` / `D235E3F9` / `86573808`；PAL: `4F319F43` / `AD1B7F16`；MPAL `667D0B64`；Triforce `D1883221`
+  - 用户自备，放 `<userData>/dolphin/GC/USA/IPL.bin`（PAL 放 EUR），**绝不进仓库**
+- 待办：拿到 GC 游戏镜像后验证直读 + 封面裁剪
 
 ## 下一步
 

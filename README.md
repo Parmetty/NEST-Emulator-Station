@@ -111,7 +111,7 @@ npm run smoke     # 窗口 + IPC + 渲染自检
 ## 已知限制
 
 - GBA / FC / SFC / N64 已验证可玩；NGC/Wii 的 Dolphin 已内置、启动通路已接，但还没有游戏镜像做端到端验证；NDS/3DS/Wii U 仅清单
-- 系统模式（NGC IPL / Wii Menu / Wii U Menu）需要用户自备 IPL / NAND；NGC 的 IPL 当前无效，入口暂不开放
+- 系统模式：**NGC「IPL 系统菜单」已可用**（需自备有效 IPL，放 `%APPDATA%\Nest\dolphin\GC\USA\IPL.bin`）；Wii Menu 需 NAND，暂未开放
 - 没有安装包，目前从源码运行
 - 抓屏要求窗口可见；最小化时不抓
 

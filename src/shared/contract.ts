@@ -89,6 +89,19 @@ export const engineManifestSchema = z.object({
    * ares keeps a status bar at the bottom ("top").
    */
   captureAnchor: z.enum(['top', 'bottom']).optional(),
+
+  /**
+   * System mode reached through the engine's own GUI: wait for the window, then
+   * play this key sequence (Dolphin: Tools → Load GameCube Main Menu → region).
+   */
+  systemBoot: z
+    .object({
+      keys: z.string(),
+      title: z.string().optional(),
+      delay: z.number().int().nonnegative().optional(),
+      step: z.number().int().nonnegative().optional(),
+    })
+    .optional(),
 });
 
 export type EngineManifest = z.infer<typeof engineManifestSchema>;

@@ -420,6 +420,24 @@ async function boot(): Promise<void> {
     });
   }
 
+  const trySystemFlag = process.argv.find((arg) => arg.startsWith('--trysystem='));
+  if (trySystemFlag) {
+    mainWindow.webContents.once('did-finish-load', () => {
+      const systemId = trySystemFlag.split('=')[1];
+      setTimeout(async () => {
+        const result = await startLaunch(services!, { systemId, mode: 'system' });
+        console.log(`[nest] trysystem ${result.ok ? 'ok' : 'failed'}: ${result.ok ? systemId : result.error}`);
+        if (!result.ok) {
+          app.exit(3);
+          return;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 25_000));
+        services!.supervisor.stopAll();
+        setTimeout(() => app.exit(0), 2000);
+      }, 1500);
+    });
+  }
+
   const tryFlag = process.argv.find(
     (arg) => arg === '--trylaunch' || arg.startsWith('--trylaunch='),
   );

@@ -1,5 +1,8 @@
-# Builds tools/capture/NestCapture.cs into resources/tools/nest-capture.exe
-# using the C# compiler that ships with the .NET Framework (no SDK needed).
+# Builds the small C# helpers in tools/ into resources/tools/*.exe using the
+# C# compiler that ships with the .NET Framework (no SDK needed).
+#
+#   tools/capture/NestCapture.cs -> resources/tools/nest-capture.exe
+#   tools/input/NestInput.cs     -> resources/tools/nest-input.exe
 $ErrorActionPreference = 'Stop'
 
 $root = Split-Path -Parent $PSScriptRoot
@@ -11,16 +14,22 @@ if (-not (Test-Path $csc)) {
   throw 'csc.exe not found: install .NET Framework 4.x'
 }
 
-$source = Join-Path $PSScriptRoot 'capture\NestCapture.cs'
 $outDir = Join-Path $root 'resources\tools'
-$exe = Join-Path $outDir 'nest-capture.exe'
 New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 
-& $csc /nologo /optimize+ /target:exe /platform:anycpu `
-  "/out:$exe" `
-  /reference:System.dll `
-  /reference:System.Drawing.dll `
-  $source
+$targets = @(
+  @{ Source = 'capture\NestCapture.cs'; Exe = 'nest-capture.exe'; Extra = @('/reference:System.Drawing.dll') },
+  @{ Source = 'input\NestInput.cs';     Exe = 'nest-input.exe';   Extra = @() }
+)
 
-if ($LASTEXITCODE -ne 0) { throw "csc failed with $LASTEXITCODE" }
-Write-Host ("built " + $exe + " (" + (Get-Item $exe).Length + " bytes)")
+foreach ($target in $targets) {
+  $source = Join-Path $PSScriptRoot $target.Source
+  $exe = Join-Path $outDir $target.Exe
+  & $csc /nologo /optimize+ /target:exe /platform:anycpu `
+    "/out:$exe" `
+    /reference:System.dll `
+    @($target.Extra) `
+    $source
+  if ($LASTEXITCODE -ne 0) { throw "csc failed for $($target.Exe): $LASTEXITCODE" }
+  Write-Host ("built " + $exe + " (" + (Get-Item $exe).Length + " bytes)")
+}

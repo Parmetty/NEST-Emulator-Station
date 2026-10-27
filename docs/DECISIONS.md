@@ -152,3 +152,16 @@ GameCube 确实有 IPL（Boot ROM）菜单，虽然少见但真实存在。3DS /
 
 
 
+
+## D19 · 系统模式通过 GUI 按键自动化实现（Dolphin / NGC）
+
+**结论**：引擎若只能用图形界面进入系统模式，就在清单里用 `systemBoot` 描述一段按键序列，
+由 `resources/tools/nest-input.exe` 在窗口出现后置前并发送，Nest 不嵌入 UI 自动化框架。
+
+**理由**：Dolphin 的 CLI 明确只接受 GCM/ISO（`-e`），`-b` 还要求 `--exec`/`--nand-title`；
+「载入 GameCube 主菜单」是纯 GUI 动作。与其给 Dolphin 打补丁，不如把“已知版本的已知按键序列”写成数据。
+
+**代价与边界**：
+- 序列绑死 Dolphin 版本与界面语言（我们随包固定 2609a；若改界面语言，助记键可能变）
+- 只在 system 模式下触发，且失败不影响直读
+- 若 Dolphin 将来提供命令行入口，`systemBoot` 直接删掉即可

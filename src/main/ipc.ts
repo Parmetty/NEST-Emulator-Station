@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { spawn } from 'node:child_process';
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain, nativeImage, shell } from 'electron';
@@ -235,5 +236,36 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   if (!started) return { ok: false, error: 'already-running' };
 
   await services.store.recordSession(systemId, Date.now(), game?.id);
+
+  // Some engines expose "system mode" only through their GUI (Dolphin: Tools →
+  // Load GameCube Main Menu). A manifest entry describes the key sequence; the
+  // helper waits for the window, focuses it and plays the keys for us.
+  if (mode === 'system' && engine.systemBoot) {
+    const pid = services.supervisor.pid(sessionId);
+    if (pid) {
+      const helper = spawn(
+        path.join(app.getAppPath(), 'resources', 'tools', 'nest-input.exe'),
+        [
+          '--pid',
+          String(pid),
+          '--keys',
+          engine.systemBoot.keys,
+          '--delay',
+          String(engine.systemBoot.delay ?? 9000),
+          '--step',
+          String(engine.systemBoot.step ?? 800),
+          ...(engine.systemBoot.title ? ['--title', engine.systemBoot.title] : []),
+          '--log',
+          path.join(app.getPath('userData'), 'shots', 'input.log'),
+        ],
+        { windowsHide: true, stdio: 'ignore' },
+      );
+      helper.once('exit', (code) => {
+        console.log(`[nest] input helper finished (code ${code}) for system=${systemId}`);
+      });
+      console.log(`[nest] input helper armed for mode=system system=${systemId}`);
+    }
+  }
+
   return { ok: true, sessionId };
 }
