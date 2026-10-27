@@ -1,33 +1,25 @@
 {
-    "id":  "dolphin",
-    "name":  "Dolphin",
-    "systems":  [
-                    "ngc",
-                    "wii"
-                ],
-    "kind":  "native",
-    "detect":  {
-                   "paths":  [
-                                 "%PROGRAMFILES%\\Dolphin-x64\\Dolphin.exe",
-                                 "%PROGRAMFILES%\\Dolphin\\Dolphin.exe"
-                             ]
-               },
-    "download":  {
-                     "homepage":  "https://dolphin-emu.org/download/"
-                 },
-    "launch":  {
-                   "args":  [
-                                "-b",
-                                "-e",
-                                "{rom}"
-                            ],
-                   "systemArgs":  [
-                                      "-b"
-                                  ],
-                   "cwd":  "engineDir"
-               },
-    "capabilities":  {
-                         "saveStates":  true,
-                         "systemMode":  null
-                     }
+  "id": "dolphin",
+  "name": "Dolphin",
+  "systems": ["ngc", "wii"],
+  "kind": "native",
+  "detect": {
+    "paths": [
+      "{engines}/dolphin/Dolphin.exe",
+      "%PROGRAMFILES%/Dolphin-x64/Dolphin.exe",
+      "%PROGRAMFILES%/Dolphin/Dolphin.exe"
+    ]
+  },
+  "download": {
+    "homepage": "https://dolphin-emu.org/download/"
+  },
+  "launch": {
+    "args": ["-u", "{userData}/dolphin", "-b", "-e", "{rom}"],
+    "systemArgs": ["-u", "{userData}/dolphin"],
+    "cwd": "engineDir"
+  },
+  "capabilities": {
+    "saveStates": true,
+    "systemMode": null
+  }
 }

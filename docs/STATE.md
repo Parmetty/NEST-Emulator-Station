@@ -40,6 +40,19 @@ node tools/run.mjs . --no-sandbox --user-data-dir=.profile --scan=.roms-fc-sfc -
 
 实测封面尺寸：FC 800×576、SFC 750×576、N64 768×576（均为游戏画面本身）。
 
+## P3 · NGC / Wii（进行中）
+
+- **Dolphin 2609a 已内置**（`resources/engines/dolphin/`，57 MB，去掉了 DolphinTool/Updater）
+  - 随包携带 VC++ 14.51 的 4 个运行库 DLL：本机 System32 的 `msvcp140.dll` 是旧的 14.11，Dolphin 启动即 0xC0000005 崩溃
+  - 用户目录隔离：`Dolphin.exe -u <userData>/dolphin`，存档/NAND 不落到用户文档目录
+  - 直读参数：`-u <dir> -b -e "<game>"`；应用已按此拉起 Dolphin（用假 ISO 验证过 spawn 与参数）
+- **扫描扩展名**：`gcm / iso / rvz → ngc`，`wbfs → wii`（`.iso` 有歧义，PS 系平台锁定时风险可控）
+- **系统模式受阻**：Dolphin 只接受 GCM/ISO，**IPL 没有命令行入口**，唯一路径是 GUI 菜单「载入 GameCube 主菜单 → 区域」
+  - 自动化序列已摸清：`Alt+T → G → U`（NTSC-U），能触发引导
+  - 但现有 IPL 被 Dolphin 拒绝：**「此 IPL 文件不是已知的正确转储。(CRC32: 6d740ae7)」** → 需要实机重新 dump
+  - 因此 `systems.ts` 里 NGC/Wii 的 `systemMode` 暂时移除，入口不显示
+- 待办：拿到有效 IPL 后接入系统模式；拿到 GC 镜像后验证直读 + 封面裁剪
+
 ## 下一步
 
 1. DAT 匹配（No-Intro SHA-1）与标题修正

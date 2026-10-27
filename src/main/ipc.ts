@@ -194,7 +194,12 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     args = mode === 'system' ? engine.launch.systemArgs : engine.launch.args;
   }
 
-  args = buildArgs(args, { rom: rom ?? '', system: systemId });
+  args = buildArgs(args, {
+    rom: rom ?? '',
+    system: systemId,
+    userData: app.getPath('userData'),
+    engines: enginesDir(),
+  });
 
   // mGBA (and most Qt frontends) only parse options that come before the ROM,
   // so everything we add goes in front of the argument list.

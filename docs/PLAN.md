@@ -29,9 +29,9 @@
 | SFC | 1990 | ares（随包内置） | — | ✅ 可玩 |
 | N64 | 1996 | ares（随包内置） | 64DD IPL（实验） | ✅ 可玩 |
 | GBA | 2001 | mGBA（随包内置） | —（BIOS 开机动画随游戏启动，不是独立系统） | ✅ 可玩 |
-| NGC | 2001 | Dolphin | IPL 系统菜单 | v1 |
+| NGC | 2001 | Dolphin（随包内置） | IPL 系统菜单（待有效 IPL） | 🟡 直读已接 |
 | NDS | 2004 | melonDS | DS 固件菜单 | v1 |
-| Wii | 2006 | Dolphin | Wii Menu（需 NAND） | v1 |
+| Wii | 2006 | Dolphin（随包内置） | Wii Menu（需 NAND） | 🟡 直读已接 |
 | 3DS | 2011 | Citra | HOME Menu（需系统文件） | v1 |
 | Wii U | 2012 | Cemu | Wii U Menu（需 MLC + 密钥） | v1 |
 | Xbox / 360 | 2001 / 2005 | xemu / Xenia | — | 预留 |

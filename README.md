@@ -101,7 +101,7 @@ npm run smoke     # 窗口 + IPC + 渲染自检
 | P1 | 扫描器 + GBA 全链路 + 内置 mGBA | ✅ |
 | P1.2 | 封面、右键移除、运行中高亮 | ✅ |
 | P2 | FC / SFC / N64 闭环 ✅（ares）；固件校验、每游戏设置、存档备份未做 | ✅ |
-| P3 | Dolphin、NAND 导入、Wii Menu | |
+| P3 | Dolphin 内置 ✅；NGC 直读待镜像验证、Wii Menu 待 NAND | |
 | P4 | Cemu、MLC/keys、Wii U Menu | |
 | P5 | 手柄导航、滤镜、首次启动向导、安装包 | |
 
@@ -110,8 +110,8 @@ npm run smoke     # 窗口 + IPC + 渲染自检
 
 ## 已知限制
 
-- GBA / FC / SFC / N64 已接完整链路；NGC 及之后的主机还只有引擎清单和界面
-- 系统模式（Wii Menu / Wii U Menu / NGC IPL）还没在真机上验证
+- GBA / FC / SFC / N64 已验证可玩；NGC/Wii 的 Dolphin 已内置、启动通路已接，但还没有游戏镜像做端到端验证；NDS/3DS/Wii U 仅清单
+- 系统模式（NGC IPL / Wii Menu / Wii U Menu）需要用户自备 IPL / NAND；NGC 的 IPL 当前无效，入口暂不开放
 - 没有安装包，目前从源码运行
 - 抓屏要求窗口可见；最小化时不抓
 

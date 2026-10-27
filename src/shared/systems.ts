@@ -32,9 +32,9 @@ export const SYSTEMS: SystemDef[] = [
   { id: 'sfc',   name: 'Super Famicom',     short: 'SFC',   year: 1990, kind: '家用机', family: 'nintendo', engine: 'ares',     image: 'consoles/sfc.webp',  state: 'ready' },
   { id: 'n64',   name: 'Nintendo 64',       short: 'N64',   year: 1996, kind: '家用机', family: 'nintendo', engine: 'ares',     image: 'consoles/n64.webp',  state: 'ready' },
   { id: 'gba',   name: 'Game Boy Advance',  short: 'GBA',   year: 2001, kind: '掌机',   family: 'nintendo', engine: 'mgba',     image: 'consoles/gba.webp',  state: 'ready', note: 'BIOS 开机动画随游戏启动' },
-  { id: 'ngc',   name: 'Nintendo GameCube', short: 'NGC',   year: 2001, kind: '家用机', family: 'nintendo', engine: 'dolphin',  image: 'consoles/ngc.webp',  state: 'ready', systemMode: 'IPL 系统菜单', note: 'IPL 系统菜单可用' },
+  { id: 'ngc',   name: 'Nintendo GameCube', short: 'NGC',   year: 2001, kind: '家用机', family: 'nintendo', engine: 'dolphin',  image: 'consoles/ngc.webp',  state: 'ready', note: '需自备游戏镜像；IPL 系统菜单待有效 IPL' },
   { id: 'nds',   name: 'Nintendo DS',       short: 'NDS',   year: 2004, kind: '掌机',   family: 'nintendo', engine: 'melonds',  image: 'consoles/nds.webp',  state: 'ready', systemMode: 'DS 固件菜单' },
-  { id: 'wii',   name: 'Nintendo Wii',      short: 'Wii',   year: 2006, kind: '家用机', family: 'nintendo', engine: 'dolphin',  image: 'consoles/wii.webp',  state: 'ready', systemMode: 'Wii Menu' },
+  { id: 'wii',   name: 'Nintendo Wii',      short: 'Wii',   year: 2006, kind: '家用机', family: 'nintendo', engine: 'dolphin',  image: 'consoles/wii.webp',  state: 'ready', note: '需自备游戏镜像；Wii Menu 待 NAND' },
   { id: '3ds',   name: 'Nintendo 3DS',      short: '3DS',   year: 2011, kind: '掌机',   family: 'nintendo', engine: 'citra',    image: 'consoles/3ds.webp',  state: 'ready', systemMode: 'HOME Menu', note: 'HOME Menu 需系统文件' },
   { id: 'wiiu',  name: 'Wii U',             short: 'Wii U', year: 2012, kind: '家用机', family: 'nintendo', engine: 'cemu',     image: 'consoles/wiiu.webp', state: 'warn', systemMode: 'Wii U Menu', note: '需导入 MLC 与密钥' },
 

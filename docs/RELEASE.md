@@ -140,7 +140,8 @@ fileAssociations:
 | --- | --- | --- |
 | mGBA（内置，MPL 2.0） | 安装目录 `resources/engines/mgba/` | 随版本走，开箱即用，约 41.5 MB |
 | ares（内置，ISC） | 安装目录 `resources/engines/ares/` | FC/SFC/N64 三合一，约 42.6 MB（已去掉 `Shaders/`） |
-| Dolphin / Cemu（重，闭源/大） | 用户目录 `%APPDATA%\Nest\engines\` | 不随包分发，避开许可和体积 |
+| Dolphin（内置，GPLv2+） | 安装目录 `resources/engines/dolphin/` | NGC/Wii，约 57 MB；必须随包带 VC++ 14.51 的 4 个 DLL |
+| Cemu（闭源，重） | 用户目录 `%APPDATA%\Nest\engines\` | 不随包分发，避开许可和体积 |
 | 用户指定路径 | 记在 `library.json` 的 settings 里 | 兜底 |
 
 探测顺序（`EngineRegistry`）：**用户目录 → 安装目录 → 系统安装路径**。
@@ -179,8 +180,9 @@ npm run dist               # 产出 release\Nest-<version>-Setup.exe
 | Electron 运行时 | ~90 MB |
 | mGBA 0.10.5 | 41.5 MB |
 | ares v148（FC/SFC/N64） | 42.6 MB |
+| Dolphin 2609a（NGC/Wii） | 57 MB |
 | 应用代码 + 资源 | ~5 MB |
-| **安装包（LZMA 压缩后）** | **约 130–150 MB** |
+| **安装包（LZMA 压缩后）** | **约 190–220 MB** |
 
 如果嫌大：mGBA 的 `shaders/`、`scripts/`、`licenses/` 只有几 MB，可精简；但 `licenses/` **不能删**（MPL 2.0 要求保留）。
 

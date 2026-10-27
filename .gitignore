@@ -13,3 +13,4 @@ coverage/
 .roms/
 .roms-fc-sfc/
 resources/engines/fceux/fceux.cfg
+.roms-ngc/

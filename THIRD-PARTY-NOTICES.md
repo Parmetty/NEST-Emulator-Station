@@ -25,6 +25,20 @@ Nest's license.
     is exactly the emulated screen (no chrome in cover captures);
   - the unused `Shaders/` directory was removed to cut 63 MB of CRT filter assets.
 
+### Dolphin 2609a — `resources/engines/dolphin/`
+
+- Project: https://dolphin-emu.org/ · Source: https://github.com/dolphin-emu/dolphin
+- License: **GPLv2+** (aggregate GPLv3-compatible) — see `resources/engines/dolphin/COPYING`
+  and `resources/engines/dolphin/Licenses/`
+- Bundles Qt 6 runtime DLLs (LGPLv3), also documented under that folder.
+- Covers NGC and Wii. Redistributed unmodified, except: `DolphinTool.exe` and
+  `Updater.exe` were removed (not used for launching).
+- The Microsoft Visual C++ 2015-2022 x64 runtime DLLs (`msvcp140.dll`,
+  `vcruntime140.dll`, `vcruntime140_1.dll`, `concrt140.dll`) are copied next to
+  `Dolphin.exe` on purpose: this machine's `System32` has an older `msvcp140.dll`
+  that makes Dolphin crash at startup. Microsoft permits redistributing these DLLs.
+  See https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist
+
 ## Runtime dependencies (installed via npm, not vendored here)
 
 | Package | License |
