@@ -32,6 +32,35 @@ function installFileLogging(): void {
 let mainWindow: BrowserWindow | null = null;
 let services: Services | null = null;
 
+/* --------------------------------------------------- single instance lock */
+/**
+ * Launching Nest.bat twice used to start two Electrons on the same
+ * `--user-data-dir`. They fight over the Chromium profile and one of them can
+ * sit forever without a visible window, which reads as "Nest didn't open".
+ * The first instance keeps the lock; later ones bring it to the front and exit.
+ *
+ * Automated runs (`--smoke`, `--shot=`, `--trylaunch=`, …) skip the lock so a
+ * stray window never blocks the test harness.
+ */
+const DEV_RUN = /^--(smoke|flow|selftest|trylaunch|shot=|dump=|scan=|shelf=|select=|settings|hold)/.test(
+  process.argv.slice(1).find((arg) => arg.startsWith('--')) ?? '',
+);
+
+const ownsInstance = DEV_RUN ? true : app.requestSingleInstanceLock();
+
+if (!ownsInstance) {
+  console.log('[nest] another instance owns the profile; exiting this one');
+  app.quit();
+} else if (!DEV_RUN) {
+  app.on('second-instance', () => {
+    console.log('[nest] second-instance: focusing the existing window');
+    if (!mainWindow) return;
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    if (!mainWindow.isVisible()) mainWindow.show();
+    mainWindow.focus();
+  });
+}
+
 /* ---------------------------------------------------- cover screenshots */
 /**
  * Covers come from the emulator itself, not from a screen grab: mGBA writes a
@@ -155,7 +184,7 @@ function createWindow(): BrowserWindow {
     minWidth: 1024,
     minHeight: 640,
     center: true,
-    show: false,
+    show: true,
     backgroundColor: '#08080a',
     autoHideMenuBar: true,
     titleBarStyle: 'hidden',
@@ -167,11 +196,14 @@ function createWindow(): BrowserWindow {
       sandbox: false,
     },
   });
-  console.log('[nest] window: constructed');
+  console.log('[nest] window: constructed (visible immediately)');
 
+  // Show first, paint second. `ready-to-show` can take a while when antivirus
+  // is scanning the renderer bundle; hiding until then is what makes a normal
+  // launch look like "nothing happened".
   win.once('ready-to-show', () => {
     console.log('[nest] window: ready-to-show');
-    win.show();
+    win.focus();
   });
 
   win.webContents.on('render-process-gone', (_e, details) => {
@@ -481,10 +513,12 @@ async function boot(): Promise<void> {
   }
 }
 
-app.whenReady().then(boot).catch((err) => {
-  console.error('[nest] boot failed', err);
-  app.exit(1);
-});
+if (ownsInstance) {
+  app.whenReady().then(boot).catch((err) => {
+    console.error('[nest] boot failed', err);
+    app.exit(1);
+  });
+}
 
 app.on('window-all-closed', () => {
   services?.supervisor.stopAll();

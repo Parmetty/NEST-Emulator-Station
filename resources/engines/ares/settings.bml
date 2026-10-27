@@ -207,7 +207,7 @@ Nintendo64
         Left: ;;
         Right: ;;
   Visible: true
-  Path: E:/workstop/
+  Path: E:/workstop/nest/.roms-fc-sfc/
 GameBoyAdvance
   Player: false
   Input
@@ -294,8 +294,8 @@ MegaDrive
   Visible: true
   Path
 Recent
-  Game-1: Nintendo 64;E:/workstop/zelda-majoras-mask-cn.n64
-  Game-2
+  Game-1: Nintendo 64;E:/workstop/nest/.roms-fc-sfc/zelda-majoras-mask-cn.n64
+  Game-2: Nintendo 64;E:/workstop/zelda-majoras-mask-cn.n64
   Game-3
   Game-4
   Game-5
