@@ -101,7 +101,7 @@ npm run smoke     # 窗口 + IPC + 渲染自检
 | P1 | 扫描器 + GBA 全链路 + 内置 mGBA | ✅ |
 | P1.2 | 封面、右键移除、运行中高亮 | ✅ |
 | P2 | FC / SFC / N64 闭环 ✅（ares）；固件校验、每游戏设置、存档备份未做 | ✅ |
-| P3 | Dolphin 内置 ✅；NGC 直读待镜像验证、Wii Menu 待 NAND | |
+| P3 | Dolphin 内置 ✅；NGC 直读已验证、Wii Menu 已可用；Wii 直读待镜像验证 | |
 | P4 | Cemu、MLC/keys、Wii U Menu | |
 | P5 | 手柄导航、滤镜、首次启动向导、安装包 | |
 
@@ -110,7 +110,7 @@ npm run smoke     # 窗口 + IPC + 渲染自检
 
 ## 已知限制
 
-- GBA / FC / SFC / N64 已验证可玩；NGC/Wii 的 Dolphin 已内置、启动通路已接，但还没有游戏镜像做端到端验证；NDS/3DS/Wii U 仅清单
+- GBA / FC / SFC / N64 已验证可玩；NGC 直读已用真实 1.4 GB 镜像验证，Wii 直读代码就绪但尚无镜像验证；NDS/3DS/Wii U 仅清单
 - 系统模式：**Wii Menu 已可用**（自备 System Menu WAD 放 `%APPDATA%\Nest\dolphin\wii-menu.wad`，走命令行、无打扰）；
   **NGC「IPL 系统菜单」为实验性**（自备有效 IPL 放 `%APPDATA%\Nest\dolphin\GC\USA\IPL.bin`，通过 GUI 自动化进入）
 - 没有安装包，目前从源码运行

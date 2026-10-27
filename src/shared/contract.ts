@@ -78,8 +78,8 @@ export const engineManifestSchema = z.object({
 
   /**
    * Width/height of the emulated screen inside the window, used to crop cover
-   * captures. Omit when the emulator already fills its client area exactly
-   * (FCEUX stretches to fit), so no cropping happens.
+   * captures. Omit when the client area already is the screen (ares with the
+   * status bar disabled, Dolphin), so no cropping happens.
    */
   captureAspect: z.number().positive().optional(),
 

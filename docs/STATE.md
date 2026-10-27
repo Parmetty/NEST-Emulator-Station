@@ -128,7 +128,7 @@ NEST_FAKE_ENGINE=1 node tools/run.mjs . --no-sandbox --user-data-dir=.profile \
 - 首页：四区布局、时间线排序、平台切换标尺、确认框、键鼠双通道（接真实 IPC）
 - 诊断开关：`--smoke`、`--shot`、`--dump`
 - 视觉基准：`docs/mock-v1/`
-- 测试 15 条 + 类型检查 + 构建
+- 测试 16 条 + 类型检查 + 构建
 
 ## 更远的路
 

@@ -3,7 +3,7 @@ import { createReadStream } from 'node:fs';
 import { readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 
-/** Extensions we can name with confidence. Ambiguous containers (iso/gcm/wbfs) land in P2. */
+/** Extension → system. .iso is ambiguous (GC/PS2/…); PS platforms are locked, so it maps to NGC. */
 export const EXT_TO_SYSTEM: Record<string, string> = {
   gba: 'gba',
   agb: 'gba',
