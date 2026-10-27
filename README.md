@@ -5,7 +5,7 @@
 
 ![Nest 首页](shots/app.png)
 
-> 当前：**beta 0.2** —— Windows 桌面版，GBA / FC / SFC 都已经可以从扫描到游玩跑通。
+> 当前：**beta 0.2** —— Windows 桌面版，GBA / FC / SFC / N64 都已经可以从扫描到游玩跑通。
 
 ## 现在能做什么
 
@@ -100,7 +100,7 @@ npm run smoke     # 窗口 + IPC + 渲染自检
 | P0 | 骨架、IPC、引擎清单、进程监管 | ✅ |
 | P1 | 扫描器 + GBA 全链路 + 内置 mGBA | ✅ |
 | P1.2 | 封面、右键移除、运行中高亮 | ✅ |
-| P2 | FC / SFC 闭环 ✅；N64、固件校验、每游戏设置、存档备份 | 进行中 |
+| P2 | FC / SFC / N64 闭环 ✅（ares）；固件校验、每游戏设置、存档备份未做 | ✅ |
 | P3 | Dolphin、NAND 导入、Wii Menu | |
 | P4 | Cemu、MLC/keys、Wii U Menu | |
 | P5 | 手柄导航、滤镜、首次启动向导、安装包 | |
@@ -110,7 +110,7 @@ npm run smoke     # 窗口 + IPC + 渲染自检
 
 ## 已知限制
 
-- GBA / FC / SFC 已接完整链路；N64 及之后的主机还只有引擎清单和界面
+- GBA / FC / SFC / N64 已接完整链路；NGC 及之后的主机还只有引擎清单和界面
 - 系统模式（Wii Menu / Wii U Menu / NGC IPL）还没在真机上验证
 - 没有安装包，目前从源码运行
 - 抓屏要求窗口可见；最小化时不抓

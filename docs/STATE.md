@@ -2,7 +2,7 @@
 
 > 新会话开场只需读这一份，再读 `PLAN.md` 与 `DECISIONS.md`。
 >
-> **发布状态：beta 0.2**（tag `v0.2.0-beta.1`）—— Windows 桌面版，GBA 全链路可玩。
+> **发布状态：beta 0.2**（tag `v0.2.0-beta.1`）—— Windows 桌面版，GBA / FC / SFC / N64 全链路可玩。
 
 ## 进度
 
@@ -12,7 +12,7 @@
 | P1 扫描器 + GBA 全链路 | ✅ 完成 |
 | P1.1 内置 mGBA + 启动设置 | ✅ 完成 |
 | P1.2 封面 / 右键移除 / 运行中高亮 | ✅ 完成 |
-| P2 FC + SFC + N64 闭环 | ✅ 完成 |
+| P2 FC + SFC + N64 闭环 | ✅ 完成（闭环）；固件校验 / 每游戏设置 / 存档备份待做 |
 | P3 NGC + Wii | 未开始 |
 
 ## P2 已完成的部分
@@ -35,6 +35,8 @@ node tools/run.mjs . --no-sandbox --user-data-dir=.profile --scan=.roms-fc-sfc -
 node tools/run.mjs . --no-sandbox --user-data-dir=.profile --scan=.roms-fc-sfc --trylaunch=sfc --hold=10000
 node tools/run.mjs . --no-sandbox --user-data-dir=.profile --scan=.roms-fc-sfc --trylaunch=n64 --hold=12000
 ```
+
+三条验证命令都走随包 ares（`resources/engines/ares/`）；GBA 走随包 mGBA，验证见 P1.1 / P1.2。
 
 实测封面尺寸：FC 800×576、SFC 750×576、N64 768×576（均为游戏画面本身）。
 
@@ -62,7 +64,6 @@ node tools/run.mjs . --no-sandbox --user-data-dir=.profile --scan=.roms --trylau
 # -> [nest] cover saved for <id> from shot-....png
 # 封面尺寸 480x320（GBA 3:2，无窗口边框/菜单栏）
 ```
-| P3–P5 | 未开始 |
 
 ## P1.1 交付
 
@@ -99,7 +100,7 @@ NEST_FAKE_ENGINE=1 node tools/run.mjs . --no-sandbox --user-data-dir=.profile \
 ## 已完成
 
 - Electron 外壳：窗口、preload、IPC（zod 校验）、单实例数据目录
-- 15 份引擎清单（9 台任天堂 + 6 个预留平台）
+- 13 份引擎清单（内置 mGBA / ares + 10 份探测与预留 + fake）
 - 进程监管：启动 / 运行 / 正常退出 / 崩溃 / 强杀，全部有事件
 - JSON 库：原子写、收藏、最近游玩
 - 首页：四区布局、时间线排序、平台切换标尺、确认框、键鼠双通道（接真实 IPC）
@@ -109,9 +110,8 @@ NEST_FAKE_ENGINE=1 node tools/run.mjs . --no-sandbox --user-data-dir=.profile \
 
 ## 更远的路
 
-1. N64：ares / mupen64plus，需确认 CLI 与控制器配置
-2. DAT 匹配（No-Intro SHA-1）与标题修正
-3. 每游戏覆盖设置、存档备份、手柄映射
+1. DAT 匹配（No-Intro SHA-1）与标题修正
+2. 每游戏覆盖设置、存档备份、手柄映射
 
 ## 环境坑（本机）
 

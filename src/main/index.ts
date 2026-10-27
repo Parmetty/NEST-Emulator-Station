@@ -42,9 +42,9 @@ let services: Services | null = null;
  * Automated runs (`--smoke`, `--shot=`, `--trylaunch=`, …) skip the lock so a
  * stray window never blocks the test harness.
  */
-const DEV_RUN = /^--(smoke|flow|selftest|trylaunch|shot=|dump=|scan=|shelf=|select=|settings|hold)/.test(
-  process.argv.slice(1).find((arg) => arg.startsWith('--')) ?? '',
-);
+const DEV_FLAG = /^--(smoke|flow|selftest|trylaunch|shot=|dump=|scan=|shelf=|select=|settings|hold)/;
+const DEV_RUN = process.argv.slice(1).some((arg) => DEV_FLAG.test(arg));
+if (DEV_RUN) console.log('[nest] dev run: single instance lock bypassed');
 
 const ownsInstance = DEV_RUN ? true : app.requestSingleInstanceLock();
 
@@ -63,13 +63,14 @@ if (!ownsInstance) {
 
 /* ---------------------------------------------------- cover screenshots */
 /**
- * Covers come from the emulator itself, not from a screen grab: mGBA writes a
- * native-resolution PNG of the emulated screen (240x160 for GBA) when it gets
- * its screenshot hotkey. That is the only faithful "what the console showed"
- * without guessing about window chrome or letterboxing.
+ * Covers come from the standalone capture tool, not from the emulator: while a
+ * game runs, `resources/tools/nest-capture.exe` grabs the client area of the
+ * engine window every few seconds (see D15). When the engine exits, the newest
+ * frame is promoted to `covers/<gameId>.png`.
  *
- * mGBA is launched with `-C screenshotPath=<userData>/shots`, and a tiny
- * PowerShell helper presses F12 every few seconds while the game runs.
+ * The tool only stores a frame when the engine window is actually in the
+ * foreground, so a frame grabbed through another window can never become a
+ * cover. Per-engine `captureAspect` in the manifest trims frontend chrome.
  */
 const captureHelpers = new Map<string, ChildProcess>();
 

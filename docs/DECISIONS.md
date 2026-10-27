@@ -19,6 +19,8 @@
 
 **否掉**：应用内一键下载托管。
 
+**后续变更**：D13 起 mGBA（MPL 2.0）与 ares（ISC）已随包内置（`resources/engines/`）；本条只约束 Dolphin / Cemu 等不随包的重引擎。
+
 ## D3 · Electron + React + TypeScript
 
 **结论**：electron-vite 构建，渲染进程 contextIsolation 开、nodeIntegration 关，IPC 入参全量 zod 校验。
