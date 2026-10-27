@@ -1,0 +1,10 @@
+# Engine payloads are copied byte-for-byte from upstream releases; never let
+# git rewrite their line endings (Dolphin's Sys/ has thousands of .ini files and
+# binary blobs, and CRLF conversion both floods commit output and can corrupt
+# files that upstream checksums).
+resources/engines/** -text
+
+# Runtime binaries and the capture tool are binary.
+resources/tools/** -text
+resources/engines/**/*.exe -text
+resources/engines/**/*.dll -text
