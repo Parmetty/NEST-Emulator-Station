@@ -207,7 +207,7 @@ Nintendo64
         Left: ;;
         Right: ;;
   Visible: true
-  Path: E:/workstop/nest/.roms-fc-sfc/
+Path
 GameBoyAdvance
   Player: false
   Input
@@ -225,7 +225,7 @@ GameBoyAdvance
         Start: ;;
         Rumble: ;;
   Visible: true
-  Path
+Path
   Firmware
     BIOS.World
 MegaDrive
@@ -292,10 +292,10 @@ MegaDrive
         Middle: ;;
         Start: ;;
   Visible: true
-  Path
+Path
 Recent
-  Game-1: Nintendo 64;E:/workstop/nest/.roms-fc-sfc/zelda-majoras-mask-cn.n64
-  Game-2: Nintendo 64;E:/workstop/zelda-majoras-mask-cn.n64
+  Game-1
+  Game-2
   Game-3
   Game-4
   Game-5
@@ -543,7 +543,7 @@ Arcade
         リーチ: ;;
         ロン: ;;
   Visible: true
-  Path
+Path
 Atari2600
   Input
     Atari.2600
@@ -568,7 +568,7 @@ Atari2600
         Right: ;;
         Fire: ;;
   Visible: true
-  Path
+Path
 WonderSwan
   Input
     WonderSwan
@@ -585,7 +585,7 @@ WonderSwan
         A: ;;
         Start: ;;
   Visible: true
-  Path
+Path
 WonderSwanColor
   Input
     WonderSwan.Color
@@ -602,7 +602,7 @@ WonderSwanColor
         A: ;;
         Start: ;;
   Visible: true
-  Path
+Path
 PocketChallengeV2
   Input
     Pocket.Challenge.V2
@@ -617,7 +617,7 @@ PocketChallengeV2
         View: ;;
         Escape: ;;
   Visible: true
-  Path
+Path
 ColecoVision
   Input
     Controller.Port.1
@@ -661,7 +661,7 @@ ColecoVision
         Star: ;;
         Pound: ;;
   Visible: true
-  Path
+Path
   Firmware
     BIOS.World
 Dendy
@@ -695,7 +695,7 @@ Dendy
         Y: ;;
         Trigger: ;;
   Visible: true
-  Path
+Path
 MSX
   Input
     Controller.Port.1
@@ -729,7 +729,7 @@ MSX
           Lo: ;;
           Hi: ;;
   Visible: true
-  Path
+Path
   Firmware
     BIOS.Japan
 MSX2
@@ -765,7 +765,7 @@ MSX2
           Lo: ;;
           Hi: ;;
   Visible: true
-  Path
+Path
   Firmware
     MAIN.Japan
     SUB.Japan
@@ -910,7 +910,7 @@ PCEngine
         Select: ;;
         Run: ;;
   Visible: true
-  Path
+Path
 PCEngineCD
   Input
     Controller.Port
@@ -1052,7 +1052,7 @@ PCEngineCD
         Select: ;;
         Run: ;;
   Visible: true
-  Path
+Path
   Firmware
     System-Card-1.0.Japan
     System-Card-3.0.Japan
@@ -1199,7 +1199,7 @@ SuperGrafx
         Select: ;;
         Run: ;;
   Visible: true
-  Path
+Path
 SuperGrafxCD
   Input
     Controller.Port
@@ -1341,7 +1341,7 @@ SuperGrafxCD
         Select: ;;
         Run: ;;
   Visible: true
-  Path
+Path
   Firmware
     Arcade-Card.Japan
 MyVision
@@ -1368,7 +1368,7 @@ MyVision
         13: ;;
         14: ;;
   Visible: true
-  Path
+Path
 Nintendo64DD
   Input
     Controller.Port.1
@@ -1500,7 +1500,7 @@ Nintendo64DD
         Left: ;;
         Right: ;;
   Visible: true
-  Path
+Path
   Firmware
     BIOS.Japan
     BIOS.US
@@ -1538,7 +1538,7 @@ Famicom
         Y: ;;
         Trigger: ;;
   Visible: true
-  Path
+Path
 SuperFamicom
   Input
     Controller.Port.1
@@ -1694,7 +1694,7 @@ SuperFamicom
         1: ;;
         2: ;;
   Visible: true
-  Path
+Path
 GameBoy
   Input
     Game.Boy
@@ -1709,7 +1709,7 @@ GameBoy
         Start: ;;
         Rumble: ;;
   Visible: true
-  Path
+Path
 GameBoyColor
   Input
     Game.Boy.Color
@@ -1724,7 +1724,7 @@ GameBoyColor
         Start: ;;
         Rumble: ;;
   Visible: true
-  Path
+Path
 FamicomDiskSystem
   Input
     Controller.Port.1
@@ -1750,7 +1750,7 @@ FamicomDiskSystem
         Start: ;;
         Microphone: ;;
   Visible: true
-  Path
+Path
   Firmware
     BIOS.Japan
 LaserActiveSEGAPAC
@@ -1784,7 +1784,7 @@ LaserActiveSEGAPAC
         Mode: ;;
         Start: ;;
   Visible: true
-  Path
+Path
   Firmware
     BIOS.US
     BIOS.Japan
@@ -1929,7 +1929,7 @@ LaserActiveNECPAC
         Select: ;;
         Run: ;;
   Visible: true
-  Path
+Path
   Firmware
     PAC-N10.US
     PAC-N1.Japan
@@ -1950,7 +1950,7 @@ NeoGeoPocketColor
         Power: ;;
         Debugger: ;;
   Visible: true
-  Path
+Path
   Firmware
     BIOS.World
 NeoGeoPocket
@@ -1967,7 +1967,7 @@ NeoGeoPocket
         Power: ;;
         Debugger: ;;
   Visible: true
-  Path
+Path
   Firmware
     BIOS.World
 NeoGeoMVS
@@ -1997,7 +1997,7 @@ NeoGeoMVS
         Select: ;;
         Start: ;;
   Visible: true
-  Path
+Path
   Firmware
     BIOS.World
 NeoGeoAES
@@ -2027,7 +2027,7 @@ NeoGeoAES
         Select: ;;
         Start: ;;
   Visible: true
-  Path
+Path
   Firmware
     BIOS.World
 MegaCD
@@ -2093,7 +2093,7 @@ MegaCD
         Middle: ;;
         Start: ;;
   Visible: true
-  Path
+Path
   Firmware
     BIOS.US
     BIOS.Japan
@@ -2143,7 +2143,7 @@ MegaCD32X
         Middle: ;;
         Start: ;;
   Visible: true
-  Path
+Path
 Mega32X
   Input
     Controller.Port.1
@@ -2189,7 +2189,7 @@ Mega32X
         Middle: ;;
         Start: ;;
   Visible: true
-  Path
+Path
 GameGear
   Input
     Game.Gear
@@ -2202,7 +2202,7 @@ GameGear
         2: ;;
         Start: ;;
   Visible: true
-  Path
+Path
   Firmware
     BIOS.World
 MasterSystem
@@ -2309,7 +2309,7 @@ MasterSystem
         Middle: ;;
         Start: ;;
   Visible: true
-  Path
+Path
   Firmware
     BIOS.US
     BIOS.Japan
@@ -2333,7 +2333,7 @@ SC-3000
         1: ;;
         2: ;;
   Visible: true
-  Path
+Path
 SG-1000
   Input
     Controller.Port.1
@@ -2353,7 +2353,7 @@ SG-1000
         1: ;;
         2: ;;
   Visible: true
-  Path
+Path
 PlayStation
   Input
     Controller.Port.1
@@ -2465,7 +2465,7 @@ PlayStation
           Lo: ;;
           Hi: ;;
   Visible: true
-  Path
+Path
   Firmware
     BIOS.US
     BIOS.Japan
@@ -2494,7 +2494,7 @@ Hotkey
   ToggleShaderDisplay: ;;
 ZXSpectrum
   Visible: true
-  Path
+Path
 ZXSpectrum128
   Visible: true
-  Path
+Path
