@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { spawn } from 'node:child_process';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain, nativeImage, shell } from 'electron';
@@ -221,6 +222,12 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
       `cmd="${command}" args=${JSON.stringify(args)} cwd="${path.dirname(command)}"`,
   );
 
+  // Dolphin boots the IPL before a disc when SkipIPL=false, and then refuses to
+  // start if the *disc region's* IPL is missing ("找不到 GC IPL"). Direct play
+  // never needs it, so make sure the setting stays sane even if a previous
+  // experiment (or the user) turned it on.
+  if (engine.id === 'dolphin') ensureDolphinConfig();
+
   const sessionId = randomUUID();
   const game = rom ? services.store.games().find((g) => g.path === rom) : undefined;
   const started = services.supervisor.start({
@@ -290,4 +297,48 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   }
 
   return { ok: true, sessionId };
+}
+
+/**
+ * Dolphin keeps its settings in `<userData>/dolphin/Config/Dolphin.ini`.
+ * Only the keys Nest has an opinion about are managed here; everything else is
+ * left untouched so settings changed in Dolphin's own UI survive.
+ */
+function ensureDolphinConfig(): void {
+  const dir = path.join(app.getPath('userData'), 'dolphin', 'Config');
+  const file = path.join(dir, 'Dolphin.ini');
+  const managed: Array<[string, string, string]> = [
+    ['Core', 'SkipIPL', 'True'],
+    ['Analytics', 'Enabled', 'False'],
+    ['Analytics', 'PermissionAsked', 'True'],
+  ];
+
+  let text = '';
+  try {
+    text = readFileSync(file, 'utf8');
+  } catch {
+    text = '';
+  }
+
+  for (const [section, key, value] of managed) {
+    const header = `[${section}]`;
+    const line = `${key} = ${value}`;
+    const sectionIndex = text.indexOf(header);
+    if (sectionIndex < 0) {
+      if (text.length > 0 && !text.endsWith('\n')) text += '\n';
+      text += `${header}\n${line}\n`;
+      continue;
+    }
+    const after = text.indexOf('\n[', sectionIndex + header.length);
+    const end = after < 0 ? text.length : after;
+    const block = text.slice(sectionIndex, end);
+    const keyPattern = new RegExp(`^${key}\\s*=.*$`, 'm');
+    const replaced = keyPattern.test(block)
+      ? block.replace(keyPattern, line)
+      : `${block.replace(/\s+$/, '')}\n${line}\n`;
+    text = text.slice(0, sectionIndex) + replaced + text.slice(end);
+  }
+
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(file, text, 'utf8');
 }

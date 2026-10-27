@@ -60,7 +60,9 @@ node tools/run.mjs . --no-sandbox --user-data-dir=.profile --scan=.roms-fc-sfc -
   - `Dolphin.exe -u <dir> -b -e <wii-menu.wad>` → 窗口标题出现 `Wii 菜单 (0000000100000002)`，无需安装 WAD
   - 用户自备 WAD 放 `<userData>/dolphin/wii-menu.wad`（**不进仓库**）
   - 清单用 `systemArgsBySystem.wii` 按主机覆盖参数，GC 仍走 GUI 自动化
-- **GC 系统模式（实验性）**：UIA 助手已加防护（单次尝试、异常不外泄、失败必收起菜单），但 Qt 菜单展开瞬间会抓输入，属已知副作用；NGC 暂时保留为实验入口
+- **GC 系统模式（已搁置）**：UIA 助手虽有防护，但实测又慢又不可靠，且 Qt 菜单展开会抓输入；`systems.ts` 已撤掉 NGC 的 `systemMode` 入口，等 Dolphin 魔改出命令行入口再做（见 D19 后续变更）
+- **Dolphin 配置托管**：`ensureDolphinConfig()` 在每次启动前确保 `[Core] SkipIPL = True`（直读不需要 IPL）并关掉统计上报
+  - 踩过的坑：测试时改成 `SkipIPL=False`，日版游戏（`GVCJ08`）就会去找 `GC/JAP/IPL.bin` 并报「找不到 GC IPL」
 
 ## 下一步
 

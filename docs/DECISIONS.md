@@ -168,3 +168,4 @@ GameCube 确实有 IPL（Boot ROM）菜单，虽然少见但真实存在。3DS /
 **后续变更（Wii）**：Dolphin 可以直接把 System Menu 的 WAD 当启动目标——-b -e <wii-menu.wad> 即可进 Wii 菜单，完全静默、零打扰，比 GC 那条路干净得多。因此清单新增 systemArgsBySystem：Wii 走 WAD 直启，GC 保留 UIA 菜单（实验性）。
 
 **UIA 的副作用（实测）**：Qt 菜单展开的瞬间会抓鼠标/键盘，用户此时操作会感到被抢。助手已改为单次尝试、异常不外泄、失败必收起菜单；但根本上这是 GUI 自动化，NGC 的入口标注为实验性，直到 Dolphin 提供命令行入口。
+**后续变更（NGC 暂停）**：UIA 实测又慢又不可靠（Qt 菜单展开会抢占输入），NGC 的 `systemMode` 入口已从 `systems.ts` 撤掉。直读不受影响：Nest 每次启动前把 Dolphin 的 `SkipIPL` 设为 True，所以不需要 IPL；只有当用户真的想进 GC 主菜单时才需要 IPL，而那条路要等 Dolphin 提供命令行入口（或我们魔改构建）。
