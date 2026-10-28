@@ -1,0 +1,2500 @@
+Video
+  Driver: OpenGL 3.2
+  Monitor: Primary
+  Format: ARGB24
+  Exclusive: false
+  Blocking: false
+  PresentSRGB: false
+  ThreadedRenderer: true
+  NativeFullScreen: false
+  Flush: false
+  Shader: None
+  WindowWidth: 800
+  WindowHeight: 576
+  Output: Scale
+  FixedScale: 2
+  AspectCorrectionMode: Standard
+  AdaptiveSizing: true
+  AutoCentering: false
+  Luminance: 1.0
+  Saturation: 1.0
+  Gamma: 1.0
+  ColorBleed: false
+  ColorEmulation: true
+  DeepBlackBoost: false
+  InterframeBlending: true
+  Overscan: false
+  PixelAccuracy: false
+  Quality: SD
+  Supersampling: false
+  DisableVideoInterfaceProcessing: false
+  WeaveDeinterlacing: true
+Audio
+  Driver: WASAPI
+  Device: Default
+  Frequency: 48000
+  Latency: 0
+  Exclusive: false
+  Blocking: true
+  Dynamic: false
+  Mute: false
+  Volume: 1.0
+  Balance: 0.0
+Input
+  Driver: SDL
+  Defocus: Pause
+Boot
+  Fast: false
+  Debugger: false
+  AwaitGDBClient: false
+  Prefer: NTSC-U
+General
+  ShowStatusBar: false
+  Rewind: false
+  RunAhead: false
+  AutoSaveMemory: true
+  HomebrewMode: false
+  ForceInterpreter: false
+  NoFilePrompt: false
+Rewind
+  Length: 100
+  Frequency: 10
+Paths
+  Home
+  Firmware
+  Saves
+  Screenshots
+  Debugging
+  ArcadeRoms
+  SuperFamicom
+    GameBoy
+    BSMemory
+    SufamiTurbo
+DebugServer
+  Port: 9123
+  Enabled: false
+  UseIPv4: false
+Nintendo64
+  ExpansionPak: true
+  ControllerPakBankString: 32KiB (Default)
+  Input
+    Controller.Port.1
+      Gamepad
+        L-Up: ;;
+        L-Down: ;;
+        L-Left: ;;
+        L-Right: ;;
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        B: ;;
+        A: ;;
+        C-Up: ;;
+        C-Down: ;;
+        C-Left: ;;
+        C-Right: ;;
+        L: ;;
+        R: ;;
+        Z: ;;
+        Start: ;;
+        Rumble: ;;
+        X-Axis
+          Lo: ;;
+          Hi: ;;
+        Y-Axis
+          Lo: ;;
+          Hi: ;;
+      Mouse
+        X: ;;
+        Y: ;;
+        Left: ;;
+        Right: ;;
+    Controller.Port.2
+      Gamepad
+        L-Up: ;;
+        L-Down: ;;
+        L-Left: ;;
+        L-Right: ;;
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        B: ;;
+        A: ;;
+        C-Up: ;;
+        C-Down: ;;
+        C-Left: ;;
+        C-Right: ;;
+        L: ;;
+        R: ;;
+        Z: ;;
+        Start: ;;
+        Rumble: ;;
+        X-Axis
+          Lo: ;;
+          Hi: ;;
+        Y-Axis
+          Lo: ;;
+          Hi: ;;
+      Mouse
+        X: ;;
+        Y: ;;
+        Left: ;;
+        Right: ;;
+    Controller.Port.3
+      Gamepad
+        L-Up: ;;
+        L-Down: ;;
+        L-Left: ;;
+        L-Right: ;;
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        B: ;;
+        A: ;;
+        C-Up: ;;
+        C-Down: ;;
+        C-Left: ;;
+        C-Right: ;;
+        L: ;;
+        R: ;;
+        Z: ;;
+        Start: ;;
+        Rumble: ;;
+        X-Axis
+          Lo: ;;
+          Hi: ;;
+        Y-Axis
+          Lo: ;;
+          Hi: ;;
+      Mouse
+        X: ;;
+        Y: ;;
+        Left: ;;
+        Right: ;;
+    Controller.Port.4
+      Gamepad
+        L-Up: ;;
+        L-Down: ;;
+        L-Left: ;;
+        L-Right: ;;
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        B: ;;
+        A: ;;
+        C-Up: ;;
+        C-Down: ;;
+        C-Left: ;;
+        C-Right: ;;
+        L: ;;
+        R: ;;
+        Z: ;;
+        Start: ;;
+        Rumble: ;;
+        X-Axis
+          Lo: ;;
+          Hi: ;;
+        Y-Axis
+          Lo: ;;
+          Hi: ;;
+      Mouse
+        X: ;;
+        Y: ;;
+        Left: ;;
+        Right: ;;
+  Visible: true
+Path
+GameBoyAdvance
+  Player: false
+  Input
+    Game.Boy.Advance
+      Controls
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        B: ;;
+        A: ;;
+        L: ;;
+        R: ;;
+        Select: ;;
+        Start: ;;
+        Rumble: ;;
+  Visible: true
+Path
+  Firmware
+    BIOS.World
+MegaDrive
+  TMSS: false
+  Input
+    Controller.Port.1
+      Control.Pad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+        C: ;;
+        Start: ;;
+      Fighting.Pad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+        C: ;;
+        X: ;;
+        Y: ;;
+        Z: ;;
+        Mode: ;;
+        Start: ;;
+      Mega.Mouse
+        X: ;;
+        Y: ;;
+        Left: ;;
+        Right: ;;
+        Middle: ;;
+        Start: ;;
+    Controller.Port.2
+      Control.Pad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+        C: ;;
+        Start: ;;
+      Fighting.Pad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+        C: ;;
+        X: ;;
+        Y: ;;
+        Z: ;;
+        Mode: ;;
+        Start: ;;
+      Mega.Mouse
+        X: ;;
+        Y: ;;
+        Left: ;;
+        Right: ;;
+        Middle: ;;
+        Start: ;;
+  Visible: true
+Path
+Recent
+  Game-1
+  Game-2
+  Game-3
+  Game-4
+  Game-5
+  Game-6
+  Game-7
+  Game-8
+  Game-9
+VirtualPad1
+  Pad.Up: ;;
+  Pad.Down: ;;
+  Pad.Left: ;;
+  Pad.Right: ;;
+  Select: ;;
+  Start: ;;
+  A..South: ;;
+  B..East: ;;
+  X..West: ;;
+  Y..North: ;;
+  L-Bumper: ;;
+  R-Bumper: ;;
+  L-Trigger: ;;
+  R-Trigger: ;;
+  L-Stick..Click: ;;
+  R-Stick..Click: ;;
+  L-Up: ;;
+  L-Down: ;;
+  L-Left: ;;
+  L-Right: ;;
+  R-Up: ;;
+  R-Down: ;;
+  R-Left: ;;
+  R-Right: ;;
+  Rumble: ;;
+VirtualMouse1
+  X: ;;
+  Y: ;;
+  Left: ;;
+  Middle: ;;
+  Right: ;;
+  Extra: ;;
+VirtualPad2
+  Pad.Up: ;;
+  Pad.Down: ;;
+  Pad.Left: ;;
+  Pad.Right: ;;
+  Select: ;;
+  Start: ;;
+  A..South: ;;
+  B..East: ;;
+  X..West: ;;
+  Y..North: ;;
+  L-Bumper: ;;
+  R-Bumper: ;;
+  L-Trigger: ;;
+  R-Trigger: ;;
+  L-Stick..Click: ;;
+  R-Stick..Click: ;;
+  L-Up: ;;
+  L-Down: ;;
+  L-Left: ;;
+  L-Right: ;;
+  R-Up: ;;
+  R-Down: ;;
+  R-Left: ;;
+  R-Right: ;;
+  Rumble: ;;
+VirtualMouse2
+  X: ;;
+  Y: ;;
+  Left: ;;
+  Middle: ;;
+  Right: ;;
+  Extra: ;;
+VirtualPad3
+  Pad.Up: ;;
+  Pad.Down: ;;
+  Pad.Left: ;;
+  Pad.Right: ;;
+  Select: ;;
+  Start: ;;
+  A..South: ;;
+  B..East: ;;
+  X..West: ;;
+  Y..North: ;;
+  L-Bumper: ;;
+  R-Bumper: ;;
+  L-Trigger: ;;
+  R-Trigger: ;;
+  L-Stick..Click: ;;
+  R-Stick..Click: ;;
+  L-Up: ;;
+  L-Down: ;;
+  L-Left: ;;
+  L-Right: ;;
+  R-Up: ;;
+  R-Down: ;;
+  R-Left: ;;
+  R-Right: ;;
+  Rumble: ;;
+VirtualMouse3
+  X: ;;
+  Y: ;;
+  Left: ;;
+  Middle: ;;
+  Right: ;;
+  Extra: ;;
+VirtualPad4
+  Pad.Up: ;;
+  Pad.Down: ;;
+  Pad.Left: ;;
+  Pad.Right: ;;
+  Select: ;;
+  Start: ;;
+  A..South: ;;
+  B..East: ;;
+  X..West: ;;
+  Y..North: ;;
+  L-Bumper: ;;
+  R-Bumper: ;;
+  L-Trigger: ;;
+  R-Trigger: ;;
+  L-Stick..Click: ;;
+  R-Stick..Click: ;;
+  L-Up: ;;
+  L-Down: ;;
+  L-Left: ;;
+  L-Right: ;;
+  R-Up: ;;
+  R-Down: ;;
+  R-Left: ;;
+  R-Right: ;;
+  Rumble: ;;
+VirtualMouse4
+  X: ;;
+  Y: ;;
+  Left: ;;
+  Middle: ;;
+  Right: ;;
+  Extra: ;;
+VirtualPad5
+  Pad.Up: ;;
+  Pad.Down: ;;
+  Pad.Left: ;;
+  Pad.Right: ;;
+  Select: ;;
+  Start: ;;
+  A..South: ;;
+  B..East: ;;
+  X..West: ;;
+  Y..North: ;;
+  L-Bumper: ;;
+  R-Bumper: ;;
+  L-Trigger: ;;
+  R-Trigger: ;;
+  L-Stick..Click: ;;
+  R-Stick..Click: ;;
+  L-Up: ;;
+  L-Down: ;;
+  L-Left: ;;
+  L-Right: ;;
+  R-Up: ;;
+  R-Down: ;;
+  R-Left: ;;
+  R-Right: ;;
+  Rumble: ;;
+VirtualMouse5
+  X: ;;
+  Y: ;;
+  Left: ;;
+  Middle: ;;
+  Right: ;;
+  Extra: ;;
+Arcade
+  Input
+    Arcade
+      Controls
+        Service: ;;
+        Test: ;;
+        Player.1.Up: ;;
+        Player.1.Down: ;;
+        Player.1.Left: ;;
+        Player.1.Right: ;;
+        Player.1.Button.1: ;;
+        Player.1.Button.2: ;;
+        Player.1.Button.3: ;;
+        Player.1.Button.4: ;;
+        Player.1.Button.5: ;;
+        Player.1.Button.6: ;;
+        Player.1.Button.7: ;;
+        Player.1.Button.8: ;;
+        Player.1.Start: ;;
+        Player.1.Coin: ;;
+        Player.1.Y-Axis.-: ;;
+        Player.1.Y-Axis.+: ;;
+        Player.1.X-Axis.-: ;;
+        Player.1.X-Axis.+: ;;
+        Player.2.Up: ;;
+        Player.2.Down: ;;
+        Player.2.Left: ;;
+        Player.2.Right: ;;
+        Player.2.Button.1: ;;
+        Player.2.Button.2: ;;
+        Player.2.Button.3: ;;
+        Player.2.Button.4: ;;
+        Player.2.Button.5: ;;
+        Player.2.Button.6: ;;
+        Player.2.Button.7: ;;
+        Player.2.Button.8: ;;
+        Player.2.Start: ;;
+        Player.2.Coin: ;;
+        Player.2.Y-Axis.-: ;;
+        Player.2.Y-Axis.+: ;;
+        Player.2.X-Axis.-: ;;
+        Player.2.X-Axis.+: ;;
+        Player.1.X-Axis
+          Lo: ;;
+          Hi: ;;
+        Player.1.Y-Axis
+          Lo: ;;
+          Hi: ;;
+        Player.2.X-Axis
+          Lo: ;;
+          Hi: ;;
+        Player.2.Y-Axis
+          Lo: ;;
+          Hi: ;;
+      Mahjong
+        A: ;;
+        B: ;;
+        C: ;;
+        D: ;;
+        E: ;;
+        F: ;;
+        G: ;;
+        H: ;;
+        I: ;;
+        J: ;;
+        K: ;;
+        L: ;;
+        M: ;;
+        N: ;;
+        カン: ;;
+        ポン: ;;
+        チー: ;;
+        リーチ: ;;
+        ロン: ;;
+  Visible: true
+Path
+Atari2600
+  Input
+    Atari.2600
+      Controls
+        Reset: ;;
+        Select: ;;
+        Left.Difficulty: ;;
+        Right.Difficulty: ;;
+        TV.Type: ;;
+    Controller.Port.1
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        Fire: ;;
+    Controller.Port.2
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        Fire: ;;
+  Visible: true
+Path
+WonderSwan
+  Input
+    WonderSwan
+      Controls
+        Y1: ;;
+        Y2: ;;
+        Y3: ;;
+        Y4: ;;
+        X1: ;;
+        X2: ;;
+        X3: ;;
+        X4: ;;
+        B: ;;
+        A: ;;
+        Start: ;;
+  Visible: true
+Path
+WonderSwanColor
+  Input
+    WonderSwan.Color
+      Controls
+        Y1: ;;
+        Y2: ;;
+        Y3: ;;
+        Y4: ;;
+        X1: ;;
+        X2: ;;
+        X3: ;;
+        X4: ;;
+        B: ;;
+        A: ;;
+        Start: ;;
+  Visible: true
+Path
+PocketChallengeV2
+  Input
+    Pocket.Challenge.V2
+      Controls
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        Pass: ;;
+        Circle: ;;
+        Clear: ;;
+        View: ;;
+        Escape: ;;
+  Visible: true
+Path
+ColecoVision
+  Input
+    Controller.Port.1
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        L: ;;
+        R: ;;
+        1: ;;
+        2: ;;
+        3: ;;
+        4: ;;
+        5: ;;
+        6: ;;
+        7: ;;
+        8: ;;
+        9: ;;
+        0: ;;
+        Star: ;;
+        Pound: ;;
+    Controller.Port.2
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        L: ;;
+        R: ;;
+        1: ;;
+        2: ;;
+        3: ;;
+        4: ;;
+        5: ;;
+        6: ;;
+        7: ;;
+        8: ;;
+        9: ;;
+        0: ;;
+        Star: ;;
+        Pound: ;;
+  Visible: true
+Path
+  Firmware
+    BIOS.World
+Dendy
+  Input
+    Controller.Port.1
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        B: ;;
+        A: ;;
+        Select: ;;
+        Start: ;;
+      Zapper
+        X: ;;
+        Y: ;;
+        Trigger: ;;
+    Controller.Port.2
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        B: ;;
+        A: ;;
+        Select: ;;
+        Start: ;;
+      Zapper
+        X: ;;
+        Y: ;;
+        Trigger: ;;
+  Visible: true
+Path
+MSX
+  Input
+    Controller.Port.1
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+      Arkanoid.Vaus.Paddle
+        L-Left: ;;
+        L-Right: ;;
+        Button: ;;
+        X-Axis
+          Lo: ;;
+          Hi: ;;
+    Controller.Port.2
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+      Arkanoid.Vaus.Paddle
+        L-Left: ;;
+        L-Right: ;;
+        Button: ;;
+        X-Axis
+          Lo: ;;
+          Hi: ;;
+  Visible: true
+Path
+  Firmware
+    BIOS.Japan
+MSX2
+  Input
+    Controller.Port.1
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+      Arkanoid.Vaus.Paddle
+        L-Left: ;;
+        L-Right: ;;
+        Button: ;;
+        X-Axis
+          Lo: ;;
+          Hi: ;;
+    Controller.Port.2
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+      Arkanoid.Vaus.Paddle
+        L-Left: ;;
+        L-Right: ;;
+        Button: ;;
+        X-Axis
+          Lo: ;;
+          Hi: ;;
+  Visible: true
+Path
+  Firmware
+    MAIN.Japan
+    SUB.Japan
+PCEngine
+  Input
+    Controller.Port
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.1
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.2
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.3
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.4
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.5
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+  Visible: true
+Path
+PCEngineCD
+  Input
+    Controller.Port
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.1
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.2
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.3
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.4
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.5
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+  Visible: true
+Path
+  Firmware
+    System-Card-1.0.Japan
+    System-Card-3.0.Japan
+    System-Card-3.0.US
+    Games-Express.Japan
+SuperGrafx
+  Input
+    Controller.Port
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.1
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.2
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.3
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.4
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.5
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+  Visible: true
+Path
+SuperGrafxCD
+  Input
+    Controller.Port
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.1
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.2
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.3
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.4
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.5
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+  Visible: true
+Path
+  Firmware
+    Arcade-Card.Japan
+MyVision
+  Input
+    MyVision
+      Controls
+        UP.B: ;;
+        DOWN.C: ;;
+        LEFT.A: ;;
+        RIGHT.D: ;;
+        ACTION.E: ;;
+        1: ;;
+        2: ;;
+        3: ;;
+        4: ;;
+        5: ;;
+        6: ;;
+        7: ;;
+        8: ;;
+        9: ;;
+        10: ;;
+        11: ;;
+        12: ;;
+        13: ;;
+        14: ;;
+  Visible: true
+Path
+Nintendo64DD
+  Input
+    Controller.Port.1
+      Gamepad
+        L-Up: ;;
+        L-Down: ;;
+        L-Left: ;;
+        L-Right: ;;
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        B: ;;
+        A: ;;
+        C-Up: ;;
+        C-Down: ;;
+        C-Left: ;;
+        C-Right: ;;
+        L: ;;
+        R: ;;
+        Z: ;;
+        Start: ;;
+        Rumble: ;;
+        X-Axis
+          Lo: ;;
+          Hi: ;;
+        Y-Axis
+          Lo: ;;
+          Hi: ;;
+      Mouse
+        X: ;;
+        Y: ;;
+        Left: ;;
+        Right: ;;
+    Controller.Port.2
+      Gamepad
+        L-Up: ;;
+        L-Down: ;;
+        L-Left: ;;
+        L-Right: ;;
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        B: ;;
+        A: ;;
+        C-Up: ;;
+        C-Down: ;;
+        C-Left: ;;
+        C-Right: ;;
+        L: ;;
+        R: ;;
+        Z: ;;
+        Start: ;;
+        Rumble: ;;
+        X-Axis
+          Lo: ;;
+          Hi: ;;
+        Y-Axis
+          Lo: ;;
+          Hi: ;;
+      Mouse
+        X: ;;
+        Y: ;;
+        Left: ;;
+        Right: ;;
+    Controller.Port.3
+      Gamepad
+        L-Up: ;;
+        L-Down: ;;
+        L-Left: ;;
+        L-Right: ;;
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        B: ;;
+        A: ;;
+        C-Up: ;;
+        C-Down: ;;
+        C-Left: ;;
+        C-Right: ;;
+        L: ;;
+        R: ;;
+        Z: ;;
+        Start: ;;
+        Rumble: ;;
+        X-Axis
+          Lo: ;;
+          Hi: ;;
+        Y-Axis
+          Lo: ;;
+          Hi: ;;
+      Mouse
+        X: ;;
+        Y: ;;
+        Left: ;;
+        Right: ;;
+    Controller.Port.4
+      Gamepad
+        L-Up: ;;
+        L-Down: ;;
+        L-Left: ;;
+        L-Right: ;;
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        B: ;;
+        A: ;;
+        C-Up: ;;
+        C-Down: ;;
+        C-Left: ;;
+        C-Right: ;;
+        L: ;;
+        R: ;;
+        Z: ;;
+        Start: ;;
+        Rumble: ;;
+        X-Axis
+          Lo: ;;
+          Hi: ;;
+        Y-Axis
+          Lo: ;;
+          Hi: ;;
+      Mouse
+        X: ;;
+        Y: ;;
+        Left: ;;
+        Right: ;;
+  Visible: true
+Path
+  Firmware
+    BIOS.Japan
+    BIOS.US
+    BIOS.DEV
+Famicom
+  Input
+    Controller.Port.1
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        B: ;;
+        A: ;;
+        Select: ;;
+        Start: ;;
+        Microphone: ;;
+      Zapper
+        X: ;;
+        Y: ;;
+        Trigger: ;;
+    Controller.Port.2
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        B: ;;
+        A: ;;
+        Select: ;;
+        Start: ;;
+        Microphone: ;;
+      Zapper
+        X: ;;
+        Y: ;;
+        Trigger: ;;
+  Visible: true
+Path
+SuperFamicom
+  Input
+    Controller.Port.1
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        B: ;;
+        A: ;;
+        Y: ;;
+        X: ;;
+        L: ;;
+        R: ;;
+        Select: ;;
+        Start: ;;
+      Rumble.Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        B: ;;
+        A: ;;
+        Y: ;;
+        X: ;;
+        L: ;;
+        R: ;;
+        Select: ;;
+        Start: ;;
+        Rumble: ;;
+      Justifier
+        X: ;;
+        Y: ;;
+        Trigger: ;;
+        Start: ;;
+      Mouse
+        X: ;;
+        Y: ;;
+        Left: ;;
+        Right: ;;
+      NTT.Data.Keypad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        B: ;;
+        A: ;;
+        Y: ;;
+        X: ;;
+        L: ;;
+        R: ;;
+        Back: ;;
+        Next: ;;
+        1: ;;
+        2: ;;
+        3: ;;
+        4: ;;
+        5: ;;
+        6: ;;
+        7: ;;
+        8: ;;
+        9: ;;
+        0: ;;
+        Star: ;;
+        C: ;;
+        Pound: ;;
+        .: ;;
+        End: ;;
+      Super.Scope
+        X: ;;
+        Y: ;;
+        Trigger: ;;
+        Cursor: ;;
+        Turbo: ;;
+        Pause: ;;
+      Twin.Tap
+        1: ;;
+        2: ;;
+    Controller.Port.2
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        B: ;;
+        A: ;;
+        Y: ;;
+        X: ;;
+        L: ;;
+        R: ;;
+        Select: ;;
+        Start: ;;
+      Rumble.Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        B: ;;
+        A: ;;
+        Y: ;;
+        X: ;;
+        L: ;;
+        R: ;;
+        Select: ;;
+        Start: ;;
+        Rumble: ;;
+      Justifier
+        X: ;;
+        Y: ;;
+        Trigger: ;;
+        Start: ;;
+      Mouse
+        X: ;;
+        Y: ;;
+        Left: ;;
+        Right: ;;
+      NTT.Data.Keypad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        B: ;;
+        A: ;;
+        Y: ;;
+        X: ;;
+        L: ;;
+        R: ;;
+        Back: ;;
+        Next: ;;
+        1: ;;
+        2: ;;
+        3: ;;
+        4: ;;
+        5: ;;
+        6: ;;
+        7: ;;
+        8: ;;
+        9: ;;
+        0: ;;
+        Star: ;;
+        C: ;;
+        Pound: ;;
+        .: ;;
+        End: ;;
+      Super.Scope
+        X: ;;
+        Y: ;;
+        Trigger: ;;
+        Cursor: ;;
+        Turbo: ;;
+        Pause: ;;
+      Twin.Tap
+        1: ;;
+        2: ;;
+  Visible: true
+Path
+GameBoy
+  Input
+    Game.Boy
+      Controls
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        B: ;;
+        A: ;;
+        Select: ;;
+        Start: ;;
+        Rumble: ;;
+  Visible: true
+Path
+GameBoyColor
+  Input
+    Game.Boy.Color
+      Controls
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        B: ;;
+        A: ;;
+        Select: ;;
+        Start: ;;
+        Rumble: ;;
+  Visible: true
+Path
+FamicomDiskSystem
+  Input
+    Controller.Port.1
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        B: ;;
+        A: ;;
+        Select: ;;
+        Start: ;;
+        Microphone: ;;
+    Controller.Port.2
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        B: ;;
+        A: ;;
+        Select: ;;
+        Start: ;;
+        Microphone: ;;
+  Visible: true
+Path
+  Firmware
+    BIOS.Japan
+LaserActiveSEGAPAC
+  Input
+    Controller.Port.1
+      Fighting.Pad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+        C: ;;
+        X: ;;
+        Y: ;;
+        Z: ;;
+        Mode: ;;
+        Start: ;;
+    Controller.Port.2
+      Fighting.Pad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+        C: ;;
+        X: ;;
+        Y: ;;
+        Z: ;;
+        Mode: ;;
+        Start: ;;
+  Visible: true
+Path
+  Firmware
+    BIOS.US
+    BIOS.Japan
+LaserActiveNECPAC
+  Input
+    Controller.Port
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.1
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.2
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.3
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.4
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+    Controller.Port.5
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        II: ;;
+        I: ;;
+        Select: ;;
+        Run: ;;
+      Avenue.Pad.6
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        III: ;;
+        II: ;;
+        I: ;;
+        IV: ;;
+        V: ;;
+        VI: ;;
+        Select: ;;
+        Run: ;;
+  Visible: true
+Path
+  Firmware
+    PAC-N10.US
+    PAC-N1.Japan
+    PCE-LP1.Japan
+    System-Card-1.0.Japan
+    Games-Express.Japan
+NeoGeoPocketColor
+  Input
+    Neo.Geo.Pocket.Color
+      Controls
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+        Option: ;;
+        Power: ;;
+        Debugger: ;;
+  Visible: true
+Path
+  Firmware
+    BIOS.World
+NeoGeoPocket
+  Input
+    Neo.Geo.Pocket
+      Controls
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+        Option: ;;
+        Power: ;;
+        Debugger: ;;
+  Visible: true
+Path
+  Firmware
+    BIOS.World
+NeoGeoMVS
+  Input
+    Controller.Port.1
+      Arcade.Stick
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+        C: ;;
+        D: ;;
+        Select: ;;
+        Start: ;;
+    Controller.Port.2
+      Arcade.Stick
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+        C: ;;
+        D: ;;
+        Select: ;;
+        Start: ;;
+  Visible: true
+Path
+  Firmware
+    BIOS.World
+NeoGeoAES
+  Input
+    Controller.Port.1
+      Arcade.Stick
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+        C: ;;
+        D: ;;
+        Select: ;;
+        Start: ;;
+    Controller.Port.2
+      Arcade.Stick
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+        C: ;;
+        D: ;;
+        Select: ;;
+        Start: ;;
+  Visible: true
+Path
+  Firmware
+    BIOS.World
+MegaCD
+  Input
+    Controller.Port.1
+      Control.Pad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+        C: ;;
+        Start: ;;
+      Fighting.Pad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+        C: ;;
+        X: ;;
+        Y: ;;
+        Z: ;;
+        Mode: ;;
+        Start: ;;
+      Mega.Mouse
+        X: ;;
+        Y: ;;
+        Left: ;;
+        Right: ;;
+        Middle: ;;
+        Start: ;;
+    Controller.Port.2
+      Control.Pad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+        C: ;;
+        Start: ;;
+      Fighting.Pad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+        C: ;;
+        X: ;;
+        Y: ;;
+        Z: ;;
+        Mode: ;;
+        Start: ;;
+      Mega.Mouse
+        X: ;;
+        Y: ;;
+        Left: ;;
+        Right: ;;
+        Middle: ;;
+        Start: ;;
+  Visible: true
+Path
+  Firmware
+    BIOS.US
+    BIOS.Japan
+    BIOS.Europe
+MegaCD32X
+  Input
+    Controller.Port.1
+      Fighting.Pad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+        C: ;;
+        X: ;;
+        Y: ;;
+        Z: ;;
+        Mode: ;;
+        Start: ;;
+      Mega.Mouse
+        X: ;;
+        Y: ;;
+        Left: ;;
+        Right: ;;
+        Middle: ;;
+        Start: ;;
+    Controller.Port.2
+      Fighting.Pad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+        C: ;;
+        X: ;;
+        Y: ;;
+        Z: ;;
+        Mode: ;;
+        Start: ;;
+      Mega.Mouse
+        X: ;;
+        Y: ;;
+        Left: ;;
+        Right: ;;
+        Middle: ;;
+        Start: ;;
+  Visible: true
+Path
+Mega32X
+  Input
+    Controller.Port.1
+      Fighting.Pad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+        C: ;;
+        X: ;;
+        Y: ;;
+        Z: ;;
+        Mode: ;;
+        Start: ;;
+      Mega.Mouse
+        X: ;;
+        Y: ;;
+        Left: ;;
+        Right: ;;
+        Middle: ;;
+        Start: ;;
+    Controller.Port.2
+      Fighting.Pad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+        C: ;;
+        X: ;;
+        Y: ;;
+        Z: ;;
+        Mode: ;;
+        Start: ;;
+      Mega.Mouse
+        X: ;;
+        Y: ;;
+        Left: ;;
+        Right: ;;
+        Middle: ;;
+        Start: ;;
+  Visible: true
+Path
+GameGear
+  Input
+    Game.Gear
+      Controls
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        1: ;;
+        2: ;;
+        Start: ;;
+  Visible: true
+Path
+  Firmware
+    BIOS.World
+MasterSystem
+  Input
+    Master.System
+      Controls
+        Pause: ;;
+    Controller.Port.1
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        1: ;;
+        2: ;;
+      Paddle
+        L-Left: ;;
+        L-Right: ;;
+        Button: ;;
+        X-Axis
+          Lo: ;;
+          Hi: ;;
+      Sports.Pad
+        X: ;;
+        Y: ;;
+        1: ;;
+        2: ;;
+      MD.Control.Pad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+        C: ;;
+        Start: ;;
+      MD.Fighting.Pad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+        C: ;;
+        X: ;;
+        Y: ;;
+        Z: ;;
+        Mode: ;;
+        Start: ;;
+      Mega.Mouse
+        X: ;;
+        Y: ;;
+        Left: ;;
+        Right: ;;
+        Middle: ;;
+        Start: ;;
+    Controller.Port.2
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        1: ;;
+        2: ;;
+      Paddle
+        L-Left: ;;
+        L-Right: ;;
+        Button: ;;
+        X-Axis
+          Lo: ;;
+          Hi: ;;
+      Sports.Pad
+        X: ;;
+        Y: ;;
+        1: ;;
+        2: ;;
+      MD.Control.Pad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+        C: ;;
+        Start: ;;
+      MD.Fighting.Pad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        A: ;;
+        B: ;;
+        C: ;;
+        X: ;;
+        Y: ;;
+        Z: ;;
+        Mode: ;;
+        Start: ;;
+      Mega.Mouse
+        X: ;;
+        Y: ;;
+        Left: ;;
+        Right: ;;
+        Middle: ;;
+        Start: ;;
+  Visible: true
+Path
+  Firmware
+    BIOS.US
+    BIOS.Japan
+    BIOS.Europe
+SC-3000
+  Input
+    Controller.Port.1
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        1: ;;
+        2: ;;
+    Controller.Port.2
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        1: ;;
+        2: ;;
+  Visible: true
+Path
+SG-1000
+  Input
+    Controller.Port.1
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        1: ;;
+        2: ;;
+    Controller.Port.2
+      Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        1: ;;
+        2: ;;
+  Visible: true
+Path
+PlayStation
+  Input
+    Controller.Port.1
+      Digital.Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        Cross: ;;
+        Circle: ;;
+        Square: ;;
+        Triangle: ;;
+        L1: ;;
+        L2: ;;
+        R1: ;;
+        R2: ;;
+        Select: ;;
+        Start: ;;
+      DualShock
+        L-Up: ;;
+        L-Down: ;;
+        L-Left: ;;
+        L-Right: ;;
+        R-Up: ;;
+        R-Down: ;;
+        R-Left: ;;
+        R-Right: ;;
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        Cross: ;;
+        Circle: ;;
+        Square: ;;
+        Triangle: ;;
+        L1: ;;
+        L2: ;;
+        L3: ;;
+        R1: ;;
+        R2: ;;
+        R3: ;;
+        Select: ;;
+        Start: ;;
+        Rumble: ;;
+        L-Stick.X
+          Lo: ;;
+          Hi: ;;
+        L-Stick.Y
+          Lo: ;;
+          Hi: ;;
+        R-Stick.X
+          Lo: ;;
+          Hi: ;;
+        R-Stick.Y
+          Lo: ;;
+          Hi: ;;
+    Controller.Port.2
+      Digital.Gamepad
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        Cross: ;;
+        Circle: ;;
+        Square: ;;
+        Triangle: ;;
+        L1: ;;
+        L2: ;;
+        R1: ;;
+        R2: ;;
+        Select: ;;
+        Start: ;;
+      DualShock
+        L-Up: ;;
+        L-Down: ;;
+        L-Left: ;;
+        L-Right: ;;
+        R-Up: ;;
+        R-Down: ;;
+        R-Left: ;;
+        R-Right: ;;
+        Up: ;;
+        Down: ;;
+        Left: ;;
+        Right: ;;
+        Cross: ;;
+        Circle: ;;
+        Square: ;;
+        Triangle: ;;
+        L1: ;;
+        L2: ;;
+        L3: ;;
+        R1: ;;
+        R2: ;;
+        R3: ;;
+        Select: ;;
+        Start: ;;
+        Rumble: ;;
+        L-Stick.X
+          Lo: ;;
+          Hi: ;;
+        L-Stick.Y
+          Lo: ;;
+          Hi: ;;
+        R-Stick.X
+          Lo: ;;
+          Hi: ;;
+        R-Stick.Y
+          Lo: ;;
+          Hi: ;;
+  Visible: true
+Path
+  Firmware
+    BIOS.US
+    BIOS.Japan
+    BIOS.Europe
+Hotkey
+  ToggleFullscreen: ;;
+  TogglePseudo-Fullscreen: ;;
+  ToggleMouseCapture: ;;
+  ToggleKeyboardCapture: ;;
+  FastForward: ;;
+  ToggleFastForward: ;;
+  Rewind: ;;
+  FrameAdvance: ;;
+  CaptureScreenshot: ;;
+  SaveState: ;;
+  LoadState: ;;
+  DecrementStateSlot: ;;
+  IncrementStateSlot: ;;
+  PauseEmulation: ;;
+  ResetSystem: ;;
+  ReloadCurrentGame: ;;
+  QuitEmulator: ;;
+  MuteAudio: ;;
+  IncreaseAudio: ;;
+  DecreaseAudio: ;;
+  ToggleShaderDisplay: ;;
+ZXSpectrum
+  Visible: true
+Path
+ZXSpectrum128
+  Visible: true
+Path

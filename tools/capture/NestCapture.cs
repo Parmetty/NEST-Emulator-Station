@@ -91,6 +91,8 @@ internal static class Program
         int minHeight = 0;
         int cropTop = 0;
         int cropBottom = 0;
+        double contentAspect = 0;
+        bool topOnly = false;
 
         for (int i = 0; i < args.Length; i++)
         {
@@ -129,6 +131,13 @@ internal static class Program
                     break;
                 case "--crop-bottom":
                     int.TryParse(args[++i], out cropBottom);
+                    break;
+                case "--content-aspect":
+                    double.TryParse(args[++i], System.Globalization.NumberStyles.Float,
+                        System.Globalization.CultureInfo.InvariantCulture, out contentAspect);
+                    break;
+                case "--top-only":
+                    topOnly = true;
                     break;
                 case "--log":
                     _log = args[++i];
@@ -200,7 +209,7 @@ internal static class Program
 
             try
             {
-                if (Capture(handle, outDir, aspect, written + 1, allowBackground, anchorTop, cropTop, cropBottom))
+                if (Capture(handle, outDir, aspect, written + 1, allowBackground, anchorTop, cropTop, cropBottom, contentAspect, topOnly))
                 {
                     written++;
                     Prune(outDir, maxFiles);
@@ -221,7 +230,8 @@ internal static class Program
         }
     }
 
-    private static bool Capture(IntPtr handle, string outDir, double aspect, int index, bool allowBackground, bool anchorTop, int cropTop, int cropBottom)
+    private static bool Capture(IntPtr handle, string outDir, double aspect, int index, bool allowBackground, bool anchorTop,
+        int cropTop, int cropBottom, double contentAspect, bool topOnly)
     {
         Rect rect;
         if (!GetClientRect(handle, out rect)) return false;
@@ -294,11 +304,30 @@ internal static class Program
             }
         }
 
+        // Some frontends letterbox the emulated screen inside a wider window
+        // (Azahar keeps both 3DS screens stacked in a landscape window). Crop to
+        // the real screen rectangle, centred horizontally, then keep the top
+        // screen only when asked.
+        int contentLeft = 0;
+        if (contentAspect > 0)
+        {
+            int targetWidth = (int)Math.Round(cropHeight * contentAspect);
+            if (targetWidth > 0 && targetWidth < width)
+            {
+                contentLeft = (width - targetWidth) / 2;
+                width = targetWidth;
+            }
+        }
+        if (topOnly && cropHeight > 1)
+        {
+            cropHeight = cropHeight / 2;
+        }
+
         using (Bitmap bitmap = new Bitmap(width, cropHeight))
         {
             using (Graphics graphics = Graphics.FromImage(bitmap))
             {
-                graphics.CopyFromScreen(origin.X, origin.Y + cropTopPx, 0, 0, new Size(width, cropHeight));
+                graphics.CopyFromScreen(origin.X + contentLeft, origin.Y + cropTopPx, 0, 0, new Size(width, cropHeight));
             }
 
             string name = string.Format("shot-{0:yyyyMMdd-HHmmss}-{1:000}.png", DateTime.Now, index);

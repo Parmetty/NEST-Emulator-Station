@@ -124,6 +124,8 @@ function startShotHelper(
   minHeight?: number,
   cropTop?: number,
   cropBottom?: number,
+  contentAspect?: number,
+  topOnly?: boolean,
 ): void {
   const exe = captureToolPath();
   const args = [
@@ -143,6 +145,8 @@ function startShotHelper(
   if (minHeight && minHeight > 0) args.push('--min-height', String(minHeight));
   if (cropTop && cropTop > 0) args.push('--crop-top', String(cropTop));
   if (cropBottom && cropBottom > 0) args.push('--crop-bottom', String(cropBottom));
+  if (contentAspect && contentAspect > 0) args.push('--content-aspect', String(contentAspect));
+  if (topOnly) args.push('--top-only');
 
   const helper = spawn(exe, args, { windowsHide: true, stdio: 'ignore' });
   captureHelpers.set(sessionId, helper);
@@ -262,7 +266,17 @@ async function boot(): Promise<void> {
         const cropTop = windowed ? engine?.captureCropTop ?? 0 : 0;
         const cropBottom = windowed ? engine?.captureCropBottom ?? 0 : 0;
         void clearShots().then(() =>
-          startShotHelper(e.sessionId, pid, aspect, anchor, minHeight, cropTop, cropBottom),
+          startShotHelper(
+        e.sessionId,
+        pid,
+        aspect,
+        anchor,
+        minHeight,
+        cropTop,
+        cropBottom,
+        engine?.captureContentAspect,
+        engine?.captureTopOnly,
+      ),
         );
       }
     }

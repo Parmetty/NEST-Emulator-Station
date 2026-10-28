@@ -123,6 +123,16 @@ export const engineManifestSchema = z.object({
   captureMinHeight: z.number().int().positive().optional(),
 
   /**
+   * Aspect of the emulated screen inside the client area (width / height).
+   * The capture centre-crops to it, which removes letterbox bars the frontend
+   * adds by making its window wider than the game (Azahar with two screens).
+   */
+  captureContentAspect: z.number().positive().optional(),
+
+  /** Keep only the top half of the captured screen (3DS: top screen only). */
+  captureTopOnly: z.boolean().optional(),
+
+  /**
    * System mode reached through the engine's own GUI: wait for the window, then
    * open a known top-level menu and invoke the target item.
    */

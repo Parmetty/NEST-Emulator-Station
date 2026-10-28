@@ -20,6 +20,8 @@
   },
   "captureCropTop": 26,
   "captureCropBottom": 26,
+  "captureContentAspect": 0.833333,
+  "captureTopOnly": true,
   "capabilities": {
     "saveStates": true,
     "systemMode": null
