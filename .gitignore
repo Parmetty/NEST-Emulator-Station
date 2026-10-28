@@ -15,3 +15,7 @@ coverage/
 resources/engines/fceux/fceux.cfg
 .roms-ngc/
 .roms-gc/
+resources/engines/**/*.nest-bak
+resources/engines/**/*.before-nest
+resources/engines/**/.nest-controls-v1
+resources/engines/**/.nest-controls-mode
