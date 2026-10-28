@@ -98,3 +98,11 @@ launches emulators you provide and scans files you already own.
 - License: **Zlib** · https://github.com/libsdl-org/SDL
 - Shipped next to `nest-pads.exe` so Nest can enumerate controllers before
   launching an engine that supports gamepads (currently Azahar / mGBA).
+### melonDS 1.1 — `resources/engines/melonds/`
+
+- Project: https://melonds.kuribo64.net/ · Source: https://github.com/melonDS-emu/melonDS
+- License: **GPLv3**
+- Covers Nintendo DS. Ships without external BIOS files: melonDS 1.1 falls back to
+  its built-in FreeBIOS, so direct boot works out of the box.
+- Runtime files (`melonDS.toml`, `wfcsettings.bin`) are generated next to the
+  executable on first launch and are git-ignored.

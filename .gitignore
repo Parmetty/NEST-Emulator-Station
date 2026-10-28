@@ -19,3 +19,7 @@ resources/engines/**/*.nest-bak
 resources/engines/**/*.before-nest
 resources/engines/**/.nest-controls-v1
 resources/engines/**/.nest-controls-mode
+.testroms/
+resources/engines/melonds/melonDS.toml
+resources/engines/melonds/melonDS.ini
+resources/engines/melonds/wfcsettings.bin

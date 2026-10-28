@@ -1,29 +1,28 @@
 {
-    "id":  "melonds",
-    "name":  "melonDS",
-    "systems":  [
-                    "nds"
-                ],
-    "kind":  "native",
-    "detect":  {
-                   "paths":  [
-                                 "%PROGRAMFILES%\\melonDS\\melonDS.exe"
-                             ]
-               },
-    "download":  {
-                     "homepage":  "https://melonds.kuribo64.net/"
-                 },
-    "launch":  {
-                   "args":  [
-                                "{rom}"
-                            ],
-                   "systemArgs":  [
-
-                                  ],
-                   "cwd":  "engineDir"
-               },
-    "capabilities":  {
-                         "saveStates":  true,
-                         "systemMode":  null
-                     }
+  "id": "melonds",
+  "name": "melonDS",
+  "systems": ["nds"],
+  "kind": "native",
+  "detect": {
+    "paths": [
+      "{engines}/melonds/melonDS.exe",
+      "%PROGRAMFILES%/melonDS/melonDS.exe"
+    ]
+  },
+  "download": {
+    "homepage": "https://melonds.kuribo64.net/"
+  },
+  "launch": {
+    "args": ["{rom}"],
+    "systemArgs": [],
+    "fullscreenFlag": "-f",
+    "cwd": "engineDir"
+  },
+  "captureCropTop": 26,
+  "captureContentAspect": 0.666667,
+  "captureTopOnly": true,
+  "capabilities": {
+    "saveStates": true,
+    "systemMode": null
+  }
 }

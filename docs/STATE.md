@@ -176,3 +176,11 @@ npm run shot         # 产出 shots/app.png
 - **NGC**：`SkipIPL=False` + `nest-menu.exe`（UIA 精确路径 `top → menu → item`）+ `nest-window.exe --render-title`；缺 IPL 返回 `missing-ipl`
 - **Wii**：优先 `-b -e wii-menu.wad`；WAD 缺失但 NAND 已装 System Menu 时回退 `-b -n 0000000100000002`
 - **NDS / Wii U**：引擎未随包，已撤掉系统模式入口（不再给按了必失败的按钮）
+## P3 · NDS（2026-10-29）
+
+- **引擎**：melonDS 1.1 内置（`resources/engines/melonds/`，41.5 MB），`melonDS.exe "<rom>"`，全屏 `-f`
+- **BIOS**：不需要。melonDS 1.1 默认走内置 FreeBIOS；真实 BIOS/固件可放但非必需
+- **系统模式**：**无**。melonDS 没有“独立启动固件菜单”的入口（`--boot=always` 无 ROM 时只停在待机画面，GUI 的 System 菜单也没有该项）
+- **封面**：`captureCropTop 26` + `captureContentAspect 0.666667` + `captureTopOnly` → 只保留下屏之上的 **DS 上屏**（256×192 比例）
+- **配置**：melonDS 便携写 `melonDS.toml` / `wfcsettings.bin` 到引擎目录，已 gitignore；打包前需清理（含 RecentROM 本地路径）
+- **已知**：封面可能取到黑帧（GTA 过场），属 COV-2 问题
