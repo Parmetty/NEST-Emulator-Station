@@ -21,6 +21,14 @@
   "captureCropTop": 26,
   "captureContentAspect": 0.666667,
   "captureTopOnly": true,
+  "systemBoot": {
+    "top": "File",
+    "menu": "Boot firmware",
+    "title": "melonDS",
+    "renderTitle": "60/60",
+    "delay": 3000,
+    "minimize": true
+  },
   "capabilities": {
     "saveStates": true,
     "systemMode": null

@@ -21,7 +21,7 @@ export const CH = {
 } as const;
 
 /* ------------------------------------------------------------- firmware */
-export type FirmwareKind = 'gc-ipl' | 'wii-menu';
+export type FirmwareKind = 'gc-ipl' | 'wii-menu' | 'nds-bios';
 
 export type FirmwareState = {
   kind: FirmwareKind;
@@ -157,8 +157,8 @@ export const engineManifestSchema = z.object({
       step: z.number().int().nonnegative().optional(),
       minimize: z.boolean().optional(),
     })
-    .refine((value) => value.keys || (value.menu && value.item), {
-      message: 'systemBoot needs keys or menu+item',
+    .refine((value) => value.keys || value.menu, {
+      message: 'systemBoot needs keys or a menu path',
     })
     .optional(),
 });

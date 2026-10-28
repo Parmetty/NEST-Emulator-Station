@@ -111,7 +111,7 @@ npm run smoke     # 窗口 + IPC + 渲染自检
 ## 已知限制
 
 - GBA / FC / SFC / N64 / NGC / 3DS / NDS 已验证可玩；Wii 直读代码就绪但尚无镜像；Wii U 仅清单（Cemu 未随包）
-- 固件/系统文件：设置面板「系统文件（自备）」可导入 IPL / WAD，导入时校验 CRC32 并落到用户目录；\n- 系统模式：**NGC GameCube Menu 与 Wii Menu 均可用**（自备 IPL / WAD）；
+- 固件/系统文件：设置面板「系统文件（自备）」可导入 IPL / WAD，导入时校验 CRC32 并落到用户目录；\n- 系统模式：**NGC GameCube Menu、Wii Menu、DS 固件菜单均可用**（自备 IPL / WAD / NDS BIOS）；
   **NGC「IPL 系统菜单」为实验性**（自备有效 IPL 放 `%APPDATA%\Nest\dolphin\GC\USA\IPL.bin`，通过 GUI 自动化进入）
 - 没有安装包，目前从源码运行
 - 抓屏要求窗口可见；最小化时不抓

@@ -229,3 +229,9 @@ est-pads.exe（SDL3）检测后切 SDL 绑定。
 3. **3DS 商业镜像 / DSP 固件 / 手柄按键** 未验证。
 4. **打包链路**（asar 路径、extraResources、本地路径清理）仍未做。
 5. **3DS 封面**：窗口画幅比游戏宽，封面两侧带黑边（卡片用裁切填满，暂可接受）。
+### 2026-10-29 追加 · NDS 系统模式打通
+
+- melonDS 的固件菜单入口在 **File → Boot firmware**（官方论坛确认），不在 System 菜单；需要真实 BIOS + 可引导 firmware
+- Nest 侧：`systemBoot {top:'File', menu:'Boot firmware'}` + 两级 UIA 菜单（`--item` 改为可选）+ `ensureMelondsConfig()` 写 TOML + `renderTitle '60/60'`
+- 设置面板「系统文件（自备）」新增 **NDS BIOS + 固件（固件菜单）**，选目录一次导入三个文件
+- 实测：`--trysystem=nds` → DS 固件菜单（日历 / PictoChat / DS Download Play）正常出现

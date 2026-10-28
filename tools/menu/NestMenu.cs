@@ -146,9 +146,9 @@ internal static class Program
                     return 2;
             }
         }
-        if (pid == 0 || string.IsNullOrEmpty(menuText) || string.IsNullOrEmpty(itemText))
+        if (pid == 0 || string.IsNullOrEmpty(menuText))
         {
-            Console.Error.WriteLine("usage: nest-menu --pid <pid> [--top text] --menu <text> --item <text> [--title text] [--delay ms] [--minimize] [--log file]");
+            Console.Error.WriteLine("usage: nest-menu --pid <pid> [--top text] --menu <text> [--item <text>] [--title text] [--delay ms] [--minimize] [--log file]");
             return 2;
         }
 
@@ -289,17 +289,27 @@ internal static class Program
 
             if (parent == null) { Log("menu item not found: " + menuText); return 1; }
 
-            if (!Expand(parent)) { Log("cannot expand: " + parent.Current.Name); return 1; }
-            Log("expanded " + parent.Current.Name);
-            Thread.Sleep(500);
-
-            AutomationElement target = null;
-            for (int attempt = 0; attempt < 12 && target == null; attempt++)
+            AutomationElement target;
+            if (string.IsNullOrEmpty(itemText))
             {
-                target = FindByName(root, itemText, parent.Current.Name);
-                if (target == null) Thread.Sleep(250);
+                // Two-level entry (melonDS: File → Boot firmware) — the menu item
+                // itself is the action, there is no submenu to walk into.
+                target = parent;
             }
-            if (target == null) { Log("submenu item not found: " + itemText); return 1; }
+            else
+            {
+                if (!Expand(parent)) { Log("cannot expand: " + parent.Current.Name); return 1; }
+                Log("expanded " + parent.Current.Name);
+                Thread.Sleep(500);
+
+                target = null;
+                for (int attempt = 0; attempt < 12 && target == null; attempt++)
+                {
+                    target = FindByName(root, itemText, parent.Current.Name);
+                    if (target == null) Thread.Sleep(250);
+                }
+                if (target == null) { Log("submenu item not found: " + itemText); return 1; }
+            }
 
             object invoke;
             if (!target.TryGetCurrentPattern(InvokePattern.Pattern, out invoke))

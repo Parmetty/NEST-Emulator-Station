@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdirSync, existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { mkdirSync, existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain, nativeImage, shell } from 'electron';
@@ -106,6 +106,86 @@ function wiiMenuWadPath(): string {
   return path.join(dolphinUserDir(), 'wii-menu.wad');
 }
 
+/* ------------------------------------------------------------- melonDS */
+
+/** DS firmware menu needs real dumps; melonDS' FreeBIOS cannot boot it. */
+function ndsBiosDir(): string {
+  return path.join(app.getPath('userData'), 'melonds', 'bios');
+}
+
+function ndsBiosFiles(): { bios7: string; bios9: string; firmware: string } | null {
+  const dir = ndsBiosDir();
+  const bios7 = path.join(dir, 'bios7.bin');
+  const bios9 = path.join(dir, 'bios9.bin');
+  const firmware = path.join(dir, 'firmware.bin');
+  if (!existsSync(bios7) || !existsSync(bios9) || !existsSync(firmware)) return null;
+  return { bios7, bios9, firmware };
+}
+
+/**
+ * melonDS 1.1 stores its settings in `melonDS.toml` next to the executable.
+ * Nest only manages the few keys it needs: external BIOS (so the real firmware
+ * menu can boot) and the paths to the user's dumps.
+ */
+function ensureMelondsConfig(systemMode: boolean): boolean {
+  const configPath = path.join(enginesDir(), 'melonds', 'melonDS.toml');
+  const bios = ndsBiosFiles();
+  if (systemMode && !bios) return false;
+
+  const managed: Array<[string, string, string]> = [
+    ['Emu', 'ConsoleType', '0'],
+    ['Emu', 'ExternalBIOSEnable', systemMode ? 'true' : 'false'],
+    ['Emu', 'DirectBoot', systemMode ? 'false' : 'true'],
+  ];
+  if (bios) {
+    const posix = (value: string) => value.replace(/\\/g, '/');
+    managed.push(['DS', 'BIOS7Path', `"${posix(bios.bios7)}"`]);
+    managed.push(['DS', 'BIOS9Path', `"${posix(bios.bios9)}"`]);
+    managed.push(['DS', 'FirmwarePath', `"${posix(bios.firmware)}"`]);
+  }
+
+  let lines: string[] = [];
+  try {
+    lines = readFileSync(configPath, 'utf8').split(/\r?\n/);
+  } catch {
+    lines = [];
+  }
+
+  for (const [section, key, value] of managed) {
+    const header = `[${section}]`;
+    let sectionIndex = lines.indexOf(header);
+    if (sectionIndex < 0) {
+      lines.push(header);
+      sectionIndex = lines.length - 1;
+    }
+    let end = lines.length;
+    for (let i = sectionIndex + 1; i < lines.length; i += 1) {
+      if (lines[i].startsWith('[')) {
+        end = i;
+        break;
+      }
+    }
+    const keyLine = `${key} = ${value}`;
+    let replaced = false;
+    for (let i = sectionIndex + 1; i < end; i += 1) {
+      if (lines[i].startsWith(`${key} `) || lines[i].startsWith(`${key}=`)) {
+        lines[i] = keyLine;
+        replaced = true;
+        break;
+      }
+    }
+    if (!replaced) lines.splice(end, 0, keyLine);
+  }
+
+  try {
+    mkdirSync(path.dirname(configPath), { recursive: true });
+    writeFileSync(configPath, `${lines.join('\n')}\n`, 'utf8');
+  } catch {
+    return false;
+  }
+  return true;
+}
+
 function firmwareStates(): FirmwareState[] {
   const states: FirmwareState[] = [];
 
@@ -145,6 +225,24 @@ function firmwareStates(): FirmwareState[] {
     states.push({ kind: 'wii-menu', label: 'Wii 系统菜单 WAD', status: 'missing', path: null });
   }
 
+  const nds = ndsBiosFiles();
+  if (nds) {
+    states.push({
+      kind: 'nds-bios',
+      label: 'NDS BIOS + 固件（固件菜单）',
+      status: 'ok',
+      path: ndsBiosDir(),
+      detail: `bios7 / bios9 / firmware 就绪`,
+    });
+  } else {
+    states.push({
+      kind: 'nds-bios',
+      label: 'NDS BIOS + 固件（固件菜单）',
+      status: 'missing',
+      path: null,
+    });
+  }
+
   return states;
 }
 
@@ -160,7 +258,38 @@ async function pickFirmware(raw: unknown): Promise<{
   state?: FirmwareState;
 }> {
   const kind = (raw as { kind?: unknown })?.kind;
-  if (kind !== 'gc-ipl' && kind !== 'wii-menu') return { ok: false, error: 'bad-request' };
+  if (kind !== 'gc-ipl' && kind !== 'wii-menu' && kind !== 'nds-bios') {
+    return { ok: false, error: 'bad-request' };
+  }
+
+  if (kind === 'nds-bios') {
+    // NDS firmware is a set of three files, so pick the folder instead of a file.
+    const folder = await dialog.showOpenDialog({
+      title: '选择包含 bios7.bin / bios9.bin / firmware.bin 的文件夹',
+      properties: ['openDirectory'],
+    });
+    if (folder.canceled || folder.filePaths.length === 0) return { ok: true, canceled: true };
+    const sourceDir = folder.filePaths[0];
+    try {
+      const wanted: Array<[string, string]> = [
+        ['bios7.bin', 'bios7.bin'],
+        ['bios9.bin', 'bios9.bin'],
+        ['firmware.bin', 'firmware.bin'],
+      ];
+      const entries = readdirSync(sourceDir);
+      const targetDir = ndsBiosDir();
+      mkdirSync(targetDir, { recursive: true });
+      for (const [name, dest] of wanted) {
+        const found = entries.find((entry) => entry.toLowerCase() === name);
+        if (!found) return { ok: false, error: `missing-${name}` };
+        writeFileSync(path.join(targetDir, dest), readFileSync(path.join(sourceDir, found)));
+      }
+      ensureMelondsConfig(false);
+    } catch (err) {
+      return { ok: false, error: (err as Error).message };
+    }
+    return { ok: true, state: firmwareStates().find((state) => state.kind === kind) };
+  }
 
   const picked = await dialog.showOpenDialog({
     title: kind === 'gc-ipl' ? '选择 GameCube IPL（ipl.bin）' : '选择 Wii 系统菜单 WAD',
@@ -196,7 +325,8 @@ async function pickFirmware(raw: unknown): Promise<{
   return { ok: true, state: firmwareStates().find((state) => state.kind === kind) };
 }
 
-/** Attaches the saved cover as a data URL, so the renderer needs no protocol handler. */function withCover(record: GameRecord): GameRecord {
+/** Attaches the saved cover as a data URL, so the renderer needs no protocol handler. */
+function withCover(record: GameRecord): GameRecord {
   if (!record.cover) return record;
   try {
     const image = nativeImage.createFromPath(path.join(coversDir(), record.cover));
@@ -437,6 +567,12 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   // GameCube menu is the IPL, so it needs SkipIPL=false.
   if (engine.id === 'dolphin') ensureDolphinConfig(mode, systemId);
 
+  // melonDS boots its firmware menu from the GUI (File → Boot firmware) and
+  // only with real BIOS/firmware dumps; FreeBIOS cannot show the DS menu.
+  if (engine.id === 'melonds' && !ensureMelondsConfig(mode === 'system')) {
+    return { ok: false, error: 'missing-nds-bios' };
+  }
+
   const sessionId = randomUUID();
   const game = rom ? services.store.games().find((g) => g.path === rom) : undefined;
   const started = services.supervisor.start({
@@ -466,7 +602,7 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
       if (systemId === 'ngc' && dolphinIpl) boot.item = dolphinIpl.item;
       const tools = path.join(app.getAppPath(), 'resources', 'tools');
       const logDir = path.join(app.getPath('userData'), 'shots');
-      const useMenu = Boolean(boot.menu && boot.item);
+      const useMenu = Boolean(boot.menu);
 
       const args = [
         '--pid',
@@ -480,7 +616,8 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
         path.join(logDir, useMenu ? 'menu.log' : 'input.log'),
       ];
       if (useMenu) {
-        args.push('--menu', boot.menu!, '--item', boot.item!);
+        args.push('--menu', boot.menu!);
+        if (boot.item) args.push('--item', boot.item);
       } else {
         args.push('--keys', boot.keys!, '--step', String(boot.step ?? 800));
       }
