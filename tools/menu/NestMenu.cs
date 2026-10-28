@@ -124,6 +124,7 @@ internal static class Program
         int pid = 0;
         string menuText = null;
         string itemText = null;
+        string topText = null;
         string title = null;
         int delayMs = 9000;
         bool minimize = false;
@@ -133,6 +134,7 @@ internal static class Program
             switch (args[i])
             {
                 case "--pid": int.TryParse(args[++i], out pid); break;
+                case "--top": topText = args[++i]; break;
                 case "--menu": menuText = args[++i]; break;
                 case "--item": itemText = args[++i]; break;
                 case "--title": title = args[++i]; break;
@@ -146,13 +148,13 @@ internal static class Program
         }
         if (pid == 0 || string.IsNullOrEmpty(menuText) || string.IsNullOrEmpty(itemText))
         {
-            Console.Error.WriteLine("usage: nest-menu --pid <pid> --menu <text> --item <text> [--title text] [--delay ms] [--minimize] [--log file]");
+            Console.Error.WriteLine("usage: nest-menu --pid <pid> [--top text] --menu <text> --item <text> [--title text] [--delay ms] [--minimize] [--log file]");
             return 2;
         }
 
         try
         {
-            return Run(pid, menuText, itemText, title, delayMs, minimize);
+            return Run(pid, topText, menuText, itemText, title, delayMs, minimize);
         }
         catch (Exception ex)
         {
@@ -163,9 +165,28 @@ internal static class Program
         }
     }
 
-    private static int Run(int pid, string menuText, string itemText, string title, int delayMs, bool minimize)
+    private static AutomationElement FindTopMenu(AutomationElement root, string text)
     {
-        Log("start pid=" + pid + " menu=" + menuText + " item=" + itemText);
+        if (string.IsNullOrEmpty(text)) return null;
+        foreach (AutomationElement item in MenuItems(root))
+        {
+            try
+            {
+                string name = item.Current.Name ?? string.Empty;
+                if (name.Length == 0 || name.Length > 24) continue;
+                if (name.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0) return item;
+            }
+            catch
+            {
+                // The menu bar can be rebuilt while Dolphin initialises.
+            }
+        }
+        return null;
+    }
+
+    private static int Run(int pid, string topText, string menuText, string itemText, string title, int delayMs, bool minimize)
+    {
+        Log("start pid=" + pid + " top=" + (topText ?? "-") + " menu=" + menuText + " item=" + itemText);
 
         IntPtr window = IntPtr.Zero;
         for (int i = 0; i < 80 && window == IntPtr.Zero; i++)
@@ -177,7 +198,7 @@ internal static class Program
         }
         if (window == IntPtr.Zero) { Log("window never appeared"); return 1; }
 
-        Thread.Sleep(delayMs);
+        Thread.Sleep(Math.Min(delayMs, 3000));
 
         AutomationElement root;
         try { root = AutomationElement.FromHandle(window); }
@@ -192,27 +213,78 @@ internal static class Program
 
         try
         {
-            // Find which top-level menu holds the target, opening one at a time.
-            foreach (AutomationElement candidate in MenuItems(root))
+            // Fast path: Dolphin's menu bar is localized, but the top-level
+            // "Tools" menu is stable enough to address directly. Poll it instead
+            // of sleeping for a guessed number of seconds.
+            if (!string.IsNullOrEmpty(topText))
             {
-                string name = candidate.Current.Name ?? string.Empty;
-                if (name.Length == 0) continue;
-
-                if (name.IndexOf(menuText, StringComparison.OrdinalIgnoreCase) >= 0)
+                AutomationElement top = null;
+                for (int attempt = 0; attempt < 50 && top == null; attempt++)
                 {
-                    parent = candidate;
-                    break;
+                    try { top = FindTopMenu(root, topText); }
+                    catch { top = null; }
+                    // The bundled Dolphin is localized. Chinese and English are
+                    // the two menu languages we can address without a full scan.
+                    if (top == null && !string.Equals(topText, "Tools", StringComparison.OrdinalIgnoreCase))
+                    {
+                        try { top = FindTopMenu(root, "Tools"); }
+                        catch { top = null; }
+                    }
+                    if (top == null)
+                    {
+                        Thread.Sleep(500);
+                        if (attempt == 10 || attempt == 25)
+                        {
+                            try { root = AutomationElement.FromHandle(window); } catch { }
+                        }
+                    }
                 }
 
-                if (!Expand(candidate)) continue;
-                openMenu = candidate;
-                Thread.Sleep(300);
+                if (top != null)
+                {
+                    if (Expand(top))
+                    {
+                        openMenu = top;
+                        Thread.Sleep(400);
+                        parent = FindByName(root, menuText, top.Current.Name);
+                        if (parent == null)
+                        {
+                            Collapse(top);
+                            openMenu = null;
+                        }
+                    }
+                }
+                else
+                {
+                    Log("top menu not found: " + topText + " (falling back to scan)");
+                }
+            }
 
-                parent = FindByName(root, menuText, name);
-                if (parent != null) break;
+            // Slow fallback for unknown/localized menu bars: open one top-level
+            // menu at a time until the target submenu appears.
+            if (parent == null)
+            {
+                foreach (AutomationElement candidate in MenuItems(root))
+                {
+                    string name = candidate.Current.Name ?? string.Empty;
+                    if (name.Length == 0) continue;
 
-                Collapse(candidate);
-                openMenu = null;
+                    if (name.IndexOf(menuText, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        parent = candidate;
+                        break;
+                    }
+
+                    if (!Expand(candidate)) continue;
+                    openMenu = candidate;
+                    Thread.Sleep(300);
+
+                    parent = FindByName(root, menuText, name);
+                    if (parent != null) break;
+
+                    Collapse(candidate);
+                    openMenu = null;
+                }
             }
 
             if (parent == null) { Log("menu item not found: " + menuText); return 1; }
@@ -222,7 +294,7 @@ internal static class Program
             Thread.Sleep(500);
 
             AutomationElement target = null;
-            for (int attempt = 0; attempt < 6 && target == null; attempt++)
+            for (int attempt = 0; attempt < 12 && target == null; attempt++)
             {
                 target = FindByName(root, itemText, parent.Current.Name);
                 if (target == null) Thread.Sleep(250);

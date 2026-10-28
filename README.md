@@ -11,7 +11,7 @@
 
 - **主机墙**：9 台任天堂主机按发售年份排列，全屏照片 + 树状列表 + 信息卡；平台（Nintendo / Xbox / PlayStation）切换时年代标尺跟着换
 - **游戏库**：扫描文件夹 → 按内容哈希去重入库 → 卡片墙 → 方向键/鼠标导航 → 启动
-- **真的能玩**：GBA（mGBA）、FC / SFC / N64（ares）都用内置引擎启动，退出后回到 Nest，最近游玩时间自动更新
+- **真的能玩**：GBA（mGBA）、FC / SFC / N64（ares）、NGC / Wii（Dolphin）、3DS（Azahar）都用内置引擎启动，退出后回到 Nest，最近游玩时间自动更新
 - **自动封面**：游戏运行期间由独立抓屏工具持续取帧，退出时把最后一帧存为封面
 - **右键移除**：从库中移除记录，绝不动磁盘上的 ROM
 - **运行中高亮**：主机行呼吸点、信息卡「运行中 ×N」、卡片角标；切窗口不会掉，支持多开
@@ -110,8 +110,8 @@ npm run smoke     # 窗口 + IPC + 渲染自检
 
 ## 已知限制
 
-- GBA / FC / SFC / N64 已验证可玩；NGC 直读已用真实 1.4 GB 镜像验证，Wii 直读代码就绪但尚无镜像验证；NDS/3DS/Wii U 仅清单
-- 系统模式：**Wii Menu 已可用**（自备 System Menu WAD 放 `%APPDATA%\Nest\dolphin\wii-menu.wad`，走命令行、无打扰）；
+- GBA / FC / SFC / N64 / NGC / 3DS 已验证可玩；Wii 直读代码就绪但尚无镜像；NDS / Wii U 仅清单（引擎未随包）
+- 固件/系统文件：设置面板「系统文件（自备）」可导入 IPL / WAD，导入时校验 CRC32 并落到用户目录；\n- 系统模式：**NGC GameCube Menu 与 Wii Menu 均可用**（自备 IPL / WAD）；
   **NGC「IPL 系统菜单」为实验性**（自备有效 IPL 放 `%APPDATA%\Nest\dolphin\GC\USA\IPL.bin`，通过 GUI 自动化进入）
 - 没有安装包，目前从源码运行
 - 抓屏要求窗口可见；最小化时不抓

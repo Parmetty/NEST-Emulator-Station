@@ -1,0 +1,27 @@
+{
+  "id": "azahar",
+  "name": "Azahar",
+  "systems": ["3ds"],
+  "kind": "native",
+  "detect": {
+    "paths": [
+      "{engines}/azahar/azahar.exe",
+      "%PROGRAMFILES%/Azahar/azahar.exe"
+    ]
+  },
+  "download": {
+    "homepage": "https://azahar-emu.org/"
+  },
+  "launch": {
+    "args": ["{rom}"],
+    "systemArgs": [],
+    "fullscreenFlag": "-f",
+    "cwd": "engineDir"
+  },
+  "captureCropTop": 26,
+  "captureCropBottom": 26,
+  "capabilities": {
+    "saveStates": true,
+    "systemMode": null
+  }
+}

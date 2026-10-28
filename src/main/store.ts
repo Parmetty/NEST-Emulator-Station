@@ -65,7 +65,10 @@ export class Store {
   async load(): Promise<void> {
     try {
       const raw = await fs.readFile(this.file, 'utf8');
-      const parsed = JSON.parse(raw) as Partial<LibraryFile> & { version?: number };
+      // A BOM (PowerShell's `utf8`, some editors) used to make JSON.parse throw,
+      // which silently reseeded the library and dropped every game.
+      const text = raw.charCodeAt(0) === 0xfeff ? raw.slice(1) : raw;
+      const parsed = JSON.parse(text) as Partial<LibraryFile> & { version?: number };
       if (!parsed?.systems || typeof parsed.systems !== 'object') throw new Error('bad shape');
       this.data = {
         version: 2,

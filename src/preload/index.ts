@@ -7,6 +7,8 @@ import {
   type LaunchMode,
   type LaunchResult,
   type ScanResult,
+  type FirmwareKind,
+  type FirmwareState,
   type Settings,
 } from '../shared/contract';
 
@@ -36,6 +38,13 @@ const api = {
 
   favorite: (systemId: string, favorite: boolean): Promise<{ ok: boolean }> =>
     ipcRenderer.invoke(CH.favorite, { systemId, favorite }),
+
+  firmwareStatus: (): Promise<FirmwareState[]> => ipcRenderer.invoke(CH.firmwareStatus),
+
+  pickFirmware: (
+    kind: FirmwareKind,
+  ): Promise<{ ok: boolean; canceled?: boolean; error?: string; state?: FirmwareState }> =>
+    ipcRenderer.invoke(CH.pickFirmware, { kind }),
 
   openHomepage: (url: string): Promise<{ ok: boolean }> =>
     ipcRenderer.invoke(CH.openHomepage, { url }),

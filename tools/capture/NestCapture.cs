@@ -58,6 +58,9 @@ internal static class Program
     [DllImport("user32.dll")]
     private static extern IntPtr GetForegroundWindow();
 
+    [DllImport("user32.dll")]
+    private static extern uint GetDpiForWindow(IntPtr hWnd);
+
     private const uint GA_ROOT = 2;
 
     private static string _log;
@@ -85,6 +88,9 @@ internal static class Program
         bool once = false;
         bool allowBackground = false;
         bool anchorTop = false;
+        int minHeight = 0;
+        int cropTop = 0;
+        int cropBottom = 0;
 
         for (int i = 0; i < args.Length; i++)
         {
@@ -115,6 +121,15 @@ internal static class Program
                 case "--anchor":
                     anchorTop = args[++i] == "top";
                     break;
+                case "--min-height":
+                    int.TryParse(args[++i], out minHeight);
+                    break;
+                case "--crop-top":
+                    int.TryParse(args[++i], out cropTop);
+                    break;
+                case "--crop-bottom":
+                    int.TryParse(args[++i], out cropBottom);
+                    break;
                 case "--log":
                     _log = args[++i];
                     break;
@@ -126,7 +141,7 @@ internal static class Program
 
         if (pid == 0 || string.IsNullOrEmpty(outDir))
         {
-            Console.Error.WriteLine("usage: nest-capture --pid <pid> --out <dir> [--interval ms] [--max n] [--aspect r] [--once] [--log file]");
+            Console.Error.WriteLine("usage: nest-capture --pid <pid> --out <dir> [--interval ms] [--max n] [--aspect r] [--min-height px] [--crop-top px@96dpi] [--crop-bottom px@96dpi] [--once] [--log file]");
             return 2;
         }
 
@@ -172,9 +187,20 @@ internal static class Program
                 continue;
             }
 
+            if (minHeight > 0)
+            {
+                Rect size;
+                if (GetClientRect(handle, out size) && (size.Bottom - size.Top) < minHeight)
+                {
+                    Log("skipped small window: " + (size.Bottom - size.Top) + "px");
+                    Thread.Sleep(400);
+                    continue;
+                }
+            }
+
             try
             {
-                if (Capture(handle, outDir, aspect, written + 1, allowBackground, anchorTop))
+                if (Capture(handle, outDir, aspect, written + 1, allowBackground, anchorTop, cropTop, cropBottom))
                 {
                     written++;
                     Prune(outDir, maxFiles);
@@ -195,7 +221,7 @@ internal static class Program
         }
     }
 
-    private static bool Capture(IntPtr handle, string outDir, double aspect, int index, bool allowBackground, bool anchorTop)
+    private static bool Capture(IntPtr handle, string outDir, double aspect, int index, bool allowBackground, bool anchorTop, int cropTop, int cropBottom)
     {
         Rect rect;
         if (!GetClientRect(handle, out rect)) return false;
@@ -228,18 +254,43 @@ internal static class Program
             return false;
         }
 
-        int cropHeight = height;
-        int cropTop = 0;
+        // Frontend chrome (Azahar: menu bar + status bar) is given in 96-DPI
+        // units; scale it so 125%/150% displays trim the right number of pixels.
+        int dpi = 96;
+        try
+        {
+            dpi = (int)GetDpiForWindow(handle);
+        }
+        catch
+        {
+            dpi = 96;
+        }
+        if (dpi <= 0) dpi = 96;
+
+        int trimTop = (int)Math.Ceiling(cropTop * dpi / 96.0);
+        int trimBottom = (int)Math.Ceiling(cropBottom * dpi / 96.0);
+        if (trimTop < 0) trimTop = 0;
+        if (trimBottom < 0) trimBottom = 0;
+        if (trimTop + trimBottom >= height)
+        {
+            trimTop = 0;
+            trimBottom = 0;
+        }
+
+        int cropTopPx = trimTop;
+        int cropHeight = height - trimTop - trimBottom;
+
         if (aspect > 0)
         {
             int target = (int)Math.Round(width / aspect);
-            if (target > 0 && target < height)
+            if (target > 0 && target < cropHeight)
             {
-                cropHeight = target;
+                int extra = cropHeight - target;
                 // Emulators put their chrome on different edges: Qt frontends
                 // keep a menu bar at the top (crop from the top, anchor bottom),
                 // ares keeps a status bar at the bottom (anchor top).
-                cropTop = anchorTop ? 0 : height - target;
+                cropTopPx += anchorTop ? 0 : extra;
+                cropHeight = target;
             }
         }
 
@@ -247,7 +298,7 @@ internal static class Program
         {
             using (Graphics graphics = Graphics.FromImage(bitmap))
             {
-                graphics.CopyFromScreen(origin.X, origin.Y + cropTop, 0, 0, new Size(width, cropHeight));
+                graphics.CopyFromScreen(origin.X, origin.Y + cropTopPx, 0, 0, new Size(width, cropHeight));
             }
 
             string name = string.Format("shot-{0:yyyyMMdd-HHmmss}-{1:000}.png", DateTime.Now, index);

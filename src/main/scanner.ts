@@ -25,7 +25,7 @@ export const EXT_TO_SYSTEM: Record<string, string> = {
   '3ds': '3ds',
   cci: '3ds',
   cxi: '3ds',
-  app: '3ds',
+  '3dsx': '3ds',
 };
 
 export interface ScannedFile {
@@ -71,6 +71,10 @@ function sha1Of(file: string): Promise<string> {
 
 /** Recursively collects ROMs under `root`. Unreadable files are skipped, not fatal. */
 export async function scanFolder(root: string, options: ScanOptions = {}): Promise<ScannedFile[]> {
+  // Engines are spawned with `cwd` set to the engine folder, so every stored
+  // path must be absolute — a relative `--scan=` root used to produce library
+  // entries the emulator could never find.
+  root = path.resolve(root);
   const maxDepth = options.maxDepth ?? DEFAULT_DEPTH;
   const maxFiles = options.maxFiles ?? DEFAULT_FILES;
   const found: ScannedFile[] = [];

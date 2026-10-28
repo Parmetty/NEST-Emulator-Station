@@ -1,4 +1,6 @@
 import type {
+  FirmwareKind,
+  FirmwareState,
   GameRecord,
   HomePayload,
   LaunchEvent,
@@ -19,6 +21,10 @@ export interface NestApi {
   settings(): Promise<Settings>;
   saveSettings(patch: Partial<Settings>): Promise<{ ok: boolean; settings?: Settings }>;
   favorite(systemId: string, favorite: boolean): Promise<{ ok: boolean }>;
+  firmwareStatus(): Promise<FirmwareState[]>;
+  pickFirmware(
+    kind: FirmwareKind,
+  ): Promise<{ ok: boolean; canceled?: boolean; error?: string; state?: FirmwareState }>;
   openHomepage(url: string): Promise<{ ok: boolean }>;
   onLaunchEvent(cb: (event: LaunchEvent) => void): () => void;
 }

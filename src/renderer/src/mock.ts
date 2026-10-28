@@ -65,6 +65,11 @@ export function installMockApi(): void {
 
   const api: NestApi = {
     info: async () => ({ version: '0.1.0-mock', platform: 'browser', electron: '-', node: '-' }),
+    firmwareStatus: async () => [
+      { kind: 'gc-ipl', label: 'GameCube IPL（系统菜单）', status: 'missing', path: null },
+      { kind: 'wii-menu', label: 'Wii 系统菜单 WAD', status: 'missing', path: null },
+    ],
+    pickFirmware: async () => ({ ok: true, canceled: true }),
     home: async () => payload(),
     games: async (systemId) => games[systemId] ?? [],
     scan: async (systemId) => {

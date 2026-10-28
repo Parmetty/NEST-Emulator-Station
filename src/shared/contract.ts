@@ -16,7 +16,23 @@ export const CH = {
   favorite: 'nest:favorite',
   openHomepage: 'nest:open-homepage',
   launchEvent: 'nest:launch-event',
+  firmwareStatus: 'nest:firmware-status',
+  pickFirmware: 'nest:pick-firmware',
 } as const;
+
+/* ------------------------------------------------------------- firmware */
+export type FirmwareKind = 'gc-ipl' | 'wii-menu';
+
+export type FirmwareState = {
+  kind: FirmwareKind;
+  label: string;
+  /** 'missing' | 'ok' | 'invalid' — invalid means the checksum/format was rejected. */
+  status: 'missing' | 'ok' | 'invalid';
+  /** Resolved path when present, for display. */
+  path: string | null;
+  /** Human readable detail, e.g. "USA / CRC32 86573808". */
+  detail?: string;
+};
 
 /* ------------------------------------------------------------- schemas */
 export const launchModeSchema = z.enum(['game', 'system']);
@@ -91,8 +107,24 @@ export const engineManifestSchema = z.object({
   captureAnchor: z.enum(['top', 'bottom']).optional(),
 
   /**
+   * Pixels of frontend chrome to drop from the client area, in 96-DPI units
+   * (the capture tool scales them by the window's DPI). Qt frontends such as
+   * Azahar draw a menu bar on top and a status bar at the bottom; a single
+   * `captureAspect` can only trim one edge.
+   */
+  captureCropTop: z.number().int().nonnegative().optional(),
+  captureCropBottom: z.number().int().nonnegative().optional(),
+
+  /**
+   * Ignore windows smaller than this client height when capturing a cover.
+   * Guards against emulator warning/error dialogs becoming the cover when the
+   * real game window never appears (Dolphin shows a 124 px warning dialog).
+   */
+  captureMinHeight: z.number().int().positive().optional(),
+
+  /**
    * System mode reached through the engine's own GUI: wait for the window, then
-   * play this key sequence (Dolphin: Tools → Load GameCube Main Menu → region).
+   * open a known top-level menu and invoke the target item.
    */
   /** System-mode launch arguments that differ per console (Dolphin: GC via GUI, Wii via WAD). */
   systemArgsBySystem: z.record(z.array(z.string())).optional(),
@@ -101,11 +133,16 @@ export const engineManifestSchema = z.object({
     .object({
       /** Keyboard path (needs foreground; used when UI Automation is not an option). */
       keys: z.string().optional(),
-      /** UI Automation path: open the menu whose label contains this text … */
+      /** Top-level menu label, e.g. "工具" / "Tools". Enables the fast path. */
+      top: z.string().optional(),
+      /** Submenu label, e.g. "GameCube". */
       menu: z.string().optional(),
-      /** … then invoke the item whose label contains this text. */
+      /** Item label inside that submenu, e.g. "NTSC-U". */
       item: z.string().optional(),
+      /** Launcher window title filter, e.g. "Dolphin". */
       title: z.string().optional(),
+      /** Emulation window title fragment, e.g. "JIT64". */
+      renderTitle: z.string().optional(),
       delay: z.number().int().nonnegative().optional(),
       step: z.number().int().nonnegative().optional(),
       minimize: z.boolean().optional(),

@@ -22,6 +22,7 @@ $targets = @(
   @{ Source = 'capture\NestCapture.cs'; Exe = 'nest-capture.exe'; Extra = @('/reference:System.Drawing.dll') },
   @{ Source = 'input\NestInput.cs';     Exe = 'nest-input.exe';   Extra = @() },
   @{ Source = 'window\NestWindow.cs';   Exe = 'nest-window.exe';  Extra = @() },
+  @{ Source = 'pads\NestPads.cs';       Exe = 'nest-pads.exe';    Extra = @() },
   @{ Source = 'menu\NestMenu.cs';       Exe = 'nest-menu.exe';    Extra = @("/reference:$wpf\UIAutomationClient.dll", "/reference:$wpf\UIAutomationTypes.dll", "/reference:$wpf\WindowsBase.dll") }
 )
 

@@ -83,3 +83,18 @@ shipped as `src/renderer/src/assets/nunito.woff2`.
 
 This repository contains **no ROMs, BIOS files, NAND dumps, or keys**. Nest only
 launches emulators you provide and scans files you already own.
+
+### Azahar 2126.2 — `resources/engines/azahar/`
+
+- Project: https://github.com/azahar-emu/azahar (Citra/Lime3DS 社区的延续)
+- License: **GPLv3** — full text at `resources/engines/azahar/LICENSE.txt`
+- Covers Nintendo 3DS. Ships with its Qt 6 / FFmpeg runtime and the same VC++ 14.51
+  DLLs as Dolphin (see below).
+- GPLv3 requires offering the corresponding source when distributing binaries;
+  this repository links the upstream release and does not vendor the source.
+
+### SDL3 — `resources/tools/SDL3.dll`
+
+- License: **Zlib** · https://github.com/libsdl-org/SDL
+- Shipped next to `nest-pads.exe` so Nest can enumerate controllers before
+  launching an engine that supports gamepads (currently Azahar / mGBA).

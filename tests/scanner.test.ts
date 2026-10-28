@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { scanFolder, titleFrom } from '../src/main/scanner';
@@ -23,6 +23,8 @@ describe('scanner', () => {
       'Golden Sun.gba',
       'Super Mario World (USA) [b1].sfc',
     ]);
+    // Engines run with cwd=engineDir, so stored paths must be absolute.
+    expect(files.every((f) => path.isAbsolute(f.path))).toBe(true);
   });
 
   it('maps extensions to systems and hashes the bytes', async () => {
@@ -67,5 +69,20 @@ describe('store games', () => {
 
     expect(store.gameCount('gba')).toBe(1);
     expect(store.games('gba')[0].title).toBe('Golden Sun');
+  });
+
+  it('keeps the library when the file starts with a UTF-8 BOM', async () => {
+    const dir = await mkdtemp(path.join(os.tmpdir(), 'nest-bom-'));
+    const file = path.join(dir, 'library.json');
+    const store = new Store(file);
+    await store.load();
+    await store.setFavorite('gba', true);
+
+    const text = await readFile(file, 'utf8');
+    await writeFile(file, `\uFEFF${text}`, 'utf8');
+
+    const reloaded = new Store(file);
+    await reloaded.load();
+    expect(reloaded.stats('gba').favorite).toBe(true);
   });
 });

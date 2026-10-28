@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   FamilyView,
+  FirmwareKind,
+  FirmwareState,
   GameRecord,
   HomePayload,
   LaunchEvent,
@@ -62,6 +64,7 @@ export default function App() {
   const [scanning, setScanning] = useState(false);
   const [settings, setSettings] = useState<Settings>({ minimizeOnLaunch: true, fullscreen: false });
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [firmware, setFirmware] = useState<FirmwareState[]>([]);
   const [runningSystems, setRunningSystems] = useState<Record<string, number>>({});
   const [runningGames, setRunningGames] = useState<Record<string, number>>({});
   const [menu, setMenu] = useState<{ x: number; y: number; game: GameRecord } | null>(null);
@@ -77,6 +80,7 @@ export default function App() {
     setSettings((prev) => ({ ...prev, ...patch }));
     await window.nest.saveSettings(patch).catch(() => undefined);
   }, []);
+
 
   /* ------------------------------------------------------------- data */
   useEffect(() => {
@@ -207,6 +211,25 @@ export default function App() {
     setToast(text);
   }, []);
 
+  /* ---------------------------------------------------------- firmware */
+  const refreshFirmware = useCallback(() => {
+    void window.nest.firmwareStatus().then(setFirmware).catch(() => undefined);
+  }, []);
+
+  const importFirmware = useCallback(
+    async (kind: FirmwareKind) => {
+      const result = await window.nest.pickFirmware(kind).catch(() => null);
+      if (!result || result.canceled) return;
+      if (!result.ok) {
+        say(result.error === 'ipl-not-recognized' ? '这个 IPL 不是 Dolphin 认可的转储' : '导入失败');
+        return;
+      }
+      say(result.state?.status === 'ok' ? '已导入并校验通过' : '已导入，但校验未通过');
+      refreshFirmware();
+    },
+    [refreshFirmware, say],
+  );
+
   // Single owner of "how long a toast lives". Every producer (say(), launch
   // events, load errors) just sets a string; this effect clears it.
   useEffect(() => {
@@ -334,6 +357,8 @@ export default function App() {
         'engine-manifest-missing': `缺少 ${engineLabel(system.engine)} 的引擎清单`,
         'not-supported': '该主机尚未接入',
         'already-running': '已有一个会话在运行',
+        'missing-ipl': '缺少对应区域的 GameCube IPL.bin（放到 .profile/dolphin/GC/USA|JAP|EUR）',
+        'missing-wii-menu': '缺少 wii-menu.wad，或 NAND 中没有已安装的 Wii System Menu',
       };
       say(map[result.error ?? ''] ?? `启动失败（${result.error}）`);
       return;
@@ -597,7 +622,7 @@ export default function App() {
         </nav>
 
         <footer className="rail-foot">
-          <button className="ghost-btn" onClick={() => setSettingsOpen(true)}>
+          <button className="ghost-btn" onClick={() => { setSettingsOpen(true); refreshFirmware(); }}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
               <path d="M4 7h16M4 12h16M4 17h16" />
               <circle cx="9" cy="7" r="2.1" fill="#08080a" />
@@ -871,6 +896,26 @@ export default function App() {
             />
             <i className="switch" />
           </label>
+
+          <h2>系统文件（自备）</h2>
+          <p className="dlg-note">
+            IPL / WAD 需要你自己从主机 dump，Nest 不打包也不下载；导入后会复制到本机数据目录。
+          </p>
+
+          {firmware.map((item) => (
+            <div className="fw-row" key={item.kind}>
+              <span>
+                {item.label}
+                <small>
+                  {item.status === 'ok' ? '已就绪' : item.status === 'invalid' ? '校验未通过' : '未导入'}
+                  {item.detail ? ` · ${item.detail}` : ''}
+                </small>
+              </span>
+              <button className="ghost-btn" onClick={() => void importFirmware(item.kind)}>
+                选择文件…
+              </button>
+            </div>
+          ))}
 
           <div className="dlg-actions">
             <button className="dlg-btn primary" onClick={() => setSettingsOpen(false)}>

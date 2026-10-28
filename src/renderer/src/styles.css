@@ -537,6 +537,33 @@ button {
   background: #fff;
 }
 
+.fw-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.fw-row span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+}
+
+.fw-row small {
+  font-size: 11px;
+  color: rgba(244, 244, 246, 0.45);
+}
+
+.fw-row .ghost-btn {
+  flex: none;
+  font-size: 12px;
+  padding: 6px 10px;
+}
+
 .toggle-row input:checked + .switch::after {
   transform: translateX(18px);
   background: #08080a;

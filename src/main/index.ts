@@ -116,7 +116,15 @@ function captureToolPath(): string {
   return path.join(app.getAppPath(), 'resources', 'tools', 'nest-capture.exe');
 }
 
-function startShotHelper(sessionId: string, pid: number, aspect: number, anchor?: 'top' | 'bottom'): void {
+function startShotHelper(
+  sessionId: string,
+  pid: number,
+  aspect: number,
+  anchor?: 'top' | 'bottom',
+  minHeight?: number,
+  cropTop?: number,
+  cropBottom?: number,
+): void {
   const exe = captureToolPath();
   const args = [
     '--pid',
@@ -132,6 +140,9 @@ function startShotHelper(sessionId: string, pid: number, aspect: number, anchor?
   ];
   if (aspect > 0) args.push('--aspect', String(aspect));
   if (anchor) args.push('--anchor', anchor);
+  if (minHeight && minHeight > 0) args.push('--min-height', String(minHeight));
+  if (cropTop && cropTop > 0) args.push('--crop-top', String(cropTop));
+  if (cropBottom && cropBottom > 0) args.push('--crop-bottom', String(cropBottom));
 
   const helper = spawn(exe, args, { windowsHide: true, stdio: 'ignore' });
   captureHelpers.set(sessionId, helper);
@@ -244,7 +255,15 @@ async function boot(): Promise<void> {
       if (pid) {
         const aspect = engine?.captureAspect ?? 0;
         const anchor = engine?.captureAnchor;
-        void clearShots().then(() => startShotHelper(e.sessionId, pid, aspect, anchor));
+        const minHeight = engine?.captureMinHeight ?? 0;
+        // Chrome cropping is for windowed frontends; fullscreen engines draw the
+        // game edge to edge, so trimming there would eat the picture.
+        const windowed = !services?.store.getSettings().fullscreen;
+        const cropTop = windowed ? engine?.captureCropTop ?? 0 : 0;
+        const cropBottom = windowed ? engine?.captureCropBottom ?? 0 : 0;
+        void clearShots().then(() =>
+          startShotHelper(e.sessionId, pid, aspect, anchor, minHeight, cropTop, cropBottom),
+        );
       }
     }
     if (e.state === 'exited' || e.state === 'crashed') {

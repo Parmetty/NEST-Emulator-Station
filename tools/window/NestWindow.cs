@@ -16,7 +16,7 @@ using System.Threading;
 /// one to appear (the render window), then exits 0 as soon as that window is
 /// gone. Nest then stops the session.
 ///
-///   nest-window.exe --pid 1234 [--timeout 21600] [--log file]
+///   nest-window.exe --pid 1234 [--render-title JIT64] [--timeout 21600] [--log file]
 /// </summary>
 internal static class Program
 {
@@ -65,12 +65,14 @@ internal static class Program
     {
         int pid = 0;
         int timeoutSec = 21600;
+        string renderTitle = null;
         for (int i = 0; i < args.Length; i++)
         {
             switch (args[i])
             {
                 case "--pid": int.TryParse(args[++i], out pid); break;
                 case "--timeout": int.TryParse(args[++i], out timeoutSec); break;
+                case "--render-title": renderTitle = args[++i]; break;
                 case "--log": _log = args[++i]; break;
                 default:
                     Console.Error.WriteLine("unknown argument: " + args[i]);
@@ -79,12 +81,52 @@ internal static class Program
         }
         if (pid == 0)
         {
-            Console.Error.WriteLine("usage: nest-window --pid <pid> [--timeout seconds] [--log file]");
+            Console.Error.WriteLine("usage: nest-window --pid <pid> [--render-title text] [--timeout seconds] [--log file]");
             return 2;
         }
 
-        Log("start pid=" + pid);
+        Log("start pid=" + pid + (renderTitle != null ? " render-title=" + renderTitle : ""));
         var deadline = DateTime.UtcNow.AddSeconds(timeoutSec);
+
+        // Preferred path: the emulator's render window has a known title
+        // fragment (Dolphin: "JIT64"). This works even when the launcher window
+        // is minimized or appears before/after the render window.
+        if (renderTitle != null)
+        {
+            IntPtr matchedWindow = IntPtr.Zero;
+            string matchedTitle = null;
+            while (DateTime.UtcNow < deadline && matchedWindow == IntPtr.Zero)
+            {
+                try { Process.GetProcessById(pid); }
+                catch { Log("process exited before render window"); return 0; }
+                foreach (var pair in VisibleWindows(pid))
+                {
+                    if (pair.Value.IndexOf(renderTitle, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        matchedWindow = pair.Key;
+                        matchedTitle = pair.Value;
+                        break;
+                    }
+                }
+                if (matchedWindow == IntPtr.Zero) Thread.Sleep(300);
+            }
+            if (matchedWindow == IntPtr.Zero) { Log("render window never appeared"); return 2; }
+            Log("render window appeared: " + matchedTitle);
+
+            while (DateTime.UtcNow < deadline)
+            {
+                try { Process.GetProcessById(pid); }
+                catch { Log("process exited"); return 0; }
+                if (!VisibleWindows(pid).ContainsKey(matchedWindow))
+                {
+                    Log("render window closed: " + matchedTitle);
+                    return 0;
+                }
+                Thread.Sleep(400);
+            }
+            Log("timeout");
+            return 2;
+        }
 
         // Wait for the launcher window to exist before taking the baseline, then
         // treat any window that appears afterwards as the emulation window.
@@ -101,7 +143,7 @@ internal static class Program
         Log("baseline windows=" + initial.Count);
 
         IntPtr render = IntPtr.Zero;
-        string renderTitle = null;
+        string renderCaption = null;
 
         while (DateTime.UtcNow < deadline)
         {
@@ -120,14 +162,14 @@ internal static class Program
                 {
                     if (initial.ContainsKey(pair.Key)) continue;
                     render = pair.Key;
-                    renderTitle = pair.Value;
-                    Log("emulation window appeared: " + renderTitle);
+                    renderCaption = pair.Value;
+                    Log("emulation window appeared: " + renderCaption);
                     break;
                 }
             }
             else if (!current.ContainsKey(render))
             {
-                Log("emulation window closed: " + renderTitle);
+                Log("emulation window closed: " + renderCaption);
                 return 0;
             }
 

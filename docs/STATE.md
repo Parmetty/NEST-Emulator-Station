@@ -161,3 +161,18 @@ npm run shot         # 产出 shots/app.png
 - 系统模式启动参数（Dolphin `-b`、Cemu 菜单）尚未在真引擎上验证，等有 NAND/MLC 的机器
 - 封面抓取源（ScreenScraper / IGDB）未选型，P5 再定
 - 打包与发布：清单已写好在 [RELEASE.md](RELEASE.md)，动手前先修两处 asar 路径问题
+
+## P3 · 3DS（2026-10-29 合并）
+
+- **引擎**：Azahar 2126.2 内置（`resources/engines/azahar/`，101.8 MB），`azahar.exe "<rom>"`，全屏 `-f`
+- **配置隔离**：子进程 `USERPROFILE / APPDATA / LOCALAPPDATA` 指向 `<userData>/azahar`
+- **封面**：清单 `captureCropTop/Bottom` 按窗口 DPI 裁掉 Qt 菜单栏与状态栏
+- **系统模式**：**无**。Azahar 不支持 HOME Menu，`systems.ts` 不声明入口
+- **键位**：首次启动写入 WASD + 空格/J/K/L + 方向键 + TGFH（同 Dolphin 布局），已自定义不覆盖
+- **固件入口**：设置面板「系统文件（自备）」可选 IPL / WAD，导入后校验 CRC 并落到 Dolphin 用户目录
+
+## P3 · 系统模式现状（合并分支后）
+
+- **NGC**：`SkipIPL=False` + `nest-menu.exe`（UIA 精确路径 `top → menu → item`）+ `nest-window.exe --render-title`；缺 IPL 返回 `missing-ipl`
+- **Wii**：优先 `-b -e wii-menu.wad`；WAD 缺失但 NAND 已装 System Menu 时回退 `-b -n 0000000100000002`
+- **NDS / Wii U**：引擎未随包，已撤掉系统模式入口（不再给按了必失败的按钮）

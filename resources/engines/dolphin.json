@@ -22,14 +22,17 @@
     "cwd": "engineDir"
   },
   "systemBoot": {
+    "top": "工具",
     "menu": "GameCube",
     "item": "NTSC-U",
     "title": "Dolphin",
-    "delay": 9000,
+    "renderTitle": "JIT64",
+    "delay": 3000,
     "minimize": true
   },
+  "captureMinHeight": 240,
   "capabilities": {
     "saveStates": true,
-    "systemMode": null
+    "systemMode": "GameCube Menu"
   }
 }
