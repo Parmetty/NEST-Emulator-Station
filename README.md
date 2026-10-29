@@ -5,64 +5,116 @@
 
 ![Nest 首页](shots/app.png)
 
-> 当前：**beta 0.2** —— Windows 桌面版，GBA / FC / SFC / N64 都已经可以从扫描到游玩跑通。
+> 当前：**0.3.2** —— Windows 桌面版 · 九台任天堂主机 · 五个内置引擎 · 免安装携带版
+
+## 下载
+
+直接下免安装版，解压双击即可用，不需要安装 Node 或任何依赖：
+
+**[Nest-0.3.2-portable.zip](https://github.com/Parmetty/NEST-Emulator-Station/releases/download/v0.3.2/Nest-0.3.2-portable.zip)** · 234 MB · [Release 页面](https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.3.2)
+
+```
+SHA256  B5AE4AF8DDAC53CADACA1C8E493864FC3C23C65E0EBD0702594452422646AFA1
+解压    598 MB / 2905 个文件
+```
+
+1. 解压到任意目录（可放 U 盘）
+2. 双击 **`启动 Nest.bat`**（带便携数据模式：库/封面/日志/引擎配置都留在解压目录的 `data\` 里）
+3. 点「扫描文件夹」指向你的 ROM 目录（之后每次启动会自动重扫）
+4. 固件在 设置 →「系统文件（自备）」导入
+
+> 无数字签名，首次运行 Windows 可能提示 SmartScreen：选「更多信息 → 仍要运行」。
 
 ## 现在能做什么
 
-- **主机墙**：9 台任天堂主机按发售年份排列，全屏照片 + 树状列表 + 信息卡；平台（Nintendo / Xbox / PlayStation）切换时年代标尺跟着换
-- **游戏库**：扫描文件夹 → 按内容哈希去重入库 → 卡片墙 → 方向键/鼠标导航 → 启动
-- **真的能玩**：GBA（mGBA）、FC / SFC / N64（ares）、NGC / Wii（Dolphin）、3DS（Azahar）、NDS（melonDS）都用内置引擎启动，退出后回到 Nest，最近游玩时间自动更新
-- **自动封面**：游戏运行期间由独立抓屏工具持续取帧，退出时把最后一帧存为封面
-- **右键移除**：从库中移除记录，绝不动磁盘上的 ROM
-- **运行中高亮**：主机行呼吸点、信息卡「运行中 ×N」、卡片角标；切窗口不会掉，支持多开
-- **进入前确认**：`注意！您即将启动 XXX`，鼠标滑过不会误启动
+| 主机 | 引擎（内置） | 直读 | 系统菜单 |
+|---|---|---|---|
+| GBA | mGBA 0.10.5 | ✅ | — |
+| FC | ares v148 | ✅ | — |
+| SFC | ares v148 | ✅ | — |
+| N64 | ares v148 | ✅ | — |
+| NDS | melonDS 1.1 | ✅ | ✅ DS 固件菜单（需 BIOS/firmware） |
+| NGC | Dolphin 2609a | ✅ | ✅ GameCube Menu（需 IPL） |
+| Wii | Dolphin 2609a | 🟡 代码就绪，待镜像验证 | ✅ Wii Menu（需 WAD） |
+| 3DS | Azahar 2126.2 | ✅ | ❌ 引擎不支持 HOME Menu |
+| Wii U | — | 仅清单 | — |
 
-![游戏库](shots/shelf.png)
+其它能力：
 
-## 要求
+- **主机墙**：9 台任天堂主机按发售年份排列，全屏照片 + 树状列表 + 信息卡；平台切换时年代标尺跟着换
+- **游戏库 + 自动扫描**：添加过的文件夹会在启动时自动重扫，新 ROM 自动出现；支持 `.cia` 与磁盘头 magic 判定 GC/Wii
+- **自动封面**：游戏运行期间由独立抓屏工具持续取帧，退出时存为封面（NDS/3DS 只截上屏）
+- **键位面板**：mGBA / ares / Dolphin / Azahar / melonDS 五引擎键盘绑定可在 Nest 里改，保存立即生效；首次启动自动写默认布局，不覆盖你已有的自定义
+- **固件中心**：GameCube IPL（CRC32 白名单）、Wii 系统菜单 WAD、NDS BIOS+固件，一键导入
+- **便携模式**：库、封面、日志、引擎配置都留在程序目录，删 `data\` 即恢复出厂
+- **运行中高亮 / 进入前确认 / 右键移除**（只删库记录，绝不动磁盘上的 ROM）
 
-- Windows 10 / 11
-- Node.js 20+（开发用）
-- 想重新编译抓屏工具的话，需要 .NET Framework 4.x 自带的 `csc.exe`（Windows 自带）
+### 键位
 
-## 快速开始
+| 主机族 | 默认键盘布局 |
+|---|---|
+| GBA / NDS / 3DS | 方向键 = 十字键，Space = A，J = B，Q/E = L/R，Enter = Start，Backspace = Select |
+| FC / SFC / N64 | W/S/A/D = 十字键，J/K = A/B，U/I = X/Y（SFC），Q/E = L/R，Enter = Start，右 Shift = Select |
+| NGC / Wii | Dolphin GCPad 键盘布局 |
+
+细节见 [docs/KEYS-GBA.md](docs/KEYS-GBA.md)、[KEYS-DOLPHIN.md](docs/KEYS-DOLPHIN.md)、
+[KEYS-3DS.md](docs/KEYS-3DS.md)、[KEYS-ARES.md](docs/KEYS-ARES.md)。
+
+![键位面板](shots/keys-gba.png)
+
+## 截图
+
+| 游戏库 | 3DS 游戏库 |
+|---|---|
+| ![游戏库](shots/shelf.png) | ![3DS](shots/shelf-3ds.png) |
+
+| 固件中心 | NDS 固件菜单 |
+|---|---|
+| ![固件](shots/settings-firmware.png) | ![DS 菜单](shots/nds-menu.png) |
+
+## 从源码运行
+
+需要 Windows 10/11 + Node.js 20+。
 
 ```bash
 npm install
 npm run build
-npm run start
+npm run start          # 或双击 Nest.bat（自动构建 + 工作区数据目录）
 ```
 
-或者直接双击 **`Nest.bat`**：它会检查依赖、必要时构建、带上工作区数据目录并启动窗口。
-双击 **`Nest-check.bat`** 可以先跑一遍自检（类型检查 → 单元测试 → 构建 → 窗口冒烟）。
+`Nest-check.bat` 会依次跑：类型检查 → 单元测试 → 构建 → 窗口冒烟。
 
-导入游戏：左侧选主机 → `A` 进入 → 右上角「扫描文件夹」→ 选装 ROM 的目录 → 卡片出现 → `A` 启动。
+### 打便携包
 
-## 数据与隐私
-
-所有数据都在本机的 `userData` 目录（默认 `%APPDATA%\nest`，或用 `--user-data-dir` 指定）：
-
-```
-library.json     主机状态、游戏库、设置
-covers/          自动生成的封面
-shots/           抓屏工具的中间帧（退出后清理）
-nest.log         主进程日志
+```bash
+npm run pack:dir       # dist/win-unpacked（免安装目录）
+npm run pack           # 免安装目录 + NSIS 安装包（默认不用，见 DECISIONS D20）
 ```
 
-没有遥测，不联网（除了你主动打开引擎官网）。
+打包前会自动执行 `tools/clean-engines.mjs`，清掉引擎配置里的本地路径与运行时状态。
+
+## 测试
+
+```bash
+npm run typecheck
+npm test               # 40 个用例：扫描/去重/清单/keymap/引擎配置写入/进程生命周期
+npm run build
+npm run smoke          # 窗口 + IPC + 渲染自检
+```
 
 ## 架构
 
 ```
 src/
-  shared/       纯数据与契约（主目录、zod schema、IPC 通道名）
-  main/         主进程：窗口、IPC、库、引擎清单、进程监管、扫描器
-  preload/      contextBridge 暴露的 window.nest
-  renderer/     React：首页 + 游戏库覆盖层
-resources/engines/*.json   引擎清单（加一台主机 = 加一份 JSON）
-resources/tools/nest-capture.exe   独立抓屏工具
-tools/capture/NestCapture.cs       它的源码
-docs/          PLAN / DECISIONS / STATE 与冻结的视觉基准
+  shared/            纯数据与契约（主机表、zod schema、IPC 通道名）
+  main/              主进程：窗口、IPC、库、引擎清单、进程监管、扫描器
+  main/controls/     各引擎的键盘绑定适配器（keymap + mgba/ares/dolphin/azahar/melonds）
+  preload/           contextBridge 暴露的 window.nest
+  renderer/          React：首页 + 游戏库覆盖层 + 设置面板
+resources/engines/   五个便携引擎 + 清单（加主机 = 加一份 JSON）
+resources/tools/     nest-capture / nest-input / nest-window / nest-menu / nest-pads
+tools/               C# 助手源码、打包清理脚本、运行器
+docs/                CHANGELOG / STATE / DECISIONS / PROGRESS / PLAN / KEYS-*
 ```
 
 设计约定：
@@ -72,63 +124,54 @@ docs/          PLAN / DECISIONS / STATE 与冻结的视觉基准
 - **IPC 全量校验**：渲染进程只拿到 `window.nest`，所有入参过 zod
 - **不内置版权物**：没有 ROM / BIOS / NAND / 密钥
 
-## 抓屏工具
+## 数据与隐私
 
-`resources/tools/nest-capture.exe`（7.6 KB）：
+数据目录默认 `%APPDATA%\Nest`；用启动脚本时改为程序目录下 `data\`：
 
 ```
-nest-capture.exe --pid <pid> --out <dir> [--interval 5000] [--max 60]
-                 [--aspect 1.5] [--once] [--log <file>]
+library.json     游戏库、主机状态、设置
+settings.controls  键位覆盖（每引擎）
+scanRoots         自动扫描的文件夹列表
+covers/           自动封面
+shots/            抓屏中间帧（退出后清理）
+nest.log          主进程日志
+dolphin/          GC IPL、Wii 菜单 WAD、NAND
+melonds/          NDS BIOS
+azahar/           3DS 配置与 NAND
 ```
 
-抓目标进程窗口的**客户区**（对模拟器就是画面本身），`--aspect` 按主机屏幕比例从底部裁掉 Qt 菜单栏。
-重新编译：`npm run build:capture`。
+没有遥测，除引擎官网外不联网。
 
-## 测试
+## 已知限制
 
-```bash
-npm run typecheck
-npm test          # 15 个用例：扫描/去重/清单/参数/进程生命周期
-npm run build
-npm run smoke     # 窗口 + IPC + 渲染自检
-```
+- **封面可能截到黑帧**：目前取退出前最后一帧；全黑过场的游戏可能拿到黑封面（COV-2，已评审待实现）
+- **Wii 直读**代码就绪但尚无真实镜像验证；Wii U 仅清单（Cemu 未随包）
+- **3DS 无系统菜单**（Azahar 不支持 HOME Menu）
+- **NGC 系统菜单**为 GUI 自动化（`File → Boot firmware` 类似路径），需要有效 IPL，Qt 菜单展开瞬间会短暂影响输入
+- **没有数字签名**：首次运行 SmartScreen 提示；个别环境需 `--no-sandbox`（启动脚本已带）
+- **Dolphin 键位面板**只覆盖 GCPad 主键位，select/Z/C-Stick 等扩展动作暂未映射
 
 ## 路线图
 
 | 阶段 | 内容 | 状态 |
 | --- | --- | --- |
-| P0 | 骨架、IPC、引擎清单、进程监管 | ✅ |
-| P1 | 扫描器 + GBA 全链路 + 内置 mGBA | ✅ |
-| P1.2 | 封面、右键移除、运行中高亮 | ✅ |
-| P2 | FC / SFC / N64 闭环 ✅（ares）；固件校验、每游戏设置、存档备份未做 | ✅ |
-| P3 | Dolphin 内置 ✅；NGC 直读已验证、Wii Menu 已可用；Wii 直读待镜像验证 | |
-| P4 | Cemu、MLC/keys、Wii U Menu | |
-| P5 | 手柄导航、滤镜、首次启动向导、安装包 | |
+| P0–P2 | 骨架、IPC、引擎清单、扫描器、GBA/FC/SFC/N64 闭环 | ✅ |
+| P3 | Dolphin（NGC/Wii 直读 + 系统菜单）、3DS（Azahar）、NDS（melonDS） | ✅ |
+| P4 | Wii U（Cemu、MLC/密钥） | 未开始 |
+| P5 | 封面质量、自动构建脚本、安装包（按需） | 进行中 |
 
-细节在 [docs/PLAN.md](docs/PLAN.md)，决策记录在 [docs/DECISIONS.md](docs/DECISIONS.md)，
-打包发布清单在 [docs/RELEASE.md](docs/RELEASE.md)（还没打包，那是动手那天的 checklist）。
-
-## 已知限制
-
-- GBA / FC / SFC / N64 / NGC / 3DS / NDS 已验证可玩；Wii 直读代码就绪但尚无镜像；Wii U 仅清单（Cemu 未随包）
-- 固件/系统文件：设置面板「系统文件（自备）」可导入 IPL / WAD，导入时校验 CRC32 并落到用户目录；\n- 系统模式：**NGC GameCube Menu、Wii Menu、DS 固件菜单均可用**（自备 IPL / WAD / NDS BIOS）；
-  **NGC「IPL 系统菜单」为实验性**（自备有效 IPL 放 `%APPDATA%\Nest\dolphin\GC\USA\IPL.bin`，通过 GUI 自动化进入）
-- 没有安装包，目前从源码运行
-- 抓屏要求窗口可见；最小化时不抓
+更细的状态见 [docs/CHANGELOG.md](docs/CHANGELOG.md)、[docs/STATE.md](docs/STATE.md)、[docs/PROGRESS.md](docs/PROGRESS.md)。
 
 ## 法律
 
 - 本仓库**不含**任何 ROM、BIOS、NAND 或密钥；只启动你提供的模拟器、扫描你已有的文件。
-- 内置的 mGBA 0.10.5 以 MPL 2.0 分发，许可证见 [resources/engines/mgba/LICENSE.txt](resources/engines/mgba/LICENSE.txt)。
+- 内置引擎与许可证：mGBA（MPL 2.0）、ares（ISC）、Dolphin（GPLv2+）、Azahar（GPLv3）、melonDS（GPLv3）、SDL3（Zlib）。
 - 主机照片来自 Wikimedia Commons 的公有领域素材（Evan-Amos），已做裁切/去色/模糊处理；可被用户替换。
 - 各主机商标归各自权利人所有，本项目与任天堂、微软、索尼无关联。
 
-完整的第三方清单见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。
+完整第三方清单见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)，引擎配置与键位细节见 `docs/`。
 
 ## 许可
 
-**MIT**（见 [LICENSE](LICENSE)）。你可以自由使用、修改、分发，甚至商用，只要保留版权声明。
-唯一需要注意的是：内置的 mGBA 是 **MPL 2.0**，它的条款不受 MIT 影响，见
+**MIT**（见 [LICENSE](LICENSE)）。内置引擎各自的许可证不受 MIT 影响，见
 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。
-
-
