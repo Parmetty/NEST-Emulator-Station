@@ -1,6 +1,8 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import {
   CH,
+  type ControlsPayload,
+  type EngineControls,
   type GameRecord,
   type HomePayload,
   type LaunchEvent,
@@ -43,6 +45,17 @@ const api = {
 
   favorite: (systemId: string, favorite: boolean): Promise<{ ok: boolean }> =>
     ipcRenderer.invoke(CH.favorite, { systemId, favorite }),
+
+  controls: (): Promise<ControlsPayload> => ipcRenderer.invoke(CH.controls),
+
+  saveControls: (
+    engineId: string,
+    controls: EngineControls,
+  ): Promise<{ ok: boolean; applied?: string[]; error?: string }> =>
+    ipcRenderer.invoke(CH.saveControls, { engineId, controls }),
+
+  resetControls: (engineId: string): Promise<{ ok: boolean; error?: string }> =>
+    ipcRenderer.invoke(CH.resetControls, { engineId }),
 
   firmwareStatus: (): Promise<FirmwareState[]> => ipcRenderer.invoke(CH.firmwareStatus),
 

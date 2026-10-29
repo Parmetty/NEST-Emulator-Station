@@ -9,16 +9,31 @@ import {
   favoriteRequestSchema,
   gamesRequestSchema,
   launchRequestSchema,
+  PAD_ACTIONS,
   scanRequestSchema,
   settingsSchema,
+  type ControlsPayload,
+  type EngineControls,
+  type EngineControlsView,
   type FirmwareState,
   type GameRecord,
   type HomePayload,
+  type KeyboardBindings,
   type LaunchResult,
+  type PadAction,
   type ScanResult,
   type SystemView,
 } from '../shared/contract';
 import { FAMILIES, systemsOf, systemById, type SystemId } from '../shared/systems';
+import {
+  applyEngineControls,
+  CONTROL_ENGINE_IDS,
+  defaultBindings,
+  isControlsSupported,
+  readEngineControls,
+  readEngineMode,
+  type ControlPaths,
+} from './controls';
 import { EngineRegistry, buildArgs } from './engines';
 import { scanFolder } from './scanner';
 import { Store } from './store';
@@ -396,6 +411,119 @@ function toView(systemId: string, store: Store): SystemView | null {
   return { ...def, ...stats, games: scanned > 0 ? scanned : stats.games };
 }
 
+/* ------------------------------------------------------------- controls */
+/** Where every engine keeps its config; the adapters receive this instead of
+ *  knowing about Electron itself. */
+function controlPaths(): ControlPaths {
+  return { enginesDir: enginesDir(), userData: app.getPath('userData') };
+}
+
+/** Complete binding set = engine defaults overlaid with the user's overrides. */
+function effectiveBindings(store: Store, engineId: string): KeyboardBindings {
+  const overrides = store.getSettings().controls?.[engineId]?.keyboard ?? {};
+  return { ...defaultBindings(engineId), ...overrides };
+}
+
+/** Where a portable engine's config lives: next to the exe Nest will launch. */
+function detectedEngineDir(services: Services, engineId: string): string | undefined {
+  if (engineId !== 'mgba' && engineId !== 'melonds') return undefined;
+  const manifest = services.engines.get(engineId);
+  const detected = manifest ? services.engines.detect(manifest) : null;
+  return detected ? path.dirname(detected) : undefined;
+}
+
+/**
+ * Apply one engine's keyboard layout. `force=false` keeps a layout the player
+ * customised inside the emulator; `force=true` is used after the player edits
+ * the mapping in Nest (save / reset) and always rewrites.
+ */
+function applyControls(
+  services: Services,
+  engineId: string,
+  force: boolean,
+  options: { gamepads?: number; mode?: 'keyboard' | 'gamepad'; engineDir?: string } = {},
+) {
+  // Portable engines may live outside `resources/engines` (user-installed
+  // mGBA/melonDS); their config sits next to the executable we actually run.
+  const result = applyEngineControls(
+    engineId,
+    controlPaths(),
+    effectiveBindings(services.store, engineId),
+    force,
+    { ...options, engineDir: options.engineDir ?? detectedEngineDir(services, engineId) },
+  );
+  if (result.reason === 'custom') {
+    console.log(`[nest] ${engineId} controls: custom layout kept`);
+  } else if (result.applied) {
+    console.log(`[nest] ${engineId} controls applied (${result.files.join(', ')})`);
+  } else if (result.reason === 'unsupported') {
+    console.log(`[nest] ${engineId} controls: unsupported (no writer yet)`);
+  }
+  return result;
+}
+
+/** How many controllers SDL can see right now (0 = none, -1 = probe failed). */
+function countGamepads(): number {
+  const base = app.isPackaged ? process.resourcesPath : app.getAppPath();
+  const exe = path.join(base, 'resources', 'tools', 'nest-pads.exe');
+  try {
+    const out = spawnSync(exe, [], { windowsHide: true, timeout: 5000, encoding: 'utf8' });
+    const match = /count=(-?\d+)/.exec(String(out.stdout ?? ''));
+    return match ? Number(match[1]) : -1;
+  } catch {
+    return -1;
+  }
+}
+
+/** Keep only known actions and plausible `KeyboardEvent.code` strings. */
+function sanitizeEngineControls(raw: unknown): EngineControls | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const input = raw as { mode?: unknown; keyboard?: unknown };
+  const controls: EngineControls = {};
+  if (input.mode === 'keyboard' || input.mode === 'gamepad') controls.mode = input.mode;
+  if (input.keyboard && typeof input.keyboard === 'object') {
+    const keyboard: KeyboardBindings = {};
+    for (const [action, value] of Object.entries(input.keyboard as Record<string, unknown>)) {
+      if (!(PAD_ACTIONS as readonly string[]).includes(action)) continue;
+      if (typeof value !== 'string' || value.length === 0 || value.length > 24) continue;
+      keyboard[action as PadAction] = value;
+    }
+    if (Object.keys(keyboard).length > 0) controls.keyboard = keyboard;
+  }
+  return controls.mode || controls.keyboard ? controls : null;
+}
+
+/** The payload the key-mapping panel reads: defaults, what the engine file
+ *  currently says, and whether the player has a custom layout. */
+function controlsPayload(services: Services): ControlsPayload {
+  const store = services.store;
+  const settings = store.getSettings();
+  const paths = controlPaths();
+  const engines: Record<string, EngineControlsView> = {};
+  for (const engineId of CONTROL_ENGINE_IDS) {
+    const overrides = settings.controls?.[engineId];
+    const defaults = defaultBindings(engineId);
+    const read = readEngineControls(engineId, paths, detectedEngineDir(services, engineId)) ?? {};
+    const current: KeyboardBindings = { ...defaults, ...read };
+    const mode =
+      engineId === 'azahar'
+        ? (overrides?.mode ?? readEngineMode(engineId, paths))
+        : 'keyboard';
+    // "custom" means the user changed the layout in Nest. A config that merely
+    // differs from our defaults (an older seed, or a hand-edited emulator file)
+    // still shows the real keys, but is not presented as a Nest override.
+    const hasOverride = Boolean(overrides?.keyboard && Object.keys(overrides.keyboard).length > 0);
+    engines[engineId] = {
+      engineId,
+      supported: isControlsSupported(engineId),
+      mode,
+      current,
+      isCustom: hasOverride,
+    };
+  }
+  return { engines };
+}
+
 export function registerIpc(services: Services): void {
   const { store, engines } = services;
 
@@ -507,6 +635,49 @@ export function registerIpc(services: Services): void {
     await shell.openExternal(url);
     return { ok: true };
   });
+
+  ipcMain.handle(CH.controls, (): ControlsPayload => controlsPayload(services));
+
+  ipcMain.handle(CH.saveControls, async (_event, raw) => {
+    const body = (raw ?? {}) as { engineId?: unknown; controls?: unknown };
+    const engineId = typeof body.engineId === 'string' ? body.engineId : '';
+    if (!(CONTROL_ENGINE_IDS as readonly string[]).includes(engineId)) {
+      return { ok: false, error: 'unknown-engine' };
+    }
+    const controls = sanitizeEngineControls(body.controls);
+    if (!controls) return { ok: false, error: 'bad-request' };
+
+    const settings = store.getSettings();
+    const controlsMap = {
+      ...(settings.controls ?? {}),
+      [engineId]: { ...controls, updatedAt: Date.now() },
+    };
+    await store.setSettings({ controls: controlsMap });
+
+    // Apply immediately so the next launch (and the next in-game session) uses
+    // the new keys without restarting Nest.
+    const result = applyControls(services, engineId, true, {
+      gamepads: engineId === 'azahar' ? countGamepads() : undefined,
+      mode: controls.mode,
+    });
+    return { ok: true, supported: result.supported, applied: result.files };
+  });
+
+  ipcMain.handle(CH.resetControls, async (_event, raw) => {
+    const engineId = String((raw as { engineId?: unknown })?.engineId ?? '');
+    if (!(CONTROL_ENGINE_IDS as readonly string[]).includes(engineId)) {
+      return { ok: false, error: 'unknown-engine' };
+    }
+    const settings = store.getSettings();
+    const controlsMap = { ...(settings.controls ?? {}) };
+    delete controlsMap[engineId];
+    await store.setSettings({ controls: controlsMap });
+
+    const result = applyControls(services, engineId, true, {
+      gamepads: engineId === 'azahar' ? countGamepads() : undefined,
+    });
+    return { ok: true, supported: result.supported, applied: result.files };
+  });
 }
 
 /** Shared by the IPC handler and the --selftest path. */
@@ -567,10 +738,7 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     args = mode === 'system' ? (engine.systemArgsBySystem?.[systemId] ?? engine.launch.systemArgs) : engine.launch.args;
   }
 
-  if (engine.id === 'mgba') {
-    const mgbaExe = services.engines.detect(engine);
-    if (mgbaExe) ensureMgbaControls(path.dirname(mgbaExe));
-  }
+  if (engine.id === 'mgba') applyControls(services, 'mgba', false);
 
   // Azahar resolves its data folder from the Windows user profile
   // (`%APPDATA%\Azahar`), not from `--user-data-dir` and not from APPDATA alone.
@@ -582,7 +750,10 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     const local = path.join(root, 'AppData', 'Local');
     mkdirSync(roaming, { recursive: true });
     mkdirSync(local, { recursive: true });
-    ensureAzaharControls(root, countGamepads());
+    applyControls(services, 'azahar', false, {
+      gamepads: countGamepads(),
+      mode: services.store.getSettings().controls?.azahar?.mode,
+    });
     env = { USERPROFILE: root, APPDATA: roaming, LOCALAPPDATA: local };
     console.log(`[nest] azahar user dir: ${root}`);
   }
@@ -624,12 +795,16 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   // never needs it, so make sure the setting stays sane even if a previous
   // experiment (or the user) turned it on. System mode is the exception: the
   // GameCube menu is the IPL, so it needs SkipIPL=false.
-  if (engine.id === 'dolphin') ensureDolphinConfig(mode, systemId);
+  if (engine.id === 'dolphin') {
+    ensureDolphinConfig(mode, systemId);
+    applyControls(services, 'dolphin', false);
+  }
 
   // melonDS boots its firmware menu from the GUI (File → Boot firmware) and
   // only with real BIOS/firmware dumps; FreeBIOS cannot show the DS menu.
-  if (engine.id === 'melonds' && !ensureMelondsConfig(mode === 'system')) {
-    return { ok: false, error: 'missing-nds-bios' };
+  if (engine.id === 'melonds') {
+    if (!ensureMelondsConfig(mode === 'system')) return { ok: false, error: 'missing-nds-bios' };
+    applyControls(services, 'melonds', false);
   }
 
   const sessionId = randomUUID();
@@ -765,350 +940,5 @@ function ensureDolphinConfig(mode: 'game' | 'system', systemId: string): void {
   if (text !== original) {
     writeFileSync(file, text, 'utf8');
     console.log(`[nest] dolphin config: SkipIPL=${skipIpl} (${mode}/${systemId})`);
-  }
-  seedDolphinInputDefaults(dir);
-}
-
-/**
- * Give Dolphin a console-style keyboard layout once. Never overwrite a layout
- * the user has already customised; a marker file makes this a one-shot seed.
- */
-function seedDolphinInputDefaults(configDir: string): void {
-  const marker = path.join(configDir, '.nest-controls-v1');
-  if (existsSync(marker)) return;
-
-  const pad = path.join(configDir, 'GCPadNew.ini');
-  let existing = '';
-  try {
-    existing = readFileSync(pad, 'utf8');
-  } catch {
-    existing = '';
-  }
-
-  const looksUntouched =
-    existing.length === 0 ||
-    (existing.includes('Buttons/A = `X`') && existing.includes('Main Stick/Up = `UP`'));
-  if (!looksUntouched) {
-    console.log('[nest] dolphin controller config is customised; leaving it untouched');
-    writeFileSync(marker, 'kept-user-config\n', 'utf8');
-    return;
-  }
-
-  const padConfig = [
-    '[GCPad1]',
-    'Device = DInput/0/Keyboard Mouse',
-    'Buttons/A = `SPACE`',
-    'Buttons/B = `J`',
-    'Buttons/X = `K`',
-    'Buttons/Y = `L`',
-    'Buttons/Z = `U`',
-    'Buttons/Start = `RETURN`',
-    'Main Stick/Up = `W`',
-    'Main Stick/Down = `S`',
-    'Main Stick/Left = `A`',
-    'Main Stick/Right = `D`',
-    'Main Stick/Calibration = 100.00 141.42 100.00 141.42 100.00 141.42 100.00 141.42',
-    'C-Stick/Up = `T`',
-    'C-Stick/Down = `G`',
-    'C-Stick/Left = `F`',
-    'C-Stick/Right = `H`',
-    'C-Stick/Calibration = 100.00 141.42 100.00 141.42 100.00 141.42 100.00 141.42',
-    'Triggers/L = `Q`',
-    'Triggers/R = `E`',
-    'D-Pad/Up = `UP`',
-    'D-Pad/Down = `DOWN`',
-    'D-Pad/Left = `LEFT`',
-    'D-Pad/Right = `RIGHT`',
-    'Triforce/Test = `1`',
-    'Triforce/Service = `2`',
-    'Triforce/Coin = `3`',
-    '[GCPad2]',
-    'Device = DInput/0/Keyboard Mouse',
-    '[GCPad3]',
-    'Device = DInput/0/Keyboard Mouse',
-    '[GCPad4]',
-    'Device = DInput/0/Keyboard Mouse',
-    '',
-  ].join('\r\n');
-
-  try {
-    if (existing.length > 0) {
-      writeFileSync(`${pad}.before-nest`, existing, 'utf8');
-    }
-    writeFileSync(pad, padConfig, 'utf8');
-    writeFileSync(marker, 'applied-v1\n', 'utf8');
-    console.log('[nest] dolphin controller defaults installed (WASD + Space/J/K/L)');
-  } catch (err) {
-    console.error('[nest] dolphin controller defaults failed:', (err as Error).message);
-  }
-}
-
-/* -------------------------------------------------------- mGBA (GBA) keys */
-/**
- * mGBA runs in portable mode, so the bundled `config.ini` is its live config.
- * The stock QT block is A=X / B=Z / L=A / R=S — neither the Dolphin nor the
- * Azahar layout. Seed the same face-button layout Nest uses elsewhere, once,
- * and never overwrite a file the player has customised.
- */
-const MGBA_KEYS: Array<[string, number]> = [
-  ['keyA', 32], // space
-  ['keyB', 74], // J
-  ['keyL', 81], // Q
-  ['keyR', 69], // E
-  ['keyStart', 16777220], // Enter
-  ['keySelect', 16777219], // Backspace
-  ['keyUp', 16777235],
-  ['keyDown', 16777237],
-  ['keyLeft', 16777234],
-  ['keyRight', 16777236],
-];
-
-/**
- * Gamepad buttons (SDL GameController indexes). mGBA's own defaults only cover
- * the left stick and the d-pad hat, so a plugged-in pad can move but cannot
- * press anything until these are filled in.
- */
-const MGBA_PAD_KEYS: Array<[string, number]> = [
-  ['keyA', 0],
-  ['keyB', 1],
-  ['keyL', 9],
-  ['keyR', 10],
-  ['keyStart', 6],
-  ['keySelect', 4],
-];
-
-function ensureMgbaControls(engineDir: string): void {
-  const file = path.join(engineDir, 'config.ini');
-  const marker = path.join(engineDir, '.nest-controls-v1');
-
-  let text = '';
-  try {
-    text = readFileSync(file, 'utf8');
-  } catch {
-    text = '';
-  }
-
-  // Empty file (fresh bundle), mGBA's stock layout, or our own keyboard seed.
-  const stock = text.length === 0 || (text.includes('keyA=88') && text.includes('keyB=90'));
-  const keyboardSeed = text.includes('keyA=32') && text.includes('keyB=74');
-  if (!stock && !keyboardSeed) {
-    if (!existsSync(marker)) {
-      writeFileSync(marker, 'kept-user-config\n', 'utf8');
-      console.log('[nest] mgba controller config is customised; leaving it untouched');
-    }
-    return;
-  }
-
-  try {
-    const eol = text.includes('\r\n') ? '\r\n' : '\n';
-    if (text.length > 0) writeFileSync(`${file}.before-nest`, text, 'utf8');
-    if (text.length === 0) text = '[gba.input.QT_K]';
-
-    const lines = text.split(/\r?\n/);
-    const padStock = text.includes('keyA=-1');
-    const sections: Array<[string, Array<[string, number]>]> = [
-      ['[gba.input.QT_K]', MGBA_KEYS],
-      ['[gba.input.SDLB]', padStock ? MGBA_PAD_KEYS : []],
-    ];
-
-    for (const [sectionName, keys] of sections) {
-      if (keys.length === 0) continue;
-      let section = '';
-      for (let i = 0; i < lines.length; i += 1) {
-        const trimmed = lines[i].trim();
-        if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
-          section = trimmed;
-          continue;
-        }
-        if (section !== sectionName) continue;
-        const eq = trimmed.indexOf('=');
-        if (eq < 0) continue;
-        const hit = keys.find(([name]) => name === trimmed.slice(0, eq));
-        if (hit) lines[i] = `${hit[0]}=${hit[1]}`;
-      }
-
-      // Add keys the file does not carry yet, right after the section header.
-      const header = lines.indexOf(sectionName);
-      if (header >= 0) {
-        const additions = keys
-          .filter(([key]) => !lines.some((line) => line.trim().startsWith(`${key}=`)))
-          .map(([key, value]) => `${key}=${value}`);
-        if (additions.length > 0) lines.splice(header + 1, 0, ...additions);
-      }
-    }
-
-    writeFileSync(file, lines.join(eol), 'utf8');
-    writeFileSync(marker, 'applied-v1\n', 'utf8');
-    console.log('[nest] mgba controls installed (keyboard Space/J/Q/E + pad buttons)');
-  } catch (err) {
-    console.error('[nest] mgba controller defaults failed:', (err as Error).message);
-  }
-}
-
-/* ------------------------------------------------------- Azahar (3DS) keys */
-/**
- * Azahar stores its controls in `qt-config.ini`, one flat key per button
- * (`profiles\1\button_a="code:32,engine:keyboard"`). Values are Qt key codes;
- * analog sticks are encoded as `analog_from_button` maps where `$0` is `:` and
- * `$1` is `,`. The stock layout is A/S/Z/X + arrow keys, which clashes with the
- * WASD muscle memory Nest already gives Dolphin players, so we seed the same
- * layout once — never overwriting a layout the user has changed.
- */
-const AZAHAR_KEYBOARD_CONTROLS: Array<[string, string]> = [
-  ['profiles\\1\\button_a', '"code:32,engine:keyboard"'],
-  ['profiles\\1\\button_b', '"code:74,engine:keyboard"'],
-  ['profiles\\1\\button_x', '"code:75,engine:keyboard"'],
-  ['profiles\\1\\button_y', '"code:76,engine:keyboard"'],
-  ['profiles\\1\\button_l', '"code:81,engine:keyboard"'],
-  ['profiles\\1\\button_r', '"code:69,engine:keyboard"'],
-  ['profiles\\1\\button_zl', '"code:49,engine:keyboard"'],
-  ['profiles\\1\\button_zr', '"code:50,engine:keyboard"'],
-  ['profiles\\1\\button_start', '"code:16777220,engine:keyboard"'],
-  ['profiles\\1\\button_select', '"code:16777219,engine:keyboard"'],
-  ['profiles\\1\\button_up', '"code:16777235,engine:keyboard"'],
-  ['profiles\\1\\button_down', '"code:16777236,engine:keyboard"'],
-  ['profiles\\1\\button_left', '"code:16777237,engine:keyboard"'],
-  ['profiles\\1\\button_right', '"code:16777238,engine:keyboard"'],
-  [
-    'profiles\\1\\circle_pad',
-    '"down:code$083$1engine$0keyboard,engine:analog_from_button,left:code$065$1engine$0keyboard,' +
-      'modifier:code$068$1engine$0keyboard,modifier_scale:0.500000,right:code$068$1engine$0keyboard,' +
-      'up:code$087$1engine$0keyboard"',
-  ],
-  [
-    'profiles\\1\\c_stick',
-    '"down:code$071$1engine$0keyboard,engine:analog_from_button,left:code$070$1engine$0keyboard,' +
-      'modifier:code$068$1engine$0keyboard,modifier_scale:0.500000,right:code$072$1engine$0keyboard,' +
-      'up:code$084$1engine$0keyboard"',
-  ],
-];
-
-/**
- * Gamepad layout for Azahar. `maptype:all` + `api:controller` binds "whichever
- * SDL gamepad is attached", so the same config works for Xbox / DualShock /
- * DualSense / Switch Pro / 8BitDo without touching per-device GUIDs.
- *
- * 3DS A/B/X/Y map to pad B/A/Y/X so the *physical* button positions match a
- * Nintendo handheld (3DS A is the right-hand button). ZL/ZR are trigger axes.
- */
-const AZAHAR_GAMEPAD_CONTROLS: Array<[string, string]> = [
-  ['profiles\\1\\button_a', '"button:1,engine:sdl,guid:0,port:-1,maptype:all,api:controller"'],
-  ['profiles\\1\\button_b', '"button:0,engine:sdl,guid:0,port:-1,maptype:all,api:controller"'],
-  ['profiles\\1\\button_x', '"button:3,engine:sdl,guid:0,port:-1,maptype:all,api:controller"'],
-  ['profiles\\1\\button_y', '"button:2,engine:sdl,guid:0,port:-1,maptype:all,api:controller"'],
-  ['profiles\\1\\button_up', '"button:11,engine:sdl,guid:0,port:-1,maptype:all,api:controller"'],
-  ['profiles\\1\\button_down', '"button:12,engine:sdl,guid:0,port:-1,maptype:all,api:controller"'],
-  ['profiles\\1\\button_left', '"button:13,engine:sdl,guid:0,port:-1,maptype:all,api:controller"'],
-  ['profiles\\1\\button_right', '"button:14,engine:sdl,guid:0,port:-1,maptype:all,api:controller"'],
-  ['profiles\\1\\button_l', '"button:9,engine:sdl,guid:0,port:-1,maptype:all,api:controller"'],
-  ['profiles\\1\\button_r', '"button:10,engine:sdl,guid:0,port:-1,maptype:all,api:controller"'],
-  ['profiles\\1\\button_start', '"button:6,engine:sdl,guid:0,port:-1,maptype:all,api:controller"'],
-  ['profiles\\1\\button_select', '"button:4,engine:sdl,guid:0,port:-1,maptype:all,api:controller"'],
-  [
-    'profiles\\1\\button_zl',
-    '"axis:4,engine:sdl,guid:0,port:-1,maptype:all,api:controller,direction:+,threshold:0.5"',
-  ],
-  [
-    'profiles\\1\\button_zr',
-    '"axis:5,engine:sdl,guid:0,port:-1,maptype:all,api:controller,direction:+,threshold:0.5"',
-  ],
-  ['profiles\\1\\button_home', '"button:5,engine:sdl,guid:0,port:-1,maptype:all,api:controller"'],
-  [
-    'profiles\\1\\circle_pad',
-    '"axis_x:0,axis_y:1,engine:sdl,guid:0,port:-1,maptype:all,api:controller"',
-  ],
-  [
-    'profiles\\1\\c_stick',
-    '"axis_x:2,axis_y:3,engine:sdl,guid:0,port:-1,maptype:all,api:controller"',
-  ],
-];
-
-function escapeRegExp(input: string): string {
-  return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-/** Replace `key=value` in one ini section, or add it under `[Controls]`. */
-function upsertControl(text: string, key: string, value: string): string {
-  const line = `${key}=${value}`;
-  const pattern = new RegExp(`^${escapeRegExp(key)}=.*$`, 'm');
-  if (pattern.test(text)) return text.replace(pattern, () => line);
-  const header = text.indexOf('[Controls]');
-  if (header < 0) return `[Controls]\n${line}\n${text}`;
-  const insertAt = text.indexOf('\n', header) + 1;
-  return `${text.slice(0, insertAt)}${line}\n${text.slice(insertAt)}`;
-}
-
-/** How many controllers SDL can see right now (0 = none, -1 = probe failed). */
-function countGamepads(): number {
-  const base = app.isPackaged ? process.resourcesPath : app.getAppPath();
-  const exe = path.join(base, 'resources', 'tools', 'nest-pads.exe');
-  try {
-    const out = spawnSync(exe, [], { windowsHide: true, timeout: 5000, encoding: 'utf8' });
-    const match = /count=(-?\d+)/.exec(String(out.stdout ?? ''));
-    return match ? Number(match[1]) : -1;
-  } catch {
-    return -1;
-  }
-}
-
-function ensureAzaharControls(root: string, gamepads: number): void {
-  const dir = path.join(root, 'AppData', 'Roaming', 'Azahar', 'config');
-  const file = path.join(dir, 'qt-config.ini');
-  const legacyMarker = path.join(root, '.nest-controls-v1');
-  const modeMarker = path.join(root, '.nest-controls-mode');
-  const desired = gamepads > 0 ? 'gamepad' : 'keyboard';
-
-  let text = '';
-  try {
-    text = readFileSync(file, 'utf8');
-  } catch {
-    text = '';
-  }
-
-  const hasKeyboardSeed = text.includes('profiles\\1\\button_a="code:32,engine:keyboard"');
-  const hasGamepadSeed = text.includes('profiles\\1\\button_a="button:1,engine:sdl');
-  const stock = text.length === 0 || text.includes('profiles\\1\\button_a="code:65,engine:keyboard"');
-
-  // Not stock and not one of our two layouts: the player customised it.
-  if (!stock && !hasKeyboardSeed && !hasGamepadSeed) {
-    if (!existsSync(legacyMarker)) {
-      writeFileSync(legacyMarker, 'kept-user-config\n', 'utf8');
-      console.log('[nest] azahar controller config is customised; leaving it untouched');
-    }
-    return;
-  }
-
-  if (desired === 'gamepad' ? hasGamepadSeed : hasKeyboardSeed) {
-    writeFileSync(modeMarker, `${desired}\n`, 'utf8');
-    return;
-  }
-
-  const pairs = desired === 'gamepad' ? AZAHAR_GAMEPAD_CONTROLS : AZAHAR_KEYBOARD_CONTROLS;
-  try {
-    mkdirSync(dir, { recursive: true });
-    if (text.length > 0 && !hasKeyboardSeed && !hasGamepadSeed) {
-      writeFileSync(`${file}.before-nest`, text, 'utf8');
-    }
-    if (text.length === 0) {
-      text = [
-        '[Controls]',
-        'profile\\default=true',
-        'profile=0',
-        'profiles\\1\\name\\default=false',
-        'profiles\\1\\name=Default',
-        'profiles\\size=1',
-        '',
-      ].join('\n');
-    }
-    for (const [key, value] of pairs) {
-      text = upsertControl(text, key, value);
-      text = upsertControl(text, `${key}\\default`, 'false');
-    }
-    writeFileSync(file, text, 'utf8');
-    writeFileSync(legacyMarker, 'applied-v1\n', 'utf8');
-    writeFileSync(modeMarker, `${desired}\n`, 'utf8');
-    console.log(`[nest] azahar controls: ${desired} (gamepads=${gamepads})`);
-  } catch (err) {
-    console.error('[nest] azahar controller defaults failed:', (err as Error).message);
   }
 }

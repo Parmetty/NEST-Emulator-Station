@@ -1,16 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
+  ControlsPayload,
   FamilyView,
   FirmwareKind,
   FirmwareState,
   GameRecord,
   HomePayload,
+  KeyCode,
+  KeyboardBindings,
   LaunchEvent,
   LaunchMode,
+  PadAction,
   Settings,
   SystemView,
 } from '@shared/contract';
-import { engineLabel } from '@shared/systems';
+import { PAD_ACTIONS } from '@shared/contract';
+import { engineLabel, systemById } from '@shared/systems';
 
 type Row =
   | { kind: 'family'; family: FamilyView }
@@ -19,6 +24,58 @@ type Row =
 type Selection = { type: 'family' | 'system'; id: string };
 
 const SHELF_COLUMNS = 5;
+
+/** Consoles with editable keyboard bindings, in the order the chips are shown. */
+const KEY_SYSTEMS = (['gba', 'fc', 'sfc', 'n64', 'nds', 'ngc', 'wii', '3ds'] as const).flatMap((id) => {
+  const system = systemById.get(id);
+  return system ? [system] : [];
+});
+
+const ACTION_LABEL: Record<PadAction, string> = {
+  up: '上',
+  down: '下',
+  left: '左',
+  right: '右',
+  a: 'A',
+  b: 'B',
+  x: 'X',
+  y: 'Y',
+  l: 'L',
+  r: 'R',
+  start: 'Start',
+  select: 'Select',
+};
+
+/** KeyboardEvent.code → the label shown inside the key badge. */
+const KEY_LABEL: Record<string, string> = {
+  Space: '空格',
+  Enter: 'Enter',
+  Escape: 'Esc',
+  Tab: 'Tab',
+  Backspace: '退格',
+  CapsLock: '大写',
+  ShiftLeft: '左 Shift',
+  ShiftRight: '右 Shift',
+  ControlLeft: '左 Ctrl',
+  ControlRight: '右 Ctrl',
+  AltLeft: '左 Alt',
+  AltRight: '右 Alt',
+  NumpadEnter: '小键盘 Enter',
+  ArrowUp: '↑',
+  ArrowDown: '↓',
+  ArrowLeft: '←',
+  ArrowRight: '→',
+};
+
+function prettyKey(code: KeyCode | undefined): string {
+  if (!code) return '未绑定';
+  const known = KEY_LABEL[code];
+  if (known) return known;
+  if (/^Key[A-Z]$/.test(code)) return code.slice(3);
+  if (/^Digit[0-9]$/.test(code)) return code.slice(5);
+  if (/^Numpad[0-9]$/.test(code)) return `小键盘 ${code.slice(6)}`;
+  return code;
+}
 
 function relpath(image: string): string {
   return image ? `./${image.replace(/^\/+/, '')}` : '';
@@ -65,6 +122,13 @@ export default function App() {
   const [settings, setSettings] = useState<Settings>({ minimizeOnLaunch: true, fullscreen: false });
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [firmware, setFirmware] = useState<FirmwareState[]>([]);
+  const [controls, setControls] = useState<ControlsPayload | null>(null);
+  const [controlsFailed, setControlsFailed] = useState(false);
+  const [keySystemId, setKeySystemId] = useState('gba');
+  const [keyDrafts, setKeyDrafts] = useState<Record<string, KeyboardBindings>>({});
+  const [keyCapture, setKeyCapture] = useState<PadAction | null>(null);
+  const [keyCaptureError, setKeyCaptureError] = useState<string | null>(null);
+  const [keyBusy, setKeyBusy] = useState<'save' | 'reset' | null>(null);
   const [runningSystems, setRunningSystems] = useState<Record<string, number>>({});
   const [runningGames, setRunningGames] = useState<Record<string, number>>({});
   const [menu, setMenu] = useState<{ x: number; y: number; game: GameRecord } | null>(null);
@@ -242,6 +306,22 @@ export default function App() {
     [say, settings],
   );
 
+  const addFolder = useCallback(async () => {
+    try {
+      // No systemId: the main process opens the folder picker and remembers the root.
+      const result = await window.nest.scan();
+      if (!result.ok) {
+        if (result.error !== 'cancelled') say(`添加失败：${result.error ?? '未知错误'}`);
+        return;
+      }
+      setSettings(await window.nest.settings().catch(() => settings));
+      await refreshHome();
+      say(`已添加文件夹，新增 ${result.added ?? 0} 个`);
+    } catch {
+      say('添加失败');
+    }
+  }, [refreshHome, say, settings]);
+
   // The silent boot scan finishes after the first paint; refresh with no toast.
   useEffect(
     () =>
@@ -268,6 +348,160 @@ export default function App() {
     },
     [refreshFirmware, say],
   );
+
+  /* ---------------------------------------------------------- controls */
+  const refreshControls = useCallback(async () => {
+    try {
+      setControls(await window.nest.controls());
+      setControlsFailed(false);
+    } catch {
+      setControlsFailed(true);
+    }
+  }, []);
+
+  // Fetch before the dialog opens: `--settings --shot=` clicks 设置 ~1.8s after
+  // load, so the panel is already populated when the screenshot is taken.
+  useEffect(() => {
+    void refreshControls();
+  }, [refreshControls]);
+
+  const keySystem = KEY_SYSTEMS.find((system) => system.id === keySystemId) ?? KEY_SYSTEMS[0];
+  const keyEngine = keySystem.engine;
+  const keyView = controls?.engines[keyEngine] ?? null;
+  const keyBindings: KeyboardBindings = {
+    ...(keyView?.current ?? {}),
+    ...(keyDrafts[keyEngine] ?? {}),
+  };
+  const keySupported = Boolean(keyView?.supported);
+  const keyShared = KEY_SYSTEMS.filter((system) => system.engine === keyEngine).map(
+    (system) => system.short,
+  );
+  const keyDirty = useMemo(() => {
+    const draft = keyDrafts[keyEngine];
+    if (!draft) return false;
+    return PAD_ACTIONS.some(
+      (action) => draft[action] !== undefined && draft[action] !== keyView?.current[action],
+    );
+  }, [keyDrafts, keyEngine, keyView]);
+
+  const openSettings = useCallback(() => {
+    setSettingsOpen(true);
+    refreshFirmware();
+    // Start the key panel on the console the user is looking at, if supported.
+    if (sel.type === 'system' && KEY_SYSTEMS.some((system) => system.id === sel.id)) {
+      setKeySystemId(sel.id);
+    }
+    void refreshControls();
+  }, [refreshControls, refreshFirmware, sel]);
+
+  // Closing the dialog must leave capture mode too, otherwise keydowns would
+  // keep being swallowed with no visible target.
+  useEffect(() => {
+    if (settingsOpen) return;
+    setKeyCapture(null);
+    setKeyCaptureError(null);
+  }, [settingsOpen]);
+
+  const pickKeySystem = useCallback((id: string) => {
+    setKeySystemId(id);
+    setKeyCapture(null);
+    setKeyCaptureError(null);
+  }, []);
+
+  const resolveBinding = useCallback(
+    (action: PadAction): KeyCode | undefined =>
+      keyDrafts[keyEngine]?.[action] ?? keyView?.current[action],
+    [keyDrafts, keyEngine, keyView],
+  );
+
+  /** One keydown while capturing: rebind, or reject a key already used by this engine. */
+  const captureKey = useCallback(
+    (event: KeyboardEvent) => {
+      if (!keyCapture) return;
+      event.preventDefault();
+      if (event.code === 'Escape' || event.key === 'Escape') {
+        setKeyCapture(null);
+        setKeyCaptureError(null);
+        say('已取消改键');
+        return;
+      }
+      const code = event.code;
+      if (!code || code === 'Unidentified') {
+        setKeyCaptureError('这个键读不出来，换一个试试');
+        return;
+      }
+      const takenBy = PAD_ACTIONS.find(
+        (action) => action !== keyCapture && resolveBinding(action) === code,
+      );
+      if (takenBy) {
+        const message = `${prettyKey(code)} 已经绑给「${ACTION_LABEL[takenBy]}」，请换一个键`;
+        setKeyCaptureError(message);
+        say(message);
+        return;
+      }
+      const action = keyCapture;
+      setKeyDrafts((prev) => ({
+        ...prev,
+        [keyEngine]: { ...(prev[keyEngine] ?? keyView?.current ?? {}), [action]: code },
+      }));
+      setKeyCapture(null);
+      setKeyCaptureError(null);
+      say(`「${ACTION_LABEL[action]}」→ ${prettyKey(code)}，点「保存」生效`);
+    },
+    [keyCapture, keyEngine, keyView, resolveBinding, say],
+  );
+
+  const saveKeys = useCallback(async () => {
+    if (!keyView?.supported || keyBusy) return;
+    setKeyBusy('save');
+    setKeyCaptureError(null);
+    try {
+      const result = await window.nest.saveControls(keyEngine, {
+        mode: keyView.mode,
+        keyboard: keyBindings,
+        updatedAt: Date.now(),
+      });
+      if (!result.ok) {
+        setKeyCaptureError(`保存失败${result.error ? `：${result.error}` : ''}`);
+        return;
+      }
+      setKeyDrafts((prev) => {
+        const next = { ...prev };
+        delete next[keyEngine];
+        return next;
+      });
+      await refreshControls();
+      say(result.applied?.length ? `已保存并写入 ${result.applied.join(' / ')}` : '键位已保存并应用');
+    } catch (err) {
+      setKeyCaptureError(`保存失败：${(err as Error).message}`);
+    } finally {
+      setKeyBusy(null);
+    }
+  }, [keyBusy, keyBindings, keyEngine, keyView, refreshControls, say]);
+
+  const resetKeys = useCallback(async () => {
+    if (!keyView?.supported || keyBusy) return;
+    setKeyBusy('reset');
+    setKeyCaptureError(null);
+    try {
+      const result = await window.nest.resetControls(keyEngine);
+      if (!result.ok) {
+        setKeyCaptureError(`恢复默认失败${result.error ? `：${result.error}` : ''}`);
+        return;
+      }
+      setKeyDrafts((prev) => {
+        const next = { ...prev };
+        delete next[keyEngine];
+        return next;
+      });
+      await refreshControls();
+      say(`${engineLabel(keyEngine)} 的键位已恢复默认`);
+    } catch (err) {
+      setKeyCaptureError(`恢复默认失败：${(err as Error).message}`);
+    } finally {
+      setKeyBusy(null);
+    }
+  }, [keyBusy, keyEngine, keyView, refreshControls, say]);
 
   // Single owner of "how long a toast lives". Every producer (say(), launch
   // events, load errors) just sets a string; this effect clears it.
@@ -444,6 +678,13 @@ export default function App() {
         return;
       }
 
+      // Key capture wins over every shortcut, including the Esc that would
+      // otherwise close the settings dialog.
+      if (keyCapture) {
+        captureKey(e);
+        return;
+      }
+
       if (settingsOpen) {
         if (k === 'Escape' || k === 'b' || k === 'B') {
           e.preventDefault();
@@ -544,6 +785,8 @@ export default function App() {
     moveShelf,
     closeShelf,
     openShelf,
+    keyCapture,
+    captureKey,
   ]);
 
   /* ----------------------------------------------------------- render */
@@ -661,7 +904,7 @@ export default function App() {
         </nav>
 
         <footer className="rail-foot">
-          <button className="ghost-btn" onClick={() => { setSettingsOpen(true); refreshFirmware(); }}>
+          <button className="ghost-btn" onClick={openSettings}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
               <path d="M4 7h16M4 12h16M4 17h16" />
               <circle cx="9" cy="7" r="2.1" fill="#08080a" />
@@ -907,54 +1150,211 @@ export default function App() {
             <i />
             设置
           </div>
-          <h2>启动与画面</h2>
-          <p className="dlg-note">这些偏好保存在本机的库文件里，换主机不影响。</p>
 
-          <label className="toggle-row">
-            <span>
-              启动引擎时最小化主窗口
-              <small>引擎退出后自动还原并聚焦</small>
-            </span>
-            <input
-              type="checkbox"
-              checked={settings.minimizeOnLaunch}
-              onChange={(e) => void updateSetting({ minimizeOnLaunch: e.target.checked })}
-            />
-            <i className="switch" />
-          </label>
+          <div className="settings-cols">
+            <div className="settings-col">
+              <h2>启动与画面</h2>
+              <p className="dlg-note">这些偏好保存在本机的库文件里，换主机不影响。</p>
 
-          <label className="toggle-row">
-            <span>
-              全屏启动引擎
-              <small>把引擎自己支持的全屏参数传给它</small>
-            </span>
-            <input
-              type="checkbox"
-              checked={settings.fullscreen}
-              onChange={(e) => void updateSetting({ fullscreen: e.target.checked })}
-            />
-            <i className="switch" />
-          </label>
+              <label className="toggle-row">
+                <span>
+                  启动引擎时最小化主窗口
+                  <small>引擎退出后自动还原并聚焦</small>
+                </span>
+                <input
+                  type="checkbox"
+                  checked={settings.minimizeOnLaunch}
+                  onChange={(e) => void updateSetting({ minimizeOnLaunch: e.target.checked })}
+                />
+                <i className="switch" />
+              </label>
 
-          <h2>系统文件（自备）</h2>
-          <p className="dlg-note">
-            IPL / WAD 需要你自己从主机 dump，Nest 不打包也不下载；导入后会复制到本机数据目录。
-          </p>
+              <label className="toggle-row">
+                <span>
+                  全屏启动引擎
+                  <small>把引擎自己支持的全屏参数传给它</small>
+                </span>
+                <input
+                  type="checkbox"
+                  checked={settings.fullscreen}
+                  onChange={(e) => void updateSetting({ fullscreen: e.target.checked })}
+                />
+                <i className="switch" />
+              </label>
 
-          {firmware.map((item) => (
-            <div className="fw-row" key={item.kind}>
-              <span>
-                {item.label}
-                <small>
-                  {item.status === 'ok' ? '已就绪' : item.status === 'invalid' ? '校验未通过' : '未导入'}
-                  {item.detail ? ` · ${item.detail}` : ''}
-                </small>
-              </span>
-              <button className="ghost-btn" onClick={() => void importFirmware(item.kind)}>
-                选择文件…
-              </button>
+              <h2>系统文件（自备）</h2>
+              <p className="dlg-note">
+                IPL / WAD 需要你自己从主机 dump，Nest 不打包也不下载；导入后会复制到本机数据目录。
+              </p>
+
+              {firmware.map((item) => (
+                <div className="fw-row" key={item.kind}>
+                  <span>
+                    {item.label}
+                    <small>
+                      {item.status === 'ok' ? '已就绪' : item.status === 'invalid' ? '校验未通过' : '未导入'}
+                      {item.detail ? ` · ${item.detail}` : ''}
+                    </small>
+                  </span>
+                  <button className="ghost-btn" onClick={() => void importFirmware(item.kind)}>
+                    选择文件…
+                  </button>
+                </div>
+              ))}
+
+              <h2>游戏文件夹（自动扫描）</h2>
+              <p className="dlg-note">
+                添加过的文件夹会记住；启动 Nest 时自动重扫，新放进来的 ROM 就会出现在游戏库里。
+              </p>
+
+              <label className="toggle-row">
+                <span>
+                  启动时自动重新扫描
+                  <small>关掉后只在点「立即扫描」或打开游戏库时扫描</small>
+                </span>
+                <input
+                  type="checkbox"
+                  checked={settings.autoScan !== false}
+                  onChange={(e) => void updateSetting({ autoScan: e.target.checked })}
+                />
+                <i className="switch" />
+              </label>
+
+              {(settings.scanRoots ?? []).length === 0 ? (
+                <p className="dlg-note">还没有添加文件夹，点「添加文件夹…」选一个放 ROM 的目录。</p>
+              ) : (
+                (settings.scanRoots ?? []).map((root) => (
+                  <div className="scan-root" key={root}>
+                    <span title={root}>{root}</span>
+                    <button className="ghost-btn" onClick={() => void removeRoot(root)}>
+                      移除
+                    </button>
+                  </div>
+                ))
+              )}
+
+              <div className="scan-actions">
+                <button className="ghost-btn" onClick={() => void addFolder()}>
+                  添加文件夹…
+                </button>
+                <button className="ghost-btn" disabled={rescanning} onClick={() => void rescanAll()}>
+                  {rescanning ? '扫描中…' : '立即扫描'}
+                </button>
+              </div>
             </div>
-          ))}
+
+            <div className="settings-col keys-col">
+              <h2>键位</h2>
+              <p className="dlg-note">
+                改的是引擎的键盘绑定，保存后立即生效；同一引擎的多台主机共用一套键位。
+              </p>
+
+              <div className="key-engines" role="group" aria-label="选择主机">
+                {KEY_SYSTEMS.map((system) => (
+                  <button
+                    key={system.id}
+                    className={`key-engine${system.id === keySystem.id ? ' on' : ''}`}
+                    title={`${system.name} · ${engineLabel(system.engine)}`}
+                    onClick={() => pickKeySystem(system.id)}
+                  >
+                    {system.short}
+                  </button>
+                ))}
+              </div>
+
+              {keyView ? (
+                <>
+                  <div className="key-meta">
+                    <span>
+                      {engineLabel(keyEngine)} · {keyView.mode === 'gamepad' ? '手柄模式' : '键盘模式'}
+                      {keyShared.length > 1 ? ` · ${keyShared.join(' / ')} 共用` : ''}
+                    </span>
+                    <small className={keyDirty ? 'dirty' : ''}>
+                      {!keyView.supported
+                        ? '暂不支持'
+                        : keyDirty
+                          ? '有未保存改动'
+                          : keyView.isCustom
+                            ? '已自定义'
+                            : '默认键位'}
+                    </small>
+                  </div>
+
+                  {!keyView.supported ? (
+                    <div className="key-unsupported">
+                      <p>该引擎键位格式尚未支持</p>
+                      <span>先用手柄，或进 {engineLabel(keyEngine)} 自己的设置里改键。</span>
+                    </div>
+                  ) : null}
+
+                  <div className={`key-group${keySupported ? '' : ' disabled'}`}>
+                    {PAD_ACTIONS.map((action) => {
+                      const code = keyBindings[action];
+                      const capturing = keyCapture === action;
+                      return (
+                        <div className={`key-row${capturing ? ' capturing' : ''}`} key={action}>
+                          <span className="key-name">{ACTION_LABEL[action]}</span>
+                          <span className={`key-badge${code ? '' : ' empty'}`}>
+                            {capturing ? '请按键…' : prettyKey(code)}
+                          </span>
+                          <button
+                            className="key-edit"
+                            disabled={!keySupported || keyBusy !== null}
+                            onClick={(event) => {
+                              // Blur so the Space/Enter used to pick a key does not
+                              // also re-activate this button on keyup.
+                              event.currentTarget.blur();
+                              if (capturing) {
+                                setKeyCapture(null);
+                                setKeyCaptureError(null);
+                                return;
+                              }
+                              setKeyCapture(action);
+                              setKeyCaptureError(null);
+                            }}
+                          >
+                            {capturing ? '取消' : '改'}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {keyCapture ? (
+                    <p className="key-hint">
+                      按下要绑定的键 · Esc 取消
+                      {keyCaptureError ? ` · ${keyCaptureError}` : ''}
+                    </p>
+                  ) : keyCaptureError ? (
+                    <p className="key-hint err">{keyCaptureError}</p>
+                  ) : null}
+
+                  <div className="key-actions">
+                    <button
+                      className="ghost-btn"
+                      disabled={!keySupported || keyBusy !== null}
+                      onClick={() => void resetKeys()}
+                    >
+                      {keyBusy === 'reset' ? '恢复中…' : '恢复默认'}
+                    </button>
+                    <button
+                      className="dlg-btn primary"
+                      disabled={!keySupported || !keyDirty || keyBusy !== null}
+                      onClick={() => void saveKeys()}
+                    >
+                      {keyBusy === 'save' ? '保存中…' : '保存'}
+                    </button>
+                  </div>
+                </>
+              ) : controlsFailed ? (
+                <p className="key-hint err">
+                  键位数据读取失败；等主进程的 controls IPC 就绪后重新打开设置。
+                </p>
+              ) : (
+                <p className="key-hint">读取中…</p>
+              )}
+            </div>
+          </div>
 
           <div className="dlg-actions">
             <button className="dlg-btn primary" onClick={() => setSettingsOpen(false)}>

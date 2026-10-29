@@ -192,3 +192,12 @@ npm run shot         # 产出 shots/app.png
 - 扩展名表见 `src/main/scanner.ts` 的 `EXT_TO_SYSTEM`；歧义镜像（`.iso/.rvz/.gcz/.ciso`）走 `systemForFile()` 读 0x18 magic 判定 GC / Wii
 - 用户添加过的文件夹存 `settings.scanRoots`（绝对路径、去重、上限 32）；`autoScan !== false` 时启动后 800ms 后台重扫，完成后向渲染层发 `nest:library-changed`，设置面板可移除文件夹或手动重扫
 - 调试参数 `--scan=` 走同一套 bookkeeping（不经过 IPC）
+
+## 键位（2026-10-30）
+
+- 模块：`src/main/controls/`（keymap + mgba/dolphin/azahar/melonds/ares 适配器 + util + facade），ares 仍是 `supported:false` 占位
+- 数据：`settings.controls[engineId] = { mode?, keyboard?, updatedAt? }`；运行时与默认值合并后交给适配器
+- 语义：`force=false` 只在配置仍是 stock 或自家 seed 时写入，用户自定义只留 marker；`force=true`（保存/恢复默认）无条件重写；`.before-nest` 仅首次备份
+- 写入位置：mGBA `<exe>/config.ini`、Dolphin `<userData>/dolphin/Config/GCPadNew.ini`、Azahar `<userData>/azahar/…/qt-config.ini`、melonDS `<exe>/melonDS.toml`
+- 界面：设置面板「键位」两栏布局，GBA/FC/SFC/N64/NDS/NGC/Wii/3DS chips；ares 组置灰提示不支持
+- 注意：启动引擎会写引擎目录里的配置（开发仓库需要 `git checkout resources/engines/<engine>` 还原）

@@ -1,4 +1,6 @@
 import type {
+  ControlsPayload,
+  EngineControls,
   FirmwareKind,
   FirmwareState,
   GameRecord,
@@ -23,6 +25,12 @@ export interface NestApi {
   settings(): Promise<Settings>;
   saveSettings(patch: Partial<Settings>): Promise<{ ok: boolean; settings?: Settings }>;
   favorite(systemId: string, favorite: boolean): Promise<{ ok: boolean }>;
+  controls(): Promise<ControlsPayload>;
+  saveControls(
+    engineId: string,
+    controls: EngineControls,
+  ): Promise<{ ok: boolean; applied?: string[]; error?: string }>;
+  resetControls(engineId: string): Promise<{ ok: boolean; error?: string }>;
   firmwareStatus(): Promise<FirmwareState[]>;
   pickFirmware(
     kind: FirmwareKind,

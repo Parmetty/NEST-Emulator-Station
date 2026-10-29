@@ -467,8 +467,37 @@ button {
   color: rgba(255, 255, 255, 0.88);
 }
 
-.settings-card {
-  width: min(520px, 90vw);
+.dialog-card.settings-card {
+  width: min(960px, 94vw);
+  max-height: calc(100vh - 56px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+}
+
+.settings-card::-webkit-scrollbar {
+  width: 8px;
+}
+
+.settings-card::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.settings-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.04fr);
+  gap: 0 30px;
+  align-items: start;
+}
+
+.settings-col {
+  min-width: 0;
+}
+
+.settings-col.keys-col {
+  padding-left: 30px;
+  border-left: 1px solid var(--hair);
 }
 
 .toggle-row {
@@ -567,6 +596,265 @@ button {
 .toggle-row input:checked + .switch::after {
   transform: translateX(18px);
   background: #08080a;
+}
+
+/* ---------- settings: key mapping ---------- */
+.key-engines {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.key-engine {
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.5);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  cursor: pointer;
+  transition: background 0.15s var(--ease), color 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+
+.key-engine:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: #fff;
+}
+
+.key-engine.on {
+  background: #fff;
+  border-color: #fff;
+  color: #08080a;
+}
+
+.key-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--hair);
+}
+
+.key-meta span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.key-meta small {
+  flex: none;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.32);
+}
+
+.key-meta small.dirty {
+  color: #e8c37a;
+}
+
+.key-group {
+  margin-top: 4px;
+}
+
+.key-group.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.key-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 5px;
+  border-radius: 7px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+  transition: background 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+
+.key-row:hover {
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.key-row.capturing {
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24);
+}
+
+.key-name {
+  flex: none;
+  width: 58px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.key-row.capturing .key-name {
+  color: #fff;
+}
+
+.key-badge {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  padding: 3px 8px;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.88);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.key-badge.empty {
+  border-style: dashed;
+  color: rgba(255, 255, 255, 0.26);
+  font-weight: 600;
+}
+
+.key-row.capturing .key-badge {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.45);
+  color: #fff;
+}
+
+.key-edit {
+  flex: none;
+  width: 50px;
+  padding: 4px 0;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: none;
+  color: rgba(255, 255, 255, 0.72);
+  font: inherit;
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s var(--ease), color 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+
+.key-edit:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+.key-edit:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.key-hint {
+  margin-top: 9px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.key-hint.err {
+  color: #e8c37a;
+}
+
+.key-unsupported {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.key-unsupported p {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.key-unsupported span {
+  display: block;
+  margin-top: 5px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.34);
+}
+
+.key-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.key-actions .ghost-btn {
+  margin-left: 0;
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.key-actions .ghost-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.scan-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.scan-actions .ghost-btn {
+  margin-left: 0;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.scan-actions .ghost-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.scan-root {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.scan-root span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.scan-root .ghost-btn {
+  flex: none;
+  margin-left: 0;
+  padding: 4px 9px;
+  font-size: 11px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* ---------- timeline ---------- */
@@ -1383,4 +1671,27 @@ kbd {
   .layer img {
     max-width: 92%;
   }
+
+  .settings-cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .settings-col.keys-col {
+    margin-top: 18px;
+    padding-top: 16px;
+    padding-left: 0;
+    border-left: 0;
+    border-top: 1px solid var(--hair);
+  }
+}
+
+/* Disabled actions still need to read as disabled. */
+.dlg-btn:disabled,
+.ghost-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.key-row.key-unsupported .key-badge {
+  color: rgba(244, 244, 246, 0.35);
 }

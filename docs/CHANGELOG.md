@@ -12,6 +12,16 @@
 - **启动自动扫描**：界面里添加过的文件夹会存进设置（`scanRoots`），每次启动 800ms 后后台重扫，新放进去的 ROM 自动出现；设置面板可查看/移除文件夹、手动「立即扫描」，并可关闭自动扫描（`autoScan`）
 - `--scan=` 调试参数同样会记住文件夹，方便测试脚本复用
 
+### 键位（B 路线）
+
+- **键位编辑界面**：设置面板新增「键位」区块，8 台主机 chip 切换（同一引擎多主机注明共用），12 个动作（上/下/左/右/A/B/X/Y/L/R/Start/Select）显示当前绑定并可改键
+- 捕获态：点「改」后按任意键（读 `KeyboardEvent.code`），Esc 取消；同引擎内重复键拒绝并提示冲突；改动暂存，点「保存」才写入
+- 「恢复默认」清掉用户覆盖并重写引擎默认值；保存/恢复后立即生效（下次启动也保留）
+- **键位核心模块** `src/main/controls/`：mGBA / Dolphin / Azahar / melonDS 四个适配器 + 统一 keymap（canonical code ↔ Qt key int / Dolphin 键名），aris 暂标记 unsupported
+- 首次启动仍自动写默认键位（不覆盖用户自定义，写前 `.before-nest` 备份）；用户覆盖值来自 `settings.controls[engineId]`
+- 修正 Azahar 键盘方向键的 Qt 码错位（旧值实际是 Right/Down/PageUp，改为 16777234–16777237）
+- 新增 `tests/controls.test.ts`（14 条）：keymap 转换、mGBA ini / melonDS TOML 写读、自定义保留、force 重写、备份不被覆盖、facade 路由、ares unsupported
+
 ---
 
 ## 0.3.0 — 2026-10-29 · 免安装携带版

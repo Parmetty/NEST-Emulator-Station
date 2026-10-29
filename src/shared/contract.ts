@@ -19,6 +19,9 @@ export const CH = {
   libraryChanged: 'nest:library-changed',
   rescan: 'nest:rescan',
   removeScanRoot: 'nest:scan-root-remove',
+  controls: 'nest:controls',
+  saveControls: 'nest:controls-save',
+  resetControls: 'nest:controls-reset',
   firmwareStatus: 'nest:firmware-status',
   pickFirmware: 'nest:pick-firmware',
 } as const;
@@ -57,6 +60,7 @@ export const gamesRequestSchema = z.object({
   systemId: z.string().min(1).max(32),
 });
 
+const keyCodeSchema = z.string().min(1).max(24);
 export const settingsSchema = z.object({
   minimizeOnLaunch: z.boolean().optional(),
   fullscreen: z.boolean().optional(),
@@ -64,6 +68,16 @@ export const settingsSchema = z.object({
   autoScan: z.boolean().optional(),
   /** Absolute folders the user added; re-scanned at boot and on demand. */
   scanRoots: z.array(z.string().min(1)).max(32).optional(),
+  controls: z
+    .record(
+      z.string().max(32),
+      z.object({
+        mode: z.enum(['keyboard', 'gamepad']).optional(),
+        keyboard: z.record(z.string().max(24), keyCodeSchema).optional(),
+        updatedAt: z.number().optional(),
+      }),
+    )
+    .optional(),
 });
 
 export const favoriteRequestSchema = z.object({
@@ -240,11 +254,41 @@ export interface ScanResult {
   error?: string;
 }
 
+/* ------------------------------------------------------------- controls */
+
+export const PAD_ACTIONS = ['up', 'down', 'left', 'right', 'a', 'b', 'x', 'y', 'l', 'r', 'start', 'select'] as const;
+
+export type PadAction = (typeof PAD_ACTIONS)[number];
+
+/** A `KeyboardEvent.code` value, e.g. "KeyW", "ArrowUp", "Space", "ShiftRight". */
+export type KeyCode = string;
+
+export type KeyboardBindings = Partial<Record<PadAction, KeyCode>>;
+
+export interface EngineControls {
+  mode?: 'keyboard' | 'gamepad';
+  keyboard?: KeyboardBindings;
+  updatedAt?: number;
+}
+
+export interface EngineControlsView {
+  engineId: string;
+  supported: boolean;
+  mode: 'keyboard' | 'gamepad';
+  current: KeyboardBindings;
+  isCustom: boolean;
+}
+
+export interface ControlsPayload {
+  engines: Record<string, EngineControlsView>;
+}
 export interface Settings {
   minimizeOnLaunch: boolean;
   fullscreen: boolean;
   autoScan?: boolean;
   scanRoots?: string[];
+  /** Per-engine key overrides written by the key-mapping panel. */
+  controls?: Record<string, EngineControls>;
 }
 
 export interface LaunchEvent {
