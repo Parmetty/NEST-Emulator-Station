@@ -1,0 +1,8 @@
+{
+  "tag_name": "v0.3.2",
+  "name": "Nest 0.3.2 · ares 键盘启用",
+  "body": "## Nest 0.3.2 · ares 键盘启用\n\n免安装携带版：下载 `Nest-0.3.2-portable.zip`，解压后双击 **启动 Nest.bat** 即可（不用安装、不写注册表）。\n\n### 这个版本有什么\n\n- **ares（FC / SFC / N64）键盘绑定正式启用**：首次启动自动写入 WASD + J/K + U/I + Q/E + Enter/右 Shift，N64 的 Z = Space；不再需要手柄或进 ares 手动绑\n- 编码依据 ares 148 源码确认：`0x1/0/<十进制下标>;;`（详见仓库 `docs/KEYS-ARES-FORMAT.md`）\n- 键位面板：GBA / FC / SFC / N64 / NDS / NGC / Wii / 3DS 全部可改键，保存后立即生效，不覆盖用户自定义布局\n- 扫描修复：`.cia`、ISO 头判定 GC/Wii、**启动时自动重扫已添加的文件夹**\n- 固件中心：GameCube IPL（CRC32 校验）/ Wii 系统菜单 WAD / NDS BIOS+固件\n- 系统菜单：NGC GameCube Menu、Wii Menu、NDS DS 固件菜单（需自备固件）\n- 内置引擎：mGBA、ares、Dolphin、Azahar、melonDS（284 MB）\n\n### 下载信息\n\n| 项 | 值 |\n|---|---|\n| 文件 | `Nest-0.3.2-portable.zip` |\n| 大小 | 234 MB（解压 598 MB / 2905 文件） |\n| SHA256 | `B5AE4AF8DDAC53CADACA1C8E493864FC3C23C65E0EBD0702594452422646AFA1` |\n\n### 首次使用\n\n1. 解压到任意目录\n2. 双击 `启动 Nest.bat`\n3. 点「扫描文件夹」指向 ROM 目录（之后每次启动自动重扫）\n4. 固件在 设置 →「系统文件（自备）」导入\n\n### 已知限制\n\n- 无数字签名：首次运行可能提示 SmartScreen，选「更多信息 → 仍要运行」\n- 3DS 无系统菜单（Azahar 不支持 HOME Menu）\n- 封面偶尔会截到过场黑帧\n- 个别环境需用启动脚本（已内置 `--no-sandbox`）\n\n完整改动见仓库 `docs/CHANGELOG.md` 的 0.3.2 节。",
+  "draft": false,
+  "prerelease": false,
+  "make_latest": "true"
+}

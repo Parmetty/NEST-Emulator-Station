@@ -279,6 +279,12 @@ est-pads.exe（SDL3）检测后切 SDL 绑定。
 - NDS DSi 模式未启用；Dolphin 的 select/Z/C-Stick 等扩展动作未映射
 - 自动构建脚本（`npm run portable` + `verify:portable`）方案已评审，未落地
 
+### 7. 发布（2026-10-30 完成）
+
+- GitHub Release **v0.3.2**：https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.3.2
+- 资产 Nest-0.3.2-portable.zip（245,728,360 B）已上传，SHA256 见上
+- 标签 0.3.2 已推送；main 与标签一致（16a2cb）
+
 ### 6. 数据
 
 - 引擎：mGBA 41.5 + ares 42.6 + Dolphin 57.0 + Azahar 101.8 + melonDS 41.5 = **284.4 MB**
