@@ -2,7 +2,7 @@
 
 本文件记录每次发布的可见变化。技术细节在 `docs/STATE.md`，决策理由在 `docs/DECISIONS.md`，待办在 `docs/PROGRESS.md`。
 
-## 0.3.1 — 开发中
+## 0.3.1 — 2026-10-30 · 免安装携带版
 
 ### 扫描（修朋友反馈的“3DS 游戏扫不到”）
 
@@ -28,6 +28,13 @@
 - 新增 `src/main/controls/ares.ts`：启动前写入 Famicom / FamicomDiskSystem / SuperFamicom / Nintendo64 的 `Port 1 → Gamepad`（WASD、J/K、U/I、Q/E、Enter、RShift；SFC 加 Y/X/L/R；N64 加 L/R/Z）
 - 校验方式：注入 `Up: 0x1/0/57;;` 后 ares 设置界面显示「键盘 + W」，证明格式与设备解析正确
 - ❌ 实测未通过：只有 W/S 对得上，A/D/J/K 等被 ares 解析成别的键、游戏内无反应 → `ares.ts` 保留但**不参与自动写入**；用户需在 ares 设置里手动绑一次（Nest 不覆盖自定义布局）。详见 `docs/DECISIONS.md` D21 实测对照表
+
+### 打包
+
+- `Nest-0.3.1-portable.zip`：**234 MB**（解压 598 MB / 2905 文件），5 引擎内置，解压后双击 `启动 Nest.bat`
+- SHA256：`46828963023521CB0B72AF4F844592E4C7CB385BE77AA2C0BBE2835BA78C7778`
+- 打包前 `tools/clean-engines.mjs` 清空引擎运行时状态（mGBA MRU / melonDS toml / `.nest-controls-*` / `*.before-nest`），并在组装后复查 zip 内容
+- 已验证：全新解压 → `--smoke` 通过 → `--scan` + mGBA 启动 + 封面生成
 
 ---
 
