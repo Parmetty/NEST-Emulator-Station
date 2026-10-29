@@ -22,12 +22,12 @@
 - 修正 Azahar 键盘方向键的 Qt 码错位（旧值实际是 Right/Down/PageUp，改为 16777234–16777237）
 - 新增 `tests/controls.test.ts`（14 条）：keymap 转换、mGBA ini / melonDS TOML 写读、自定义保留、force 重写、备份不被覆盖、facade 路由、ares unsupported
 
-### ares 键位（FC / SFC / N64）
+### ares 键位（FC / SFC / N64）— 研究完成，暂未启用
 
 - ares 的 `settings.bml` 绑定格式破译：`0x<deviceID>/<groupID>/<inputID hex>;;`，键盘设备 `0x1`、group `0`、inputID 为 VK 码（W=0x57、Enter=0x0d）
 - 新增 `src/main/controls/ares.ts`：启动前写入 Famicom / FamicomDiskSystem / SuperFamicom / Nintendo64 的 `Port 1 → Gamepad`（WASD、J/K、U/I、Q/E、Enter、RShift；SFC 加 Y/X/L/R；N64 加 L/R/Z）
 - 校验方式：注入 `Up: 0x1/0/57;;` 后 ares 设置界面显示「键盘 + W」，证明格式与设备解析正确
-- ⚠️ 待真机确认：VK 码为小写十六进制、设备号 `0x1` 在本机可复现；游戏内按键响应还需要你试一次（`E:\workstop\ares-probe`）
+- ❌ 实测未通过：只有 W/S 对得上，A/D/J/K 等被 ares 解析成别的键、游戏内无反应 → `ares.ts` 保留但**不参与自动写入**；用户需在 ares 设置里手动绑一次（Nest 不覆盖自定义布局）。详见 `docs/DECISIONS.md` D21 实测对照表
 
 ---
 

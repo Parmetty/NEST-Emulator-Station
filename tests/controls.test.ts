@@ -105,8 +105,8 @@ describe('keymap', () => {
     expect(aresAssignmentToCode('garbage')).toBeNull();
   });
 
-  it('marks every adapter engine as supported', () => {
-    for (const engineId of ['mgba', 'ares', 'dolphin', 'azahar', 'melonds']) {
+  it('supports every adapter except ares, whose BML ids are not decoded yet', () => {
+    for (const engineId of ['mgba', 'dolphin', 'azahar', 'melonds']) {
       expect(isControlsSupported(engineId)).toBe(true);
     }
     expect(isControlsSupported('nope')).toBe(false);
@@ -533,11 +533,12 @@ describe('ares adapter', () => {
 });
 
 describe('controls facade', () => {
-  it('reports ares as supported but writes nothing when settings.bml is missing', async () => {
+  it('does not write ares bindings while the adapter is disabled', async () => {
     const root = await tempDir('nest-controls-');
     try {
       const result = applyEngineControls('ares', { enginesDir: root, userData: root }, {}, false);
-      expect(result.supported).toBe(true);
+      expect(result.supported).toBe(false);
+      expect(result.reason).toBe('unsupported');
       expect(result.applied).toBe(false);
       expect(existsSync(path.join(root, 'ares', 'settings.bml'))).toBe(false);
     } finally {

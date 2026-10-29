@@ -1,4 +1,10 @@
-# FC / SFC / N64（ares）使用说明
+# ares（FC / SFC / N64）键盘绑定
+
+> **状态：实验性，Nest 暂不自动写入（2026-10-30）。**
+> 格式已破译（见下），但 ares 自己写出的 inputID 和我们按 VK 码推出的值对不上：
+> 实测只有 W/S（Up/Down）能对上，A/D/J/K 等会被 ares 显示成别的键、游戏内无反应。
+> 因此 `ares.ts` 保持只读：Nest 不会碰 `settings.bml`，用户需在 ares 设置里手动绑一次（或用游戏手柄），
+> 手动绑好后 Nest 会识别为“自定义布局”并永不覆盖。
 
 ares 是便携引擎：设置就写在 exe 旁边的 `settings.bml`（BML，缩进式 ini）。
 Nest 在启动前检查 Famicom / FamicomDiskSystem / SuperFamicom / Nintendo64 四个系统的

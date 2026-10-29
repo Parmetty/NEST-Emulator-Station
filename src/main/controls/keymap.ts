@@ -8,6 +8,14 @@
 import { PAD_ACTIONS, type KeyboardBindings, type PadAction } from '../../shared/contract';
 
 export const CONTROL_ENGINE_IDS = ['mgba', 'ares', 'dolphin', 'azahar', 'melonds'] as const;
+
+/**
+ * Engines Nest can safely rewrite. ares is listed above so the settings panel still
+ * shows the group, but its BML input ids are not fully decoded yet — writing
+ * guessed values produced bindings ares displayed under the wrong keys, so the
+ * adapter stays read-only until the encoding is confirmed in-game.
+ */
+export const WRITABLE_ENGINE_IDS = ['mgba', 'dolphin', 'azahar', 'melonds'] as const;
 export type ControlEngineId = (typeof CONTROL_ENGINE_IDS)[number];
 
 export function isPadAction(value: string): value is PadAction {

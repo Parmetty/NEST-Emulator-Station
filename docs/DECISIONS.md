@@ -207,3 +207,20 @@ GameCube 确实有 IPL（Boot ROM）菜单，虽然少见但真实存在。3DS /
 **实现**：`src/main/controls/ares.ts` + `keymap.ts` 的 VK 表；写入 Famicom / FamicomDiskSystem / SuperFamicom / Nintendo64 的 `Input → Controller.Port.1 → Gamepad`。
 
 **风险**：设备号 `0x1` 是 ares 运行时枚举出的 id，本机可复现；若某台机器键盘枚举顺序不同，绑定会显示 `(disconnected)`。缓解：写入前检测失败就只写数字形式，并在日志里提示；后续可改用 identifier 形式（需再实验确认键盘 identifier 字符串）。
+
+### D21 实测对照（2026-10-30，ares v148）
+
+| 动作 | 用户按的键 | ares 自己写的值 | 我们的 VK 推导值 | 界面显示 |
+|---|---|---|---|---|
+| Up | W | `0x1/0/57;;` | `0x1/0/57;;` | W ✅ |
+| Down | S | `0x1/0/53;;` | `0x1/0/53;;` | S ✅ |
+| Left | A | `0x1/0/35;;` | `0x1/0/41;;` | G ❌ |
+| Right | D | `0x1/0/38;;` | `0x1/0/44;;` | J ❌ |
+| A 键 | J | `0x1/0/44;;` | `0x1/0/4a;;` | F4 ❌ |
+| B 键 | K | `0x1/0/45;;` | `0x1/0/4b;;` | F4 ❌ |
+| Start | Enter | `0x1/0/91;;` | `0x1/0/d;;` | Escape ❌（手动改后有效） |
+
+结论：inputID 不是 Windows VK（W/S 只是巧合相同），更像 ares/ruby 自己的键盘枚举索引。
+下一步需要从 ruby/hiro 源码拿键盘 input 表，或让用户再绑一组键做对照（每绑一个键记下键名），
+在拿到确定映射前不自动写，避免生成“看似配置好但按了没反应”的 layouts。
+

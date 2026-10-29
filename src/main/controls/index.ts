@@ -12,7 +12,7 @@ import { applyAresControls, readAresControls } from './ares';
 import { applyDolphinControls, readDolphinControls } from './dolphin';
 import { applyMgbaControls, readMgbaControls } from './mgba';
 import { applyMelondsControls, readMelondsControls } from './melonds';
-import { CONTROL_ENGINE_IDS } from './keymap';
+import { CONTROL_ENGINE_IDS, WRITABLE_ENGINE_IDS } from './keymap';
 import type { ApplyResult } from './util';
 
 export { CONTROL_ENGINE_IDS, DEFAULT_KEYBOARD, defaultBindings, type ControlEngineId } from './keymap';
@@ -39,7 +39,7 @@ export interface ApplyControlsResult extends ApplyResult {
 }
 
 export function isControlsSupported(engineId: string): boolean {
-  return (CONTROL_ENGINE_IDS as readonly string[]).includes(engineId);
+  return (WRITABLE_ENGINE_IDS as readonly string[]).includes(engineId);
 }
 
 /** Which layout the adapter last wrote (Azahar only; everything else is keyboard). */
