@@ -186,3 +186,9 @@ npm run shot         # 产出 shots/app.png
 - **封面**：`captureCropTop 26` + `captureContentAspect 0.666667` + `captureTopOnly` → 只保留下屏之上的 **DS 上屏**（256×192 比例）
 - **配置**：melonDS 便携写 `melonDS.toml` / `wfcsettings.bin` 到引擎目录，已 gitignore；打包前需清理（含 RecentROM 本地路径）
 - **已知**：封面可能取到黑帧（GTA 过场），属 COV-2 问题
+
+## 扫描（2026-10-30）
+
+- 扩展名表见 `src/main/scanner.ts` 的 `EXT_TO_SYSTEM`；歧义镜像（`.iso/.rvz/.gcz/.ciso`）走 `systemForFile()` 读 0x18 magic 判定 GC / Wii
+- 用户添加过的文件夹存 `settings.scanRoots`（绝对路径、去重、上限 32）；`autoScan !== false` 时启动后 800ms 后台重扫，完成后向渲染层发 `nest:library-changed`，设置面板可移除文件夹或手动重扫
+- 调试参数 `--scan=` 走同一套 bookkeeping（不经过 IPC）

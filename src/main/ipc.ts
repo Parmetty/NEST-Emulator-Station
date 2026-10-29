@@ -337,6 +337,50 @@ function withCover(record: GameRecord): GameRecord {
   }
 }
 
+/* ------------------------------------------------------------ scan roots */
+
+const MAX_SCAN_ROOTS = 32;
+
+/** Adds a folder to the auto-scan list, keeping it absolute and deduplicated. */
+async function rememberScanRoot(store: Store, root: string): Promise<void> {
+  const resolved = path.resolve(root);
+  const current = store.getSettings().scanRoots ?? [];
+  if (current.includes(resolved)) return;
+  await store.setSettings({ scanRoots: [...current, resolved].slice(-MAX_SCAN_ROOTS) });
+}
+
+/**
+ * Re-scans every remembered folder. Used both by the settings panel button and
+ * by the silent scan at startup, so a user who adds a folder once never has to
+ * touch it again.
+ */
+export async function rescanRoots(
+  store: Store,
+): Promise<{ roots: string[]; added: number; skipped: number; total: number }> {
+  const roots = (store.getSettings().scanRoots ?? []).filter((root) => {
+    try {
+      return existsSync(root);
+    } catch {
+      return false;
+    }
+  });
+  let added = 0;
+  let skipped = 0;
+  let total = 0;
+  for (const root of roots) {
+    try {
+      const files = await scanFolder(root);
+      const result = await store.upsertGames(files);
+      added += result.added;
+      skipped += result.skipped;
+      total += files.length;
+    } catch {
+      /* one unreadable root must not block the rest */
+    }
+  }
+  return { roots, added, skipped, total };
+}
+
 export function createServices(onEvent: (payload: unknown) => void): Services {
   const store = new Store(path.join(app.getPath('userData'), 'library.json'));
   const engines = new EngineRegistry(enginesDir());
@@ -424,10 +468,25 @@ export function registerIpc(services: Services): void {
     try {
       const files = await scanFolder(root, { systemId: parsed.data.systemId });
       const { added, skipped } = await store.upsertGames(files);
+      // Remember the folder so the next launch can re-scan it without asking.
+      await rememberScanRoot(store, root);
       return { ok: true, root, added, skipped, total: files.length };
     } catch (err) {
       return { ok: false, error: (err as Error).message };
     }
+  });
+
+  ipcMain.handle(CH.rescan, async (): Promise<ScanResult> => {
+    const result = await rescanRoots(store);
+    return { ok: true, root: result.roots.join(';'), added: result.added, skipped: result.skipped, total: result.total };
+  });
+
+  ipcMain.handle(CH.removeScanRoot, async (_event, raw) => {
+    const root = String((raw as { root?: unknown })?.root ?? '').trim();
+    if (!root) return { ok: false, error: 'bad-request' };
+    const current = store.getSettings().scanRoots ?? [];
+    const settings = await store.setSettings({ scanRoots: current.filter((item) => item !== root) });
+    return { ok: true, settings };
   });
 
   ipcMain.handle(CH.launch, (_event, raw) => startLaunch(services, raw));

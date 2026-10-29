@@ -1,32 +1,54 @@
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
-import { readdir, stat } from 'node:fs/promises';
+import { open, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 
-/** Extension → system. .iso is ambiguous (GC/PS2/…); PS platforms are locked, so it maps to NGC. */
+/**
+ * Extension → system. `.iso` / `.rvz` cover both GameCube and Wii discs, so the
+ * extension alone is not enough: those go through {@link sniffSystem} which
+ * reads the disc header. `.wbfs` is always Wii.
+ */
 export const EXT_TO_SYSTEM: Record<string, string> = {
   gba: 'gba',
   agb: 'gba',
   nes: 'fc',
   fds: 'fc',
   unf: 'fc',
+  unif: 'fc',
   sfc: 'sfc',
   smc: 'sfc',
   swc: 'sfc',
   fig: 'sfc',
+  bs: 'sfc',
   n64: 'n64',
   z64: 'n64',
   v64: 'n64',
   gcm: 'ngc',
   iso: 'ngc',
   rvz: 'ngc',
+  gcz: 'ngc',
+  ciso: 'ngc',
+  dol: 'ngc',
   wbfs: 'wii',
+  wia: 'wii',
   nds: 'nds',
+  dsi: 'nds',
+  ids: 'nds',
+  srl: 'nds',
   '3ds': '3ds',
   cci: '3ds',
   cxi: '3ds',
   '3dsx': '3ds',
+  cia: '3ds',
 };
+
+/** Disc images whose system must be decided by the header, not the extension. */
+const AMBIGUOUS_DISC_EXT = new Set(['iso', 'rvz', 'gcz', 'ciso']);
+
+/** GameCube disc magic at 0x18 (big endian). */
+const GC_MAGIC = 0xc2339f3f;
+/** Wii disc magic at 0x18 (big endian). */
+const WII_MAGIC = 0x5d1c9ea3;
 
 export interface ScannedFile {
   path: string;
@@ -44,8 +66,8 @@ export interface ScanOptions {
   maxFiles?: number;
 }
 
-const DEFAULT_DEPTH = 6;
-const DEFAULT_FILES = 20_000;
+const DEFAULT_DEPTH = 8;
+const DEFAULT_FILES = 50_000;
 
 export function titleFrom(fileName: string): string {
   const base = path.basename(fileName, path.extname(fileName));
@@ -67,6 +89,41 @@ function sha1Of(file: string): Promise<string> {
     stream.once('error', reject);
     stream.once('end', () => resolve(hash.digest('hex')));
   });
+}
+
+/**
+ * Reads the 4-byte disc magic at 0x18 to tell a GameCube image from a Wii one.
+ * A `.wbfs` file keeps the ISO header after its 0x200-byte wrapper.
+ */
+async function sniffDiscSystem(file: string, ext: string): Promise<string | null> {
+  let handle;
+  try {
+    handle = await open(file, 'r');
+    const offset = ext === 'wbfs' ? 0x200 + 0x18 : 0x18;
+    const buffer = Buffer.alloc(4);
+    const { bytesRead } = await handle.read(buffer, 0, 4, offset);
+    if (bytesRead < 4) return null;
+    const magic = buffer.readUInt32BE(0);
+    if (magic === GC_MAGIC) return 'ngc';
+    if (magic === WII_MAGIC) return 'wii';
+    return null;
+  } catch {
+    return null;
+  } finally {
+    await handle?.close();
+  }
+}
+
+/** Resolves the system for one file, falling back to the extension table. */
+export async function systemForFile(file: string): Promise<string | null> {
+  const ext = path.extname(file).slice(1).toLowerCase();
+  const byExtension = EXT_TO_SYSTEM[ext];
+  if (!byExtension) return null;
+  if (ext === 'wbfs' || AMBIGUOUS_DISC_EXT.has(ext)) {
+    const sniffed = await sniffDiscSystem(file, ext);
+    if (sniffed) return sniffed;
+  }
+  return byExtension;
 }
 
 /** Recursively collects ROMs under `root`. Unreadable files are skipped, not fatal. */
@@ -97,11 +154,12 @@ export async function scanFolder(root: string, options: ScanOptions = {}): Promi
         continue;
       }
       if (!entry.isFile()) continue;
-      const systemId = EXT_TO_SYSTEM[path.extname(entry.name).slice(1).toLowerCase()];
-      if (!systemId) continue;
-      if (options.systemId && systemId !== options.systemId) continue;
+      if (!EXT_TO_SYSTEM[path.extname(entry.name).slice(1).toLowerCase()]) continue;
       seen += 1;
       try {
+        const systemId = await systemForFile(full);
+        if (!systemId) continue;
+        if (options.systemId && systemId !== options.systemId) continue;
         const info = await stat(full);
         const sha1 = await sha1Of(full);
         found.push({

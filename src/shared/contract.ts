@@ -16,6 +16,9 @@ export const CH = {
   favorite: 'nest:favorite',
   openHomepage: 'nest:open-homepage',
   launchEvent: 'nest:launch-event',
+  libraryChanged: 'nest:library-changed',
+  rescan: 'nest:rescan',
+  removeScanRoot: 'nest:scan-root-remove',
   firmwareStatus: 'nest:firmware-status',
   pickFirmware: 'nest:pick-firmware',
 } as const;
@@ -57,6 +60,10 @@ export const gamesRequestSchema = z.object({
 export const settingsSchema = z.object({
   minimizeOnLaunch: z.boolean().optional(),
   fullscreen: z.boolean().optional(),
+  /** Scan the folders below automatically when Nest starts. */
+  autoScan: z.boolean().optional(),
+  /** Absolute folders the user added; re-scanned at boot and on demand. */
+  scanRoots: z.array(z.string().min(1)).max(32).optional(),
 });
 
 export const favoriteRequestSchema = z.object({
@@ -236,6 +243,8 @@ export interface ScanResult {
 export interface Settings {
   minimizeOnLaunch: boolean;
   fullscreen: boolean;
+  autoScan?: boolean;
+  scanRoots?: string[];
 }
 
 export interface LaunchEvent {

@@ -2,6 +2,16 @@
 
 本文件记录每次发布的可见变化。技术细节在 `docs/STATE.md`，决策理由在 `docs/DECISIONS.md`，待办在 `docs/PROGRESS.md`。
 
+## 0.3.1 — 开发中
+
+### 扫描（修朋友反馈的“3DS 游戏扫不到”）
+
+- 扩展名补齐：`.cia`（3DS 安装包，之前完全扫不到）、`.dsi/.ids/.srl`（NDS）、`.wia`（Wii）、`.gcz/.ciso/.dol`（NGC）、`.unif`（FC）、`.bs`（SFC）
+- `.iso/.rvz/.gcz/.ciso` 不再一律归 NGC：读偏移 0x18 的磁盘头 magic 区分 GameCube（`C2339F3F`）与 Wii（`5D1C9EA3`），Unknow 时回退扩展名
+- 扫描深度 6 → 8 层、单次上限 20k → 50k 文件
+- **启动自动扫描**：界面里添加过的文件夹会存进设置（`scanRoots`），每次启动 800ms 后后台重扫，新放进去的 ROM 自动出现；设置面板可查看/移除文件夹、手动「立即扫描」，并可关闭自动扫描（`autoScan`）
+- `--scan=` 调试参数同样会记住文件夹，方便测试脚本复用
+
 ---
 
 ## 0.3.0 — 2026-10-29 · 免安装携带版

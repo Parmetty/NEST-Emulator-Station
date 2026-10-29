@@ -23,6 +23,8 @@ const EMPTY: SystemStats = { games: 0, saves: 0, lastPlayed: null, favorite: fal
 export const DEFAULT_SETTINGS: Settings = {
   minimizeOnLaunch: true,
   fullscreen: false,
+  autoScan: true,
+  scanRoots: [],
 };
 
 /** Demo numbers so an empty library still looks alive. Real scans override them. */

@@ -108,6 +108,9 @@ export function installMockApi(): void {
       return { ok: true };
     },
     stop: async () => ({ ok: true }),
+    rescan: async () => ({ ok: true, root: "", added: 0, skipped: 0, total: 0 }),
+    removeScanRoot: async () => ({ ok: true }),
+    onLibraryChanged: () => () => undefined,
     settings: async () => ({ minimizeOnLaunch: true, fullscreen: false }),
     saveSettings: async () => ({ ok: true }),
     favorite: async (systemId, favorite) => {

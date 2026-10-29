@@ -31,6 +31,11 @@ const api = {
 
   stop: (sessionId: string): Promise<{ ok: boolean }> => ipcRenderer.invoke(CH.stop, { sessionId }),
 
+  rescan: (): Promise<ScanResult> => ipcRenderer.invoke(CH.rescan),
+
+  removeScanRoot: (root: string): Promise<{ ok: boolean; error?: string }> =>
+    ipcRenderer.invoke(CH.removeScanRoot, { root }),
+
   settings: (): Promise<Settings> => ipcRenderer.invoke(CH.settings),
 
   saveSettings: (patch: Partial<Settings>): Promise<{ ok: boolean; settings?: Settings }> =>
@@ -48,6 +53,12 @@ const api = {
 
   openHomepage: (url: string): Promise<{ ok: boolean }> =>
     ipcRenderer.invoke(CH.openHomepage, { url }),
+
+  onLibraryChanged: (cb: (info: { roots: number; added: number }) => void): (() => void) => {
+    const handler = (_e: unknown, info: { roots: number; added: number }) => cb(info);
+    ipcRenderer.on(CH.libraryChanged, handler);
+    return () => ipcRenderer.removeListener(CH.libraryChanged, handler);
+  },
 
   onLaunchEvent: (cb: (event: LaunchEvent) => void): (() => void) => {
     const handler = (_e: unknown, event: LaunchEvent) => cb(event);

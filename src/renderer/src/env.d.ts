@@ -18,6 +18,8 @@ export interface NestApi {
   removeGame(gameId: string): Promise<{ ok: boolean; error?: string }>;
   launch(systemId: string, mode?: LaunchMode, rom?: string): Promise<LaunchResult>;
   stop(sessionId: string): Promise<{ ok: boolean }>;
+  rescan(): Promise<ScanResult>;
+  removeScanRoot(root: string): Promise<{ ok: boolean; error?: string }>;
   settings(): Promise<Settings>;
   saveSettings(patch: Partial<Settings>): Promise<{ ok: boolean; settings?: Settings }>;
   favorite(systemId: string, favorite: boolean): Promise<{ ok: boolean }>;
@@ -26,6 +28,7 @@ export interface NestApi {
     kind: FirmwareKind,
   ): Promise<{ ok: boolean; canceled?: boolean; error?: string; state?: FirmwareState }>;
   openHomepage(url: string): Promise<{ ok: boolean }>;
+  onLibraryChanged(cb: (info: { roots: number; added: number }) => void): () => void;
   onLaunchEvent(cb: (event: LaunchEvent) => void): () => void;
 }
 

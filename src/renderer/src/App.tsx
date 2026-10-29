@@ -212,6 +212,45 @@ export default function App() {
   }, []);
 
   /* ---------------------------------------------------------- firmware */
+  /* -------------------------------------------------------- scan roots */
+  const [rescanning, setRescanning] = useState(false);
+
+  const rescanAll = useCallback(async () => {
+    setRescanning(true);
+    try {
+      const result = await window.nest.rescan();
+      await refreshHome();
+      if (result.ok) {
+        const added = result.added ?? 0;
+        say(added > 0 ? `重新扫描完成，新增 ${added} 个` : '重新扫描完成，没有新游戏');
+      } else {
+        say('扫描失败');
+      }
+    } catch {
+      say('扫描失败');
+    } finally {
+      setRescanning(false);
+    }
+  }, [refreshHome, say]);
+
+  const removeRoot = useCallback(
+    async (root: string) => {
+      await window.nest.removeScanRoot(root).catch(() => undefined);
+      setSettings(await window.nest.settings().catch(() => settings));
+      say('已移除这个文件夹');
+    },
+    [say, settings],
+  );
+
+  // The silent boot scan finishes after the first paint; refresh with no toast.
+  useEffect(
+    () =>
+      window.nest.onLibraryChanged(() => {
+        void refreshHome();
+      }),
+    [refreshHome],
+  );
+
   const refreshFirmware = useCallback(() => {
     void window.nest.firmwareStatus().then(setFirmware).catch(() => undefined);
   }, []);

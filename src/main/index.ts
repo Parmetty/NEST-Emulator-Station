@@ -5,7 +5,15 @@ import { copyFile, mkdir, readdir, stat, unlink, writeFile } from 'node:fs/promi
 import { app, BrowserWindow, shell } from 'electron';
 import { CH, type LaunchEvent } from '../shared/contract';
 import { systemById, type SystemId } from '../shared/systems';
-import { coversDir, createServices, registerIpc, shotsDir, startLaunch, type Services } from './ipc';
+import {
+  coversDir,
+  createServices,
+  registerIpc,
+  rescanRoots,
+  shotsDir,
+  startLaunch,
+  type Services,
+} from './ipc';
 
 const SMOKE = process.argv.includes('--smoke') || process.env.NEST_SMOKE === '1';
 
@@ -252,6 +260,35 @@ function createWindow(): BrowserWindow {
   return win;
 }
 
+/** Re-scans remembered folders in the background, then refreshes the renderer. */
+async function autoScanOnBoot(): Promise<void> {
+  if (!services) return;
+  const settings = services.store.getSettings();
+  if (settings.autoScan === false) return;
+  const roots = settings.scanRoots ?? [];
+  if (roots.length === 0) return;
+  try {
+    const result = await rescanRoots(services.store);
+    console.log(
+      '[nest] auto-scan: ' +
+        result.roots.length +
+        ' root(s), +' +
+        result.added +
+        ' new, ' +
+        result.skipped +
+        ' duplicates, ' +
+        result.total +
+        ' files',
+    );
+    mainWindow?.webContents.send(CH.libraryChanged, {
+      roots: result.roots.length,
+      added: result.added,
+    });
+  } catch (err) {
+    console.error('[nest] auto-scan failed:', (err as Error).message);
+  }
+}
+
 async function boot(): Promise<void> {
   installFileLogging();
   console.log('[nest] boot: services');
@@ -306,8 +343,15 @@ async function boot(): Promise<void> {
   const preloadScan = process.argv.find((arg) => arg.startsWith('--scan='));
   if (preloadScan) {
     const { scanFolder } = await import('./scanner');
-    const files = await scanFolder(preloadScan.slice('--scan='.length));
+    const root = path.resolve(preloadScan.slice('--scan='.length));
+    const files = await scanFolder(root);
     const result = await services.store.upsertGames(files);
+    // Same bookkeeping as the IPC handler: a folder scanned once stays on the
+    // auto-scan list, including when the test harness passes --scan=.
+    const known = services.store.getSettings().scanRoots ?? [];
+    if (!known.includes(root)) {
+      await services.store.setSettings({ scanRoots: [...known, root] });
+    }
     console.log(`[nest] preload scan: +${result.added} (${result.skipped} duplicates)`);
   }
   console.log('[nest] boot: ipc');
@@ -319,6 +363,14 @@ async function boot(): Promise<void> {
   mainWindow.on('closed', () => {
     services?.supervisor.stopAll();
     mainWindow = null;
+  });
+  // Silent auto-scan: folders the user added once are re-scanned on every boot,
+  // so newly dropped ROMs show up without touching the UI. Runs after the first
+  // paint so startup never blocks on a big folder.
+  mainWindow.webContents.once('did-finish-load', () => {
+    setTimeout(() => {
+      void autoScanOnBoot();
+    }, 800);
   });
 
   const shotFlag = process.argv.find((arg) => arg.startsWith('--shot='));
