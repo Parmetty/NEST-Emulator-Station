@@ -12,11 +12,14 @@ import { applyDolphinControls, readDolphinControls } from '../src/main/controls/
 import {
   codeToDolphinName,
   codeToQtKey,
+  aresAssignmentToCode,
+  codeToAresAssignment,
   DEFAULT_KEYBOARD,
   defaultBindings,
   dolphinNameToCode,
   qtToCode,
 } from '../src/main/controls/keymap';
+import { applyAresControls, readAresControls } from '../src/main/controls/ares';
 import { applyMelondsControls, readMelondsControls } from '../src/main/controls/melonds';
 import { applyMgbaControls, readMgbaControls } from '../src/main/controls/mgba';
 
@@ -71,14 +74,42 @@ describe('keymap', () => {
     expect(defaultBindings('dolphin')).toMatchObject({ a: 'Space', up: 'KeyW', l: 'KeyQ' });
     expect(defaultBindings('azahar')).toMatchObject({ a: 'Space', select: 'Backspace', up: 'ArrowUp' });
     expect(defaultBindings('melonds')).toMatchObject({ x: 'KeyK', y: 'KeyL', up: 'ArrowUp' });
-    expect(defaultBindings('ares')).toEqual({ ...DEFAULT_KEYBOARD.ares });
+    expect(defaultBindings('ares')).toMatchObject({
+      up: 'KeyW',
+      down: 'KeyS',
+      left: 'KeyA',
+      right: 'KeyD',
+      a: 'KeyJ',
+      b: 'KeyK',
+      x: 'KeyU',
+      y: 'KeyI',
+      l: 'KeyQ',
+      r: 'KeyE',
+      start: 'Enter',
+      select: 'ShiftRight',
+    });
     expect(defaultBindings('nope')).toEqual({});
   });
 
-  it('marks ares as unsupported until its format is known', () => {
-    expect(isControlsSupported('ares')).toBe(false);
-    expect(isControlsSupported('mgba')).toBe(true);
-    expect(isControlsSupported('melonds')).toBe(true);
+  it('encodes ares assignments (device 0x1, Windows virtual-key codes)', () => {
+    expect(codeToAresAssignment('KeyW')).toBe('0x1/0/57;;');
+    expect(codeToAresAssignment('KeyJ')).toBe('0x1/0/4a;;');
+    expect(codeToAresAssignment('Enter')).toBe('0x1/0/d;;');
+    expect(codeToAresAssignment('ShiftRight')).toBe('0x1/0/a1;;');
+    expect(codeToAresAssignment('Space')).toBe('0x1/0/20;;');
+    expect(codeToAresAssignment('ArrowUp')).toBe('0x1/0/26;;');
+    expect(codeToAresAssignment('Unknown')).toBeNull();
+    expect(aresAssignmentToCode('0x1/0/57;;')).toBe('KeyW');
+    expect(aresAssignmentToCode('0x1/0/a1;;')).toBe('ShiftRight');
+    expect(aresAssignmentToCode(';;')).toBeNull();
+    expect(aresAssignmentToCode('garbage')).toBeNull();
+  });
+
+  it('marks every adapter engine as supported', () => {
+    for (const engineId of ['mgba', 'ares', 'dolphin', 'azahar', 'melonds']) {
+      expect(isControlsSupported(engineId)).toBe(true);
+    }
+    expect(isControlsSupported('nope')).toBe(false);
   });
 });
 
@@ -312,14 +343,203 @@ describe('Azahar adapter', () => {
   });
 });
 
+describe('ares adapter', () => {
+  function fixture(): string {
+    return [
+      'Video',
+      '  WindowWidth: 800',
+      '',
+      'Nintendo64',
+      '  ExpansionPak: true',
+      '  Input',
+      '    Controller.Port.1',
+      '      Gamepad',
+      '        Up: ;;',
+      '        Down: ;;',
+      '        Left: ;;',
+      '        Right: ;;',
+      '        B: ;;',
+      '        A: ;;',
+      '        L: ;;',
+      '        R: ;;',
+      '        Z: ;;',
+      '        Start: ;;',
+      '      Mouse',
+      '        X: ;;',
+      'Path',
+      'Famicom',
+      '  Input',
+      '    Controller.Port.1',
+      '      Gamepad',
+      '        Up: ;;',
+      '        Down: ;;',
+      '        Left: ;;',
+      '        Right: ;;',
+      '        B: ;;',
+      '        A: ;;',
+      '        Select: ;;',
+      '        Start: ;;',
+      '        Microphone: ;;',
+      '      Zapper',
+      '        X: ;;',
+      'Path',
+      'SuperFamicom',
+      '  Input',
+      '    Controller.Port.1',
+      '      Gamepad',
+      '        Up: ;;',
+      '        Down: ;;',
+      '        Left: ;;',
+      '        Right: ;;',
+      '        B: ;;',
+      '        A: ;;',
+      '        Y: ;;',
+      '        X: ;;',
+      '        L: ;;',
+      '        R: ;;',
+      '        Select: ;;',
+      '        Start: ;;',
+      'Path',
+      'FamicomDiskSystem',
+      '  Input',
+      '    Controller.Port.1',
+      '      Gamepad',
+      '        Up: ;;',
+      '        Down: ;;',
+      '        Left: ;;',
+      '        Right: ;;',
+      '        B: ;;',
+      '        A: ;;',
+      '        Select: ;;',
+      '        Start: ;;',
+      'Path',
+      '',
+    ].join('\n');
+  }
+
+  it('writes ares BML assignments for FC / SFC / N64', async () => {
+    const dir = await tempDir('nest-ares-');
+    try {
+      await writeFile(path.join(dir, 'settings.bml'), fixture());
+      const result = applyAresControls(dir, { ...DEFAULT_KEYBOARD.ares }, false);
+      expect(result.applied).toBe(true);
+      expect(existsSync(path.join(dir, 'settings.bml.before-nest'))).toBe(true);
+      expect(await readFile(path.join(dir, '.nest-controls-v1'), 'utf8')).toContain('applied-v1');
+
+      const text = await readFile(path.join(dir, 'settings.bml'), 'utf8');
+      // Famicom / FDS (same key set)
+      expect(text).toContain('Up: 0x1/0/57;;');
+      expect(text).toContain('Down: 0x1/0/53;;');
+      expect(text).toContain('Left: 0x1/0/41;;');
+      expect(text).toContain('Right: 0x1/0/44;;');
+      expect(text).toContain('A: 0x1/0/4a;;');
+      expect(text).toContain('B: 0x1/0/4b;;');
+      expect(text).toContain('Start: 0x1/0/d;;');
+      expect(text).toContain('Select: 0x1/0/a1;;');
+      // SFC-only buttons
+      expect(text).toContain('Y: 0x1/0/49;;');
+      expect(text).toContain('X: 0x1/0/55;;');
+      expect(text).toContain('L: 0x1/0/51;;');
+      expect(text).toContain('R: 0x1/0/45;;');
+      // N64 fixed Z
+      expect(text).toContain('Z: 0x1/0/20;;');
+      // Untouched nodes survive
+      expect(text).toContain('WindowWidth: 800');
+      expect(text).toContain('Microphone: ;;');
+      expect(text).toContain('        X: ;;');
+
+      expect(readAresControls(dir)).toMatchObject({
+        up: 'KeyW',
+        down: 'KeyS',
+        left: 'KeyA',
+        right: 'KeyD',
+        a: 'KeyJ',
+        b: 'KeyK',
+        x: 'KeyU',
+        y: 'KeyI',
+        l: 'KeyQ',
+        r: 'KeyE',
+        start: 'Enter',
+        select: 'ShiftRight',
+      });
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('keeps a hand-made ares binding when force is false', async () => {
+    const dir = await tempDir('nest-ares-custom-');
+    try {
+      const custom = fixture().replace(
+        '        Up: ;;',
+        '        Up: 0x1/0/51;;',
+      );
+      await writeFile(path.join(dir, 'settings.bml'), custom);
+      const result = applyAresControls(dir, { ...DEFAULT_KEYBOARD.ares }, false);
+      expect(result.applied).toBe(false);
+      expect(result.reason).toBe('custom');
+      expect(await readFile(path.join(dir, 'settings.bml'), 'utf8')).toBe(custom);
+      expect(await readFile(path.join(dir, '.nest-controls-v1'), 'utf8')).toContain('kept-user-config');
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('force rewrites custom ares bindings', async () => {
+    const dir = await tempDir('nest-ares-force-');
+    try {
+      await writeFile(
+        path.join(dir, 'settings.bml'),
+        fixture().replace('        Up: ;;', '        Up: 0x1/0/51;;'),
+      );
+      const result = applyAresControls(
+        dir,
+        { ...DEFAULT_KEYBOARD.ares, up: 'ArrowUp' },
+        true,
+      );
+      expect(result.applied).toBe(true);
+      expect(await readFile(path.join(dir, 'settings.bml'), 'utf8')).toContain('Up: 0x1/0/26;;');
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('edits the real bundled settings.bml in place without touching other nodes', async () => {
+    const real = await readFile(
+      path.join(__dirname, '..', 'resources', 'engines', 'ares', 'settings.bml'),
+      'utf8',
+    );
+    const dir = await tempDir('nest-ares-real-');
+    try {
+      await writeFile(path.join(dir, 'settings.bml'), real);
+      const result = applyAresControls(dir, { ...DEFAULT_KEYBOARD.ares }, true);
+      expect(result.applied).toBe(true);
+
+      const text = await readFile(path.join(dir, 'settings.bml'), 'utf8');
+      // In-place edit: no lines added or removed.
+      expect(text.split('\n').length).toBe(real.split('\n').length);
+      expect(text).toContain('Up: 0x1/0/57;;');
+      expect(text).toContain('ShowStatusBar: false');
+      expect(text).not.toContain('Microphone: 0x1');
+      // Untouched neighbouring systems keep their empty bindings.
+      expect(text).toContain('Dendy');
+      expect(text).toContain('ZXSpectrum');
+      // Read-back merges FC + SFC into one action map.
+      expect(readAresControls(dir)).toMatchObject({ a: 'KeyJ', x: 'KeyU', select: 'ShiftRight' });
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+});
+
 describe('controls facade', () => {
-  it('reports ares as unsupported and writes nothing', async () => {
+  it('reports ares as supported but writes nothing when settings.bml is missing', async () => {
     const root = await tempDir('nest-controls-');
     try {
       const result = applyEngineControls('ares', { enginesDir: root, userData: root }, {}, false);
-      expect(result.supported).toBe(false);
-      expect(result.reason).toBe('unsupported');
+      expect(result.supported).toBe(true);
       expect(result.applied).toBe(false);
+      expect(existsSync(path.join(root, 'ares', 'settings.bml'))).toBe(false);
     } finally {
       await rm(root, { recursive: true, force: true });
     }

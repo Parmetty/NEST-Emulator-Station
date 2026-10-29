@@ -187,3 +187,23 @@ GameCube 确实有 IPL（Boot ROM）菜单，虽然少见但真实存在。3DS /
 - 用户拿到的是一堆文件夹，可能误删 `resources` 导致引擎消失
 
 **后续**：若将来加自动更新或需要写系统目录，再回头做安装版；NSIS 配置（`oneClick:false` + `allowToChangeInstallationDirectory:true`）已留在 `package.json` 里备查。
+
+## D21 · ares 键盘绑定格式（2026-10-30 实验破译）
+
+**结论**：ares 的 `settings.bml` 里，输入绑定写成
+
+```
+0x<deviceID>/<groupID>/<inputID hex>;;
+```
+
+键盘是 `0x1/0/<VK码>;;`；`inputID` 是 **Windows 虚拟键码（VK）的十六进制**，不是 SDL scancode。
+空绑定写 `;;`。
+
+**证据**：
+- 在 ares v148 里手动把 Famicom 的 Up 绑到 W，ares 自己写出 `Up: 0x1/0/57;;`（0x57 = VK_W）
+- 反向验证：把 `Up: ;;` 改成 `Up: 0x1/0/57;;` 后启动 ares → Settings → Input，Up 行显示「键盘图标 + W」，说明解析与设备解析都正确
+- 此前失败的两个候选：`Keyboard/0/40`（3 段，被 input.cpp 忽略）、`0x0/0/40`（设备号错，且 40 是 SDL scancode 而非 VK）
+
+**实现**：`src/main/controls/ares.ts` + `keymap.ts` 的 VK 表；写入 Famicom / FamicomDiskSystem / SuperFamicom / Nintendo64 的 `Input → Controller.Port.1 → Gamepad`。
+
+**风险**：设备号 `0x1` 是 ares 运行时枚举出的 id，本机可复现；若某台机器键盘枚举顺序不同，绑定会显示 `(disconnected)`。缓解：写入前检测失败就只写数字形式，并在日志里提示；后续可改用 identifier 形式（需再实验确认键盘 identifier 字符串）。

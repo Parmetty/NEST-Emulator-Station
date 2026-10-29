@@ -12,6 +12,7 @@ import { applyAresControls, readAresControls } from './ares';
 import { applyDolphinControls, readDolphinControls } from './dolphin';
 import { applyMgbaControls, readMgbaControls } from './mgba';
 import { applyMelondsControls, readMelondsControls } from './melonds';
+import { CONTROL_ENGINE_IDS } from './keymap';
 import type { ApplyResult } from './util';
 
 export { CONTROL_ENGINE_IDS, DEFAULT_KEYBOARD, defaultBindings, type ControlEngineId } from './keymap';
@@ -38,7 +39,7 @@ export interface ApplyControlsResult extends ApplyResult {
 }
 
 export function isControlsSupported(engineId: string): boolean {
-  return engineId !== 'ares';
+  return (CONTROL_ENGINE_IDS as readonly string[]).includes(engineId);
 }
 
 /** Which layout the adapter last wrote (Azahar only; everything else is keyboard). */
@@ -57,6 +58,8 @@ function engineDirs(
       return { engineDir: engineDir ?? path.join(paths.enginesDir, 'mgba') };
     case 'melonds':
       return { engineDir: engineDir ?? path.join(paths.enginesDir, 'melonds') };
+    case 'ares':
+      return { engineDir: engineDir ?? path.join(paths.enginesDir, 'ares') };
     case 'dolphin':
       return { configDir: path.join(paths.userData, 'dolphin', 'Config') };
     case 'azahar':
@@ -97,6 +100,9 @@ export function applyEngineControls(
     case 'azahar':
       result = applyAzaharControls(dirs.root!, bindings, options.gamepads ?? 0, force, options.mode);
       break;
+    case 'ares':
+      result = applyAresControls(dirs.engineDir!, bindings, force);
+      break;
     default:
       return unsupported;
   }
@@ -120,7 +126,7 @@ export function readEngineControls(
     case 'azahar':
       return readAzaharControls(dirs.root!);
     case 'ares':
-      return readAresControls();
+      return readAresControls(dirs.engineDir!);
     default:
       return null;
   }

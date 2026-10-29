@@ -426,7 +426,7 @@ function effectiveBindings(store: Store, engineId: string): KeyboardBindings {
 
 /** Where a portable engine's config lives: next to the exe Nest will launch. */
 function detectedEngineDir(services: Services, engineId: string): string | undefined {
-  if (engineId !== 'mgba' && engineId !== 'melonds') return undefined;
+  if (engineId !== 'mgba' && engineId !== 'melonds' && engineId !== 'ares') return undefined;
   const manifest = services.engines.get(engineId);
   const detected = manifest ? services.engines.detect(manifest) : null;
   return detected ? path.dirname(detected) : undefined;
@@ -458,6 +458,8 @@ function applyControls(
     console.log(`[nest] ${engineId} controls applied (${result.files.join(', ')})`);
   } else if (result.reason === 'unsupported') {
     console.log(`[nest] ${engineId} controls: unsupported (no writer yet)`);
+  } else if (!result.applied) {
+    console.log(`[nest] ${engineId} controls: skipped (${result.reason ?? 'unknown'})`);
   }
   return result;
 }
@@ -739,6 +741,7 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   }
 
   if (engine.id === 'mgba') applyControls(services, 'mgba', false);
+  if (engine.id === 'ares') applyControls(services, 'ares', false);
 
   // Azahar resolves its data folder from the Windows user profile
   // (`%APPDATA%\Azahar`), not from `--user-data-dir` and not from APPDATA alone.

@@ -132,6 +132,86 @@ export function dolphinNameToCode(name: string): string | null {
   return null;
 }
 
+/* --------------------------------------------------------- ares assignments */
+/**
+ * ares stores an input binding as `0x<deviceID>/<groupID>/<inputID(hex)>;;`.
+ * The keyboard is device `0x1`, group `0`, and inputIDs are **Windows virtual
+ * key codes** (not SDL scancodes): W = 0x57, Enter = 0x0D, ShiftRight = 0xA1.
+ * The trailing `;;` is what ares itself writes; keep it verbatim.
+ */
+const ARES_NAMED_VK: Record<string, number> = {
+  Space: 0x20,
+  Enter: 0x0d,
+  Escape: 0x1b,
+  Tab: 0x09,
+  Backspace: 0x08,
+  Insert: 0x2d,
+  Delete: 0x2e,
+  Home: 0x24,
+  End: 0x23,
+  PageUp: 0x21,
+  PageDown: 0x22,
+  ArrowLeft: 0x25,
+  ArrowUp: 0x26,
+  ArrowRight: 0x27,
+  ArrowDown: 0x28,
+  ShiftLeft: 0xa0,
+  ShiftRight: 0xa1,
+  ControlLeft: 0xa2,
+  ControlRight: 0xa3,
+  AltLeft: 0xa4,
+  AltRight: 0xa5,
+  CapsLock: 0x14,
+  Minus: 0xbd,
+  Equal: 0xbb,
+  BracketLeft: 0xdb,
+  BracketRight: 0xdd,
+  Backslash: 0xdc,
+  Semicolon: 0xba,
+  Quote: 0xde,
+  Comma: 0xbc,
+  Period: 0xbe,
+  Slash: 0xbf,
+  Backquote: 0xc0,
+};
+
+export function codeToAresVk(code: string): number | null {
+  if (/^Key[A-Z]$/.test(code)) return code.charCodeAt(3);
+  if (/^Digit[0-9]$/.test(code)) return code.charCodeAt(5);
+  const fn = /^F([1-9]|1[0-2])$/.exec(code);
+  if (fn) return 0x6f + Number(fn[1]);
+  return Object.prototype.hasOwnProperty.call(ARES_NAMED_VK, code) ? ARES_NAMED_VK[code] : null;
+}
+
+const ARES_VK_TO_CODE = new Map<number, string>();
+for (const [code, value] of Object.entries(ARES_NAMED_VK)) ARES_VK_TO_CODE.set(value, code);
+for (let i = 0; i < 26; i += 1) {
+  ARES_VK_TO_CODE.set(0x41 + i, `Key${String.fromCharCode(0x41 + i)}`);
+}
+for (let i = 0; i < 10; i += 1) ARES_VK_TO_CODE.set(0x30 + i, `Digit${i}`);
+for (let i = 1; i <= 12; i += 1) ARES_VK_TO_CODE.set(0x6f + i, `F${i}`);
+
+/** `KeyboardEvent.code` → ares assignment, e.g. "0x1/0/57;;" for W. */
+export function codeToAresAssignment(code: string): string | null {
+  const vk = codeToAresVk(code);
+  if (vk == null) return null;
+  // ares formats these with nall::hex(), which uses lowercase digits — mirror it
+  // exactly so its own writer and ours agree on the same string.
+  return `0x1/0/${vk.toString(16)};;`;
+}
+
+/** ares assignment → `KeyboardEvent.code`; empty bindings return null. */
+export function aresAssignmentToCode(assignment: string): string | null {
+  const value = assignment.trim();
+  if (value.length === 0 || value === ';;') return null;
+  const bare = value.endsWith(';;') ? value.slice(0, -2) : value;
+  const tokens = bare.split('/');
+  if (tokens.length !== 3) return null;
+  const input = Number.parseInt(tokens[2], 16);
+  if (!Number.isFinite(input)) return null;
+  return ARES_VK_TO_CODE.get(input) ?? null;
+}
+
 /* ----------------------------------------------------- per-engine defaults */
 /**
  * Keyboard defaults per engine. These intentionally keep the layouts that were
@@ -153,16 +233,18 @@ export const DEFAULT_KEYBOARD: Record<ControlEngineId, KeyboardBindings> = {
     select: 'Backspace',
   },
   ares: {
-    up: 'ArrowUp',
-    down: 'ArrowDown',
-    left: 'ArrowLeft',
-    right: 'ArrowRight',
-    a: 'Space',
-    b: 'KeyJ',
+    up: 'KeyW',
+    down: 'KeyS',
+    left: 'KeyA',
+    right: 'KeyD',
+    a: 'KeyJ',
+    b: 'KeyK',
+    x: 'KeyU',
+    y: 'KeyI',
     l: 'KeyQ',
     r: 'KeyE',
     start: 'Enter',
-    select: 'Backspace',
+    select: 'ShiftRight',
   },
   dolphin: {
     up: 'KeyW',
