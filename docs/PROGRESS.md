@@ -235,3 +235,52 @@ est-pads.exe（SDL3）检测后切 SDL 绑定。
 - Nest 侧：`systemBoot {top:'File', menu:'Boot firmware'}` + 两级 UIA 菜单（`--item` 改为可选）+ `ensureMelondsConfig()` 写 TOML + `renderTitle '60/60'`
 - 设置面板「系统文件（自备）」新增 **NDS BIOS + 固件（固件菜单）**，选目录一次导入三个文件
 - 实测：`--trysystem=nds` → DS 固件菜单（日历 / PictoChat / DS Download Play）正常出现
+
+---
+
+## 2026-10-30 进度（0.3.1 / 0.3.2）
+
+### 1. 扫描修复（修朋友反馈的“3DS 游戏扫不到”）
+
+- 扩展名补 `.cia`（3DS 安装包，之前完全扫不到）、`.dsi/.ids/.srl`（NDS）、`.wia`（Wii）、`.gcz/.ciso/.dol`（NGC）、`.unif`（FC）、`.bs`（SFC）
+- `.iso/.rvz/.gcz/.ciso` 改为读偏移 0x18 的磁盘头 magic 区分 GC（`C2339F3F`）与 Wii（`5D1C9EA3`），未知时回退扩展名
+- 扫描深度 6→8、单次上限 20k→50k
+- **启动自动扫描**：添加过的文件夹存 `settings.scanRoots`，启动 800ms 后后台重扫，完成后发 `nest:library-changed` 刷新界面；设置面板可查看/移除文件夹、手动重扫、关闭自动扫描
+- `--scan=` 调试参数也走同一套记录逻辑
+- 新增 `tests/scanner-ext.test.ts`（4 条）
+
+### 2. 键位系统（B 路线）
+
+- 新增 `src/main/controls/`：`keymap.ts` + mGBA / Dolphin / Azahar / melonDS / ares 适配器 + `util.ts` + facade，统一“首次 seed、不覆盖用户自定义、force 重写、`.before-nest` 备份、marker”语义
+- IPC：`CH.controls / saveControls / resetControls`；保存后立即生效
+- 设置面板新增「键位」区块：8 台主机 chip 切换、12 个动作行、捕获态（`KeyboardEvent.code`）、同引擎冲突拒绝、恢复默认/保存、ares 单独提示
+- 设置面板补齐「游戏文件夹（自动扫描）」区块（之前只有回调没有 JSX 的遗漏）
+- 修正 Azahar 键盘方向键错位的 Qt 码（16777234–16777237）
+- 新增 `tests/controls.test.ts`（14 条，含真实 `settings.bml` in-place 写入断言）
+
+### 3. ares 键盘绑定（本日最难）
+
+- 先是按 ares 源码规则推测出 `0x<dev>/<group>/<id>;;` 三段结构，按 Windows VK 码试写 → 实测只有 W/S 对得上
+- 通过用户手动绑键采样 + 用户提供的 `docs/KEYS-ARES-FORMAT.md`（ares 148 Debian 源码）最终确认：**第三段是十进制下标**（ruby Windows 键盘表 `keys[]` 顺序），不是 VK/scancode/hex；`0x1` 是键盘设备 id（跨机器稳定）；`;;` 是 3 个 mapping 槽拼接的产物
+- 据此重写 `keymap.ts`（102 项下标表）、恢复 ares 自动写入，测试期望值同步更新
+- 文档：`docs/KEYS-ARES.md`（已启用）、`docs/KEYS-ARES-FORMAT.md`（源码依据 + 三平台差异）、`docs/DECISIONS.md` D21 修正
+
+### 4. 打包与发布
+
+- 0.3.1：首个包含扫描修复 + 键位面板 + 四引擎自动键位的便携包
+- 0.3.2：ares 键盘启用后的版本（当前 release）
+- `tools/clean-engines.mjs` 扩展：清 `.nest-controls-*`、`*.before-nest`（上次 zip 混入运行时状态的根因）
+- 打包流程：build → clean-engines → electron-builder --dir → 组装便携目录（启动 bat + 说明）→ 7za → 组装后二次残留检查 → 解压 smoke 验证
+
+### 5. 已知遗留
+
+- COV-2 封面黑帧：仍按 mtime 取最后一帧（nest-cover 方案已评审，未实现）
+- NSIS 安装包：按 D20 暂不做
+- NDS DSi 模式未启用；Dolphin 的 select/Z/C-Stick 等扩展动作未映射
+- 自动构建脚本（`npm run portable` + `verify:portable`）方案已评审，未落地
+
+### 6. 数据
+
+- 引擎：mGBA 41.5 + ares 42.6 + Dolphin 57.0 + Azahar 101.8 + melonDS 41.5 = **284.4 MB**
+- 测试：**40 passed**（5 个文件）
+- 便携包：`Nest-0.3.2-portable.zip` 234 MB / 解压 598 MB / 2905 文件
