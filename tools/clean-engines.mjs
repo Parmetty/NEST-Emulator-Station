@@ -55,6 +55,31 @@ function scrubMgbaQtIni() {
 
 scrubMgbaQtIni();
 
+/**
+ * Drop every "we already seeded this" marker and pre-seed backup. They are
+ * runtime state: shipping them makes a fresh install believe the engine was
+ * already configured (and leaks a copy of the old config in `*.before-nest`).
+ */
+function scrubNestedRuntimeState() {
+  function walk(dir) {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+        continue;
+      }
+      const isMarker = entry.name.startsWith(".nest-controls");
+      const isBackup = entry.name.endsWith(".before-nest");
+      if (!isMarker && !isBackup) continue;
+      removed.push(relative(join(root, "resources", "engines"), full));
+      if (!checkOnly) rmSync(full, { force: true });
+    }
+  }
+  if (existsSync(enginesDir)) walk(enginesDir);
+}
+
+scrubNestedRuntimeState();
+
 /** Anything still pointing at the build machine is a packaging bug. */
 const LOCAL_PATH_PATTERNS = [/[A-Za-z]:\\\\workstop/i, /[A-Za-z]:\/workstop/i, /[A-Za-z]:\\\\Users\\\\/i];
 const TEXT_EXT = /\.(ini|bml|toml|cfg|conf|json|txt|xml|yml|yaml)$/i;

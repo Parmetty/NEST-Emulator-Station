@@ -93,20 +93,22 @@ describe('keymap', () => {
 
   it('encodes ares assignments (device 0x1, Windows virtual-key codes)', () => {
     expect(codeToAresAssignment('KeyW')).toBe('0x1/0/57;;');
-    expect(codeToAresAssignment('KeyJ')).toBe('0x1/0/4a;;');
-    expect(codeToAresAssignment('Enter')).toBe('0x1/0/d;;');
-    expect(codeToAresAssignment('ShiftRight')).toBe('0x1/0/a1;;');
-    expect(codeToAresAssignment('Space')).toBe('0x1/0/20;;');
-    expect(codeToAresAssignment('ArrowUp')).toBe('0x1/0/26;;');
+    expect(codeToAresAssignment('KeyJ')).toBe('0x1/0/44;;');
+    expect(codeToAresAssignment('Enter')).toBe('0x1/0/91;;');
+    expect(codeToAresAssignment('ShiftRight')).toBe('0x1/0/94;;');
+    expect(codeToAresAssignment('Space')).toBe('0x1/0/92;;');
+    expect(codeToAresAssignment('ArrowUp')).toBe('0x1/0/86;;');
     expect(codeToAresAssignment('Unknown')).toBeNull();
     expect(aresAssignmentToCode('0x1/0/57;;')).toBe('KeyW');
-    expect(aresAssignmentToCode('0x1/0/a1;;')).toBe('ShiftRight');
+    expect(aresAssignmentToCode('0x1/0/94;;')).toBe('ShiftRight');
+    expect(aresAssignmentToCode('0x1/0/35;;')).toBe('KeyA');
+    expect(aresAssignmentToCode('0x1/0/91;;')).toBe('Enter');
     expect(aresAssignmentToCode(';;')).toBeNull();
     expect(aresAssignmentToCode('garbage')).toBeNull();
   });
 
-  it('supports every adapter except ares, whose BML ids are not decoded yet', () => {
-    for (const engineId of ['mgba', 'dolphin', 'azahar', 'melonds']) {
+  it('marks every adapter engine as supported', () => {
+    for (const engineId of ['mgba', 'ares', 'dolphin', 'azahar', 'melonds']) {
       expect(isControlsSupported(engineId)).toBe(true);
     }
     expect(isControlsSupported('nope')).toBe(false);
@@ -430,19 +432,19 @@ describe('ares adapter', () => {
       // Famicom / FDS (same key set)
       expect(text).toContain('Up: 0x1/0/57;;');
       expect(text).toContain('Down: 0x1/0/53;;');
-      expect(text).toContain('Left: 0x1/0/41;;');
-      expect(text).toContain('Right: 0x1/0/44;;');
-      expect(text).toContain('A: 0x1/0/4a;;');
-      expect(text).toContain('B: 0x1/0/4b;;');
-      expect(text).toContain('Start: 0x1/0/d;;');
-      expect(text).toContain('Select: 0x1/0/a1;;');
+      expect(text).toContain('Left: 0x1/0/35;;');
+      expect(text).toContain('Right: 0x1/0/38;;');
+      expect(text).toContain('A: 0x1/0/44;;');
+      expect(text).toContain('B: 0x1/0/45;;');
+      expect(text).toContain('Start: 0x1/0/91;;');
+      expect(text).toContain('Select: 0x1/0/94;;');
       // SFC-only buttons
-      expect(text).toContain('Y: 0x1/0/49;;');
+      expect(text).toContain('Y: 0x1/0/43;;');
       expect(text).toContain('X: 0x1/0/55;;');
       expect(text).toContain('L: 0x1/0/51;;');
-      expect(text).toContain('R: 0x1/0/45;;');
+      expect(text).toContain('R: 0x1/0/39;;');
       // N64 fixed Z
-      expect(text).toContain('Z: 0x1/0/20;;');
+      expect(text).toContain('Z: 0x1/0/92;;');
       // Untouched nodes survive
       expect(text).toContain('WindowWidth: 800');
       expect(text).toContain('Microphone: ;;');
@@ -498,7 +500,7 @@ describe('ares adapter', () => {
         true,
       );
       expect(result.applied).toBe(true);
-      expect(await readFile(path.join(dir, 'settings.bml'), 'utf8')).toContain('Up: 0x1/0/26;;');
+      expect(await readFile(path.join(dir, 'settings.bml'), 'utf8')).toContain('Up: 0x1/0/86;;');
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
@@ -533,12 +535,11 @@ describe('ares adapter', () => {
 });
 
 describe('controls facade', () => {
-  it('does not write ares bindings while the adapter is disabled', async () => {
+  it('treats a missing ares settings.bml as write-nothing', async () => {
     const root = await tempDir('nest-controls-');
     try {
       const result = applyEngineControls('ares', { enginesDir: root, userData: root }, {}, false);
-      expect(result.supported).toBe(false);
-      expect(result.reason).toBe('unsupported');
+      expect(result.supported).toBe(true);
       expect(result.applied).toBe(false);
       expect(existsSync(path.join(root, 'ares', 'settings.bml'))).toBe(false);
     } finally {

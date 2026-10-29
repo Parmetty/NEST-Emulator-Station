@@ -9,13 +9,7 @@ import { PAD_ACTIONS, type KeyboardBindings, type PadAction } from '../../shared
 
 export const CONTROL_ENGINE_IDS = ['mgba', 'ares', 'dolphin', 'azahar', 'melonds'] as const;
 
-/**
- * Engines Nest can safely rewrite. ares is listed above so the settings panel still
- * shows the group, but its BML input ids are not fully decoded yet — writing
- * guessed values produced bindings ares displayed under the wrong keys, so the
- * adapter stays read-only until the encoding is confirmed in-game.
- */
-export const WRITABLE_ENGINE_IDS = ['mgba', 'dolphin', 'azahar', 'melonds'] as const;
+export const WRITABLE_ENGINE_IDS = ['mgba', 'ares', 'dolphin', 'azahar', 'melonds'] as const;
 export type ControlEngineId = (typeof CONTROL_ENGINE_IDS)[number];
 
 export function isPadAction(value: string): value is PadAction {
@@ -142,70 +136,142 @@ export function dolphinNameToCode(name: string): string | null {
 
 /* --------------------------------------------------------- ares assignments */
 /**
- * ares stores an input binding as `0x<deviceID>/<groupID>/<inputID(hex)>;;`.
- * The keyboard is device `0x1`, group `0`, and inputIDs are **Windows virtual
- * key codes** (not SDL scancodes): W = 0x57, Enter = 0x0D, ShiftRight = 0xA1.
- * The trailing `;;` is what ares itself writes; keep it verbatim.
+ * ares stores an input binding as `0x<deviceID>/<groupID>/<inputID>;;`.
+ *
+ * Everything here was confirmed against the ares 148 sources (see
+ * docs/KEYS-ARES-FORMAT.md):
+ * - deviceID: keyboard is `0x1`; the value is (pathID<<32)|(vendorID<<16)|productID
+ *   with the keyboard's hard-coded GenericVendorID/GenericProductID (0x0000/0x0001),
+ *   so it does not change between machines.
+ * - groupID: 0 (HID::Keyboard::GroupID::Button is the only keyboard group).
+ * - inputID: **decimal** index into ruby/input/keyboard/rawinput.cpp `keys[]` —
+ *   NOT a virtual-key code and NOT a scancode. ares parses it with nall's
+ *   decimal `natural()`: it stops at the first non-digit, which is why the old
+ *   VK-hex attempt decoded `4a` as 4 and `d` as 0.
+ * - The trailing `;;` is how ares saves three mapping slots joined with `;`
+ *   (trimRight leaves two separators). Two slots empty = `;;`; the bare
+ *   `0x1/0/<id>` is also accepted, but we mirror ares' own output.
  */
-const ARES_NAMED_VK: Record<string, number> = {
-  Space: 0x20,
-  Enter: 0x0d,
-  Escape: 0x1b,
-  Tab: 0x09,
-  Backspace: 0x08,
-  Insert: 0x2d,
-  Delete: 0x2e,
-  Home: 0x24,
-  End: 0x23,
-  PageUp: 0x21,
-  PageDown: 0x22,
-  ArrowLeft: 0x25,
-  ArrowUp: 0x26,
-  ArrowRight: 0x27,
-  ArrowDown: 0x28,
-  ShiftLeft: 0xa0,
-  ShiftRight: 0xa1,
-  ControlLeft: 0xa2,
-  ControlRight: 0xa3,
-  AltLeft: 0xa4,
-  AltRight: 0xa5,
-  CapsLock: 0x14,
-  Minus: 0xbd,
-  Equal: 0xbb,
-  BracketLeft: 0xdb,
-  BracketRight: 0xdd,
-  Backslash: 0xdc,
-  Semicolon: 0xba,
-  Quote: 0xde,
-  Comma: 0xbc,
-  Period: 0xbe,
-  Slash: 0xbf,
-  Backquote: 0xc0,
+
+/** ares v148 Windows: inputID is the decimal index of ruby's rawinput key table. */
+const ARES_KEY_INDEX: Record<string, number> = {
+  // 0 = Escape is reserved by ares and cannot be bound.
+  F1: 1,
+  F2: 2,
+  F3: 3,
+  F4: 4,
+  F5: 5,
+  F6: 6,
+  F7: 7,
+  F8: 8,
+  F9: 9,
+  F10: 10,
+  F11: 11,
+  F12: 12,
+  PrintScreen: 13,
+  ScrollLock: 14,
+  Backquote: 15,
+  Digit1: 16,
+  Digit2: 17,
+  Digit3: 18,
+  Digit4: 19,
+  Digit5: 20,
+  Digit6: 21,
+  Digit7: 22,
+  Digit8: 23,
+  Digit9: 24,
+  Digit0: 25,
+  Minus: 26,
+  Equal: 27,
+  Backspace: 28,
+  Insert: 29,
+  Delete: 30,
+  Home: 31,
+  End: 32,
+  PageUp: 33,
+  PageDown: 34,
+  KeyA: 35,
+  KeyB: 36,
+  KeyC: 37,
+  KeyD: 38,
+  KeyE: 39,
+  KeyF: 40,
+  KeyG: 41,
+  KeyH: 42,
+  KeyI: 43,
+  KeyJ: 44,
+  KeyK: 45,
+  KeyL: 46,
+  KeyM: 47,
+  KeyN: 48,
+  KeyO: 49,
+  KeyP: 50,
+  KeyQ: 51,
+  KeyR: 52,
+  KeyS: 53,
+  KeyT: 54,
+  KeyU: 55,
+  KeyV: 56,
+  KeyW: 57,
+  KeyX: 58,
+  KeyY: 59,
+  KeyZ: 60,
+  BracketLeft: 61,
+  BracketRight: 62,
+  Backslash: 63,
+  Semicolon: 64,
+  Quote: 65,
+  Comma: 66,
+  Period: 67,
+  Slash: 68,
+  Numpad1: 69,
+  Numpad2: 70,
+  Numpad3: 71,
+  Numpad4: 72,
+  Numpad5: 73,
+  Numpad6: 74,
+  Numpad7: 75,
+  Numpad8: 76,
+  Numpad9: 77,
+  Numpad0: 78,
+  NumpadDecimal: 79,
+  NumpadEnter: 80,
+  NumpadAdd: 81,
+  NumpadSubtract: 82,
+  NumpadMultiply: 83,
+  NumpadDivide: 84,
+  CapsLock: 85,
+  ArrowUp: 86,
+  ArrowDown: 87,
+  ArrowLeft: 88,
+  ArrowRight: 89,
+  Tab: 90,
+  Enter: 91,
+  Space: 92,
+  ShiftLeft: 93,
+  ShiftRight: 94,
+  ControlLeft: 95,
+  ControlRight: 96,
+  AltLeft: 97,
+  AltRight: 98,
+  MetaLeft: 99,
+  MetaRight: 100,
+  ContextMenu: 101,
 };
 
-export function codeToAresVk(code: string): number | null {
-  if (/^Key[A-Z]$/.test(code)) return code.charCodeAt(3);
-  if (/^Digit[0-9]$/.test(code)) return code.charCodeAt(5);
-  const fn = /^F([1-9]|1[0-2])$/.exec(code);
-  if (fn) return 0x6f + Number(fn[1]);
-  return Object.prototype.hasOwnProperty.call(ARES_NAMED_VK, code) ? ARES_NAMED_VK[code] : null;
+const ARES_INDEX_TO_CODE = new Map<number, string>();
+for (const [code, index] of Object.entries(ARES_KEY_INDEX)) ARES_INDEX_TO_CODE.set(index, code);
+
+/** `KeyboardEvent.code` → ares decimal key index, or null when unmappable. */
+export function codeToAresKeyIndex(code: string): number | null {
+  const index = ARES_KEY_INDEX[code];
+  return index == null ? null : index;
 }
 
-const ARES_VK_TO_CODE = new Map<number, string>();
-for (const [code, value] of Object.entries(ARES_NAMED_VK)) ARES_VK_TO_CODE.set(value, code);
-for (let i = 0; i < 26; i += 1) {
-  ARES_VK_TO_CODE.set(0x41 + i, `Key${String.fromCharCode(0x41 + i)}`);
-}
-for (let i = 0; i < 10; i += 1) ARES_VK_TO_CODE.set(0x30 + i, `Digit${i}`);
-for (let i = 1; i <= 12; i += 1) ARES_VK_TO_CODE.set(0x6f + i, `F${i}`);
-
-/** `KeyboardEvent.code` → ares assignment, e.g. "0x1/0/57;;" for W. */
+/** `KeyboardEvent.code` → ares assignment, e.g. `0x1/0/57;;` for W. */
 export function codeToAresAssignment(code: string): string | null {
-  const vk = codeToAresVk(code);
-  if (vk == null) return null;
-  // ares formats these with nall::hex(), which uses lowercase digits — mirror it
-  // exactly so its own writer and ours agree on the same string.
-  return `0x1/0/${vk.toString(16)};;`;
+  const index = codeToAresKeyIndex(code);
+  return index == null ? null : `0x1/0/${index};;`;
 }
 
 /** ares assignment → `KeyboardEvent.code`; empty bindings return null. */
@@ -215,9 +281,9 @@ export function aresAssignmentToCode(assignment: string): string | null {
   const bare = value.endsWith(';;') ? value.slice(0, -2) : value;
   const tokens = bare.split('/');
   if (tokens.length !== 3) return null;
-  const input = Number.parseInt(tokens[2], 16);
-  if (!Number.isFinite(input)) return null;
-  return ARES_VK_TO_CODE.get(input) ?? null;
+  const index = Number.parseInt(tokens[2], 10);
+  if (!Number.isFinite(index)) return null;
+  return ARES_INDEX_TO_CODE.get(index) ?? null;
 }
 
 /* ----------------------------------------------------- per-engine defaults */

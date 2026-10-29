@@ -22,12 +22,12 @@
 - 修正 Azahar 键盘方向键的 Qt 码错位（旧值实际是 Right/Down/PageUp，改为 16777234–16777237）
 - 新增 `tests/controls.test.ts`（14 条）：keymap 转换、mGBA ini / melonDS TOML 写读、自定义保留、force 重写、备份不被覆盖、facade 路由、ares unsupported
 
-### ares 键位（FC / SFC / N64）— 研究完成，暂未启用
+### ares 键位（FC / SFC / N64）
 
-- ares 的 `settings.bml` 绑定格式破译：`0x<deviceID>/<groupID>/<inputID hex>;;`，键盘设备 `0x1`、group `0`、inputID 为 VK 码（W=0x57、Enter=0x0d）
+- ares 的 `settings.bml` 绑定格式最终确认：`0x1/0/<十进制下标>;;`。`0x1` = 键盘设备 id（`(pathID<<32)|(vendorID<<16)|productID`，跨机器稳定）、`0` = group、第三段是 ruby Windows 键盘表的下标（**十进制，不是 VK 也不是 scancode**）、`;;` 是 3 个 mapping 槽拼接后 trim 的产物
 - 新增 `src/main/controls/ares.ts`：启动前写入 Famicom / FamicomDiskSystem / SuperFamicom / Nintendo64 的 `Port 1 → Gamepad`（WASD、J/K、U/I、Q/E、Enter、RShift；SFC 加 Y/X/L/R；N64 加 L/R/Z）
-- 校验方式：注入 `Up: 0x1/0/57;;` 后 ares 设置界面显示「键盘 + W」，证明格式与设备解析正确
-- ❌ 实测未通过：只有 W/S 对得上，A/D/J/K 等被 ares 解析成别的键、游戏内无反应 → `ares.ts` 保留但**不参与自动写入**；用户需在 ares 设置里手动绑一次（Nest 不覆盖自定义布局）。详见 `docs/DECISIONS.md` D21 实测对照表
+- 校验方式：源码逐字确认（`desktop-ui/input/input.cpp` + `ruby/input/keyboard/rawinput.cpp` + `nall/atoi.hpp` 的十进制 `natural()`），并与 ares 亲手写出的 `settings.bml` 逐字节比对（A=35、D=38、J=44、K=45、Return=91、RightShift=94）
+- 已启用（`WRITABLE_ENGINE_IDS` 包含 ares）；`docs/KEYS-ARES-FORMAT.md` 记录完整源码依据与 102 项 Windows 键盘表，另附 Linux/macOS 差异警告
 
 ### 打包
 
@@ -92,7 +92,7 @@
 
 ### 已知限制
 
-1. **ares 键盘绑定**：格式已从源码破译（`identifier/groupID/inputID` 三段，非 0x 开头需四段），候选方案实测未生效，FC/SFC/N64 目前靠手柄或进 ares 手动绑
+1. ~~ares 键盘绑定~~：已按源码确认的十进制下标表实现（2026-10-30），见 `docs/KEYS-ARES.md`
 2. **3DS 无系统菜单**：Azahar 不支持 HOME Menu，短期无解
 3. **Wii 直读**：代码就绪但没有真实镜像验证
 4. **封面黑帧**：过场全黑时可能截到黑图，需要「挑非黑帧」或手动重拍

@@ -24,7 +24,7 @@
 - **ares 配置就位**（随包 `settings.bml`）：`ShowStatusBar: false`、`Overscan: false`
   - 客户区因此就是纯画面，**不需要裁剪**，`captureAspect` 从 ares 清单里移除
   - 教训：按 4:3 硬裁会在窗口留黑边时切掉画面底部
-- **ares 键位**：首次启动自动写入 FC / SFC / N64 键盘默认（WASD + J/K + U/I + Q/E + Enter/ShiftRight，N64 Z=Space），格式 `0x1/0/<VK hex>;;`，详见 `KEYS-ARES.md`
+- **ares 键位**：首次启动自动写入 FC / SFC / N64 键盘默认（WASD + J/K + U/I + Q/E + Enter/ShiftRight，N64 Z=Space）。编码 `0x1/0/<十进制下标>;;`：`0x1` 是键盘设备 id（跨机器稳定）、`0` 是 group、第三段是 ruby Windows 键盘表下标（**不是 VK/scancode**）、`;;` 是 3 个 mapping 槽的拼接结果。源码依据见 `docs/KEYS-ARES-FORMAT.md`，用法见 `docs/KEYS-ARES.md`
 - **抓屏工具**：新增 `--anchor top|bottom`（当前只有 mGBA 用 `aspect 1.5` 且默认 bottom）
 - **界面引擎名**：新增 `engineLabel()` 映射，显示 `mGBA` / `ares` 而不是原始 id
 - 许可证：ares 是 ISC，源码 https://github.com/ares-emulator/ares
