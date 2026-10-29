@@ -600,7 +600,9 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
       const boot = { ...engine.systemBoot };
       // The NGC menu is region-specific; use the IPL we actually found.
       if (systemId === 'ngc' && dolphinIpl) boot.item = dolphinIpl.item;
-      const tools = path.join(app.getAppPath(), 'resources', 'tools');
+      const tools = app.isPackaged
+    ? path.join(process.resourcesPath, 'tools')
+    : path.join(app.getAppPath(), 'resources', 'tools');
       const logDir = path.join(app.getPath('userData'), 'shots');
       const useMenu = Boolean(boot.menu);
 

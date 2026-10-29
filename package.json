@@ -1,6 +1,6 @@
 {
   "name": "nest",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Nest - a console-style emulator launcher",
   "main": "./out/main/index.js",
@@ -14,7 +14,9 @@
     "shot": "node tools/run.mjs . --no-sandbox --user-data-dir=.profile --shot=shots/app.png",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
     "test": "vitest run",
-    "build:capture": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/build-capture.ps1"
+    "build:capture": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/build-capture.ps1",
+    "pack": "npm run build && node tools/clean-engines.mjs && electron-builder --win --x64",
+    "pack:dir": "npm run build && node tools/clean-engines.mjs && electron-builder --win --x64 --dir"
   },
   "dependencies": {
     "react": "^19.0.0",
@@ -27,9 +29,54 @@
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.0",
     "electron": "^33.0.0",
+    "electron-builder": "^25.1.8",
     "electron-vite": "^2.3.0",
     "typescript": "^5.6.0",
     "vite": "^5.4.0",
     "vitest": "^2.1.0"
+  },
+  "build": {
+    "appId": "dev.nest.station",
+    "productName": "Nest",
+    "copyright": "MIT licensed · bundled emulators keep their own GPL/MPL/ISC licenses",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "out/**/*",
+      "package.json",
+      "!**/*.map"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/engines",
+        "to": "engines"
+      },
+      {
+        "from": "resources/tools",
+        "to": "tools"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "Nest-${version}-Setup.${ext}",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": false,
+      "shortcutName": "Nest"
+    },
+    "electronDist": "node_modules/electron/dist"
   }
 }

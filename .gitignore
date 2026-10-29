@@ -23,3 +23,7 @@ resources/engines/**/.nest-controls-mode
 resources/engines/melonds/melonDS.toml
 resources/engines/melonds/melonDS.ini
 resources/engines/melonds/wfcsettings.bin
+.cache/
+dist/
+-portable-profile/
+.profile-*/

@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { spawn, type ChildProcess } from 'node:child_process';
-import { appendFileSync } from 'node:fs';
+import { appendFileSync, existsSync } from 'node:fs';
 import { copyFile, mkdir, readdir, stat, unlink, writeFile } from 'node:fs/promises';
 import { app, BrowserWindow, shell } from 'electron';
 import { CH, type LaunchEvent } from '../shared/contract';
@@ -32,6 +32,14 @@ function installFileLogging(): void {
 let mainWindow: BrowserWindow | null = null;
 let services: Services | null = null;
 
+/* ------------------------------------------------------------ portable mode */
+/**
+ * Portable builds ship 启动 Nest.bat, which passes --user-data-dir=<exe>/data
+ * so the library, covers and engine configs stay inside the unzipped folder.
+ * Do NOT try to rewrite userData at runtime: Chromium fixes the profile path
+ * before whenReady, and both pp.setPath and a self-relaunch crashed the
+ * packaged browser process on Windows.
+ */
 /* --------------------------------------------------- single instance lock */
 /**
  * Launching Nest.bat twice used to start two Electrons on the same
@@ -42,6 +50,7 @@ let services: Services | null = null;
  * Automated runs (`--smoke`, `--shot=`, `--trylaunch=`, …) skip the lock so a
  * stray window never blocks the test harness.
  */
+
 const DEV_FLAG = /^--(smoke|flow|selftest|trylaunch|trysystem|shot=|dump=|scan=|shelf=|select=|settings|hold)/;
 const DEV_RUN = process.argv.slice(1).some((arg) => DEV_FLAG.test(arg));
 if (DEV_RUN) console.log('[nest] dev run: single instance lock bypassed');
@@ -113,7 +122,9 @@ async function newestShot(): Promise<string | null> {
  * console. Omitted means "the client area is already the screen" (e.g. FCEUX).
  */
 function captureToolPath(): string {
-  return path.join(app.getAppPath(), 'resources', 'tools', 'nest-capture.exe');
+  return app.isPackaged
+    ? path.join(process.resourcesPath, 'tools', 'nest-capture.exe')
+    : path.join(app.getAppPath(), 'resources', 'tools', 'nest-capture.exe');
 }
 
 function startShotHelper(
