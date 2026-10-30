@@ -1,0 +1,57 @@
+Nest 0.3.0 · 免安装携带版
+================================
+
+解压后双击「启动 Nest.bat」即可，不需要安装、不写注册表。
+
+目录说明
+--------
+启动 Nest.bat          推荐入口：带便携数据模式启动（见下）
+便携数据模式.bat        同上，单独一份方便复制
+Nest.exe               主程序（高级用户可直接双击，数据会落在 %APPDATA%\Nest）
+resources\engines\     mGBA / ares / Dolphin / Azahar / melonDS 五个引擎
+resources\tools\       抓屏、按键、窗口监视、UIA 菜单、手柄检测助手
+data\                  便携数据目录（首次启动自动生成）
+
+便携数据模式
+------------
+用「启动 Nest.bat」启动时，加的参数是：
+    Nest.exe --no-sandbox --user-data-dir="<本目录>\data"
+
+于是这些内容都留在本文件夹里，整个目录可以拷到 U 盘 / 另一台电脑：
+    data\library.json   游戏库
+    data\covers\        自动封面
+    data\dolphin\       GC IPL / Wii 菜单 / NAND
+    data\melonds\       NDS BIOS
+    data\azahar\        3DS 配置
+    data\nest.log       运行日志
+
+想恢复出厂：删掉 data 文件夹即可。
+
+我该从哪里开始
+--------------
+1. 启动后点「扫描文件夹」，指向你的 ROM 目录
+   - GBA: .gba    FC: .nes    SFC: .sfc/.smc    N64: .n64/.z64
+   - NDS: .nds    3DS: .3dsx/.3ds    NGC: .gcm/.iso/.rvz    Wii: .iso/.wbfk
+2. 游戏卡上按 A 启动；退游戏后自动回 Nest 并生成封面
+3. 系统菜单（需要自备固件）：设置 →「系统文件（自备）」
+   - GameCube IPL（NGC 系统菜单）
+   - Wii 系统菜单 WAD（Wii Menu）
+   - NDS BIOS + 固件（DS 固件菜单）
+
+已知限制
+--------
+- 无数字签名：首次运行 Windows 可能弹 SmartScreen，选「更多信息 → 仍要运行」
+- Wii 直读代码就绪，但还没有真实镜像验证
+- 3DS 没有系统菜单（Azahar 不支持 HOME Menu）
+- NDS 固件菜单需要真实 BIOS/firmware（自带 FreeBIOS 只能跑游戏）
+- FC/SFC/N64 的键盘绑定还在处理中，默认可用手柄或进 ares 手动绑
+
+如果双击没反应
+--------------
+请用「启动 Nest.bat」。个别系统上 Electron 的沙箱不可用，需要 --no-sandbox 参数，
+启动脚本里已经带上了。
+
+许可证
+------
+Nest 本体 MIT；内置引擎各有许可证（mGBA MPL2、ares ISC、Dolphin GPLv2+、
+Azahar GPLv3、melonDS GPLv3），详见 THIRD-PARTY-NOTICES.md。

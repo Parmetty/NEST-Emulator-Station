@@ -109,7 +109,7 @@ hid->setPathID(0);
 | Z（N64） | Space | `Space` | Spacebar | 92 | `0x1/0/92;;` |
 
 对照表里 `A`=35、`D`=38、`J`=44、`K`=45、`M`=47、`Return`=91 与
-`ares-probe/settings.ares-manual-bound.bml` 里 ares 亲手写出的值 **逐字节一致**——
+`docs/evidence/ares-manual-bound.bml`（原 `E:\workstop\ares-probe`，已归档）里 ares 亲手写出的值 **逐字节一致**——
 这就是最终验证（不是推测）。
 
 ## 4. 旧实验为什么“只有 W/S 对”：`natural()` 是十进制解析

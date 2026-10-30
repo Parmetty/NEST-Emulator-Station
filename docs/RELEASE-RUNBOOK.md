@@ -56,9 +56,9 @@ $ver = (Get-Content package.json -Raw | ConvertFrom-Json).version
 $out = "dist\portable\Nest-$ver"
 New-Item -ItemType Directory -Force -Path (Split-Path $out) | Out-Null
 Copy-Item 'dist\win-unpacked' $out -Recurse
-Copy-Item 'E:\workstop\nest-portable\启动 Nest.bat'        $out -Force
-Copy-Item 'E:\workstop\nest-portable\便携数据模式.bat'      $out -Force
-Copy-Item 'E:\workstop\nest-portable\使用说明.txt'          $out -Force
+Copy-Item 'tools\portable\启动 Nest.bat'        $out -Force
+Copy-Item 'tools\portable\便携数据模式.bat'      $out -Force
+Copy-Item 'tools\portable\使用说明.txt'          $out -Force
 ```
 
 > `启动 Nest.bat` 的内容是 `Nest.exe --no-sandbox --user-data-dir="%~dp0data"`。
