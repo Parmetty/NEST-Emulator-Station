@@ -1,0 +1,46 @@
+{
+  "id": "dolphin-lr",
+  "name": "Dolphin (libretro)",
+  "systems": ["ngc", "wii"],
+  "kind": "native",
+  "detect": {
+    "paths": [
+      "{engines}/../tools/nest-libretro.exe"
+    ]
+  },
+  "systemArgsBySystem": {
+    "wii": [
+      "--core", "{engines}/dolphin/dolphin_libretro.dll",
+      "--rom", "{userData}/firmware/wii/wii-menu.wad",
+      "--system-dir", "{userData}/libretro/sys",
+      "--save-dir", "{userData}/libretro/save",
+      "--timeout", "0",
+      "--log", "{userData}/libretro/nest-libretro.log"
+    ]
+  },
+  "launch": {
+    "args": [
+      "--core", "{engines}/dolphin/dolphin_libretro.dll",
+      "--rom", "{rom}",
+      "--system-dir", "{userData}/libretro/sys",
+      "--save-dir", "{userData}/libretro/save",
+      "--shot-dir", "{userData}/covers-pending",
+      "--shot-every", "120",
+      "--timeout", "0",
+      "--log", "{userData}/libretro/nest-libretro.log"
+    ],
+    "systemArgs": [
+      "--core", "{engines}/dolphin/dolphin_libretro.dll",
+      "--system-dir", "{userData}/libretro/sys",
+      "--save-dir", "{userData}/libretro/save",
+      "--timeout", "0",
+      "--log", "{userData}/libretro/nest-libretro.log"
+    ],
+    "fullscreenFlag": "--fullscreen",
+    "cwd": "engineDir"
+  },
+  "capabilities": {
+    "saveStates": false,
+    "systemMode": "Wii Menu (libretro)"
+  }
+}

@@ -631,7 +631,9 @@ export default function App() {
         'not-supported': '该主机尚未接入',
         'already-running': '已有一个会话在运行',
         'missing-ipl': '缺少对应区域的 GameCube IPL.bin（放到 .profile/dolphin/GC/USA|JAP|EUR）',
-        'missing-wii-menu': '缺少 wii-menu.wad，或 NAND 中没有已安装的 Wii System Menu',
+        'missing-wii-menu': '缺少 wii-menu.wad：请在「设置 → 系统文件（自备）」中导入自备的 Wii 系统菜单',
+        'libretro-host-missing': '本安装包缺少 libretro 宿主或核心，无法启动 Wii Menu，请更新或重装 Nest',
+        'libretro-not-ready': 'libretro 运行目录准备失败，请查看 nest.log',
       };
       say(map[result.error ?? ''] ?? `启动失败（${result.error}）`);
       return;

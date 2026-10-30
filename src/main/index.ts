@@ -2,18 +2,21 @@ import path from 'node:path';
 import { spawn, type ChildProcess } from 'node:child_process';
 import { appendFileSync, existsSync } from 'node:fs';
 import { copyFile, mkdir, readdir, stat, unlink, writeFile } from 'node:fs/promises';
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, nativeImage, shell } from 'electron';
 import { CH, type LaunchEvent } from '../shared/contract';
 import { systemById, type SystemId } from '../shared/systems';
 import {
   coversDir,
   createServices,
+  engineIdForSession,
+  forgetSessionEngine,
   registerIpc,
   rescanRoots,
   shotsDir,
   startLaunch,
   type Services,
 } from './ipc';
+import { libretroShotDir, listShotCandidates } from './libretro';
 
 const SMOKE = process.argv.includes('--smoke') || process.env.NEST_SMOKE === '1';
 
@@ -211,6 +214,85 @@ async function finishCoverCapture(sessionId: string, gameId?: string | null): Pr
   }
 }
 
+/* ------------------------------------------------ libretro host covers */
+/**
+ * The libretro host has no separate window for `nest-capture` to grab: it draws
+ * the core's frames itself. It dumps PNGs into `<userData>/covers-pending`
+ * while a game runs; on exit we promote the newest frame that is not a black
+ * fade/transition — the same "don't save a black cover" rule as COV-2.
+ */
+function isMostlyBlack(file: string): boolean {
+  try {
+    const image = nativeImage.createFromPath(file);
+    if (image.isEmpty()) return true;
+    const bitmap = image.getBitmap(); // BGRA, one buffer per frame
+    const pixels = Math.floor(bitmap.length / 4);
+    if (pixels === 0) return true;
+    const step = Math.max(1, Math.floor(pixels / 4000));
+    let lit = 0;
+    let sampled = 0;
+    for (let i = 0; i < pixels; i += step) {
+      const offset = i * 4;
+      const brightest = Math.max(bitmap[offset], bitmap[offset + 1], bitmap[offset + 2]);
+      if (brightest > 24) lit += 1;
+      sampled += 1;
+    }
+    return sampled === 0 || lit / sampled < 0.02;
+  } catch {
+    // Undecodable frames are treated as unusable rather than as a valid cover.
+    return true;
+  }
+}
+
+async function clearHostShots(): Promise<void> {
+  const dir = libretroShotDir(app.getPath('userData'));
+  try {
+    const entries = await readdir(dir);
+    await Promise.all(
+      entries
+        .filter((name) => name.toLowerCase().endsWith('.png'))
+        .map((name) => unlink(path.join(dir, name))),
+    );
+  } catch {
+    /* directory may not exist yet */
+  }
+}
+
+async function finishHostCoverCapture(gameId?: string | null): Promise<void> {
+  if (!gameId || !services) {
+    await clearHostShots();
+    return;
+  }
+  const dir = libretroShotDir(app.getPath('userData'));
+  try {
+    let candidates = listShotCandidates(dir);
+    if (candidates.length === 0) {
+      // The host writes the last frame while tearing down; give it a moment.
+      await new Promise((resolve) => setTimeout(resolve, 900));
+      candidates = listShotCandidates(dir);
+    }
+    // Newest first; checking a bounded slice keeps a long session from decoding
+    // thousands of PNGs when the last frames happen to be a black transition.
+    const picked = candidates.slice(0, 20).find((candidate) => !isMostlyBlack(candidate.path));
+    if (!picked) {
+      console.log(
+        `[nest] libretro cover: ${candidates.length} frame(s) captured, all black; keeping the old cover`,
+      );
+      return;
+    }
+    const target = coversDir();
+    await mkdir(target, { recursive: true });
+    const name = `${gameId}.png`;
+    await copyFile(picked.path, path.join(target, name));
+    await services.store.updateGame(gameId, { cover: name, coverAt: Date.now() });
+    console.log(`[nest] cover saved for ${gameId} from libretro ${path.basename(picked.path)}`);
+  } catch (err) {
+    console.error('[nest] libretro cover save failed:', (err as Error).message);
+  } finally {
+    await clearHostShots();
+  }
+}
+
 function createWindow(): BrowserWindow {
   console.log('[nest] window: constructing');
   const win = new BrowserWindow({
@@ -301,35 +383,45 @@ async function boot(): Promise<void> {
       mainWindow?.minimize();
     }
     if (e.state === 'running') {
-      const system = systemById.get(e.systemId as SystemId);
-      const engine = system ? services?.engines.get(system.engine) : undefined;
-      const pid = services?.supervisor.pid(e.sessionId);
-      if (pid) {
-        const aspect = engine?.captureAspect ?? 0;
-        const anchor = engine?.captureAnchor;
-        const minHeight = engine?.captureMinHeight ?? 0;
-        // Chrome cropping is for windowed frontends; fullscreen engines draw the
-        // game edge to edge, so trimming there would eat the picture.
-        const windowed = !services?.store.getSettings().fullscreen;
-        const cropTop = windowed ? engine?.captureCropTop ?? 0 : 0;
-        const cropBottom = windowed ? engine?.captureCropBottom ?? 0 : 0;
-        void clearShots().then(() =>
-          startShotHelper(
-        e.sessionId,
-        pid,
-        aspect,
-        anchor,
-        minHeight,
-        cropTop,
-        cropBottom,
-        engine?.captureContentAspect,
-        engine?.captureTopOnly,
-      ),
-        );
+      if (engineIdForSession(e.sessionId) === 'dolphin-lr') {
+        // The libretro host renders its own frames: no external window to grab.
+        console.log('[nest] libretro host session: host supplies cover frames');
+      } else {
+        const system = systemById.get(e.systemId as SystemId);
+        const engine = system ? services?.engines.get(system.engine) : undefined;
+        const pid = services?.supervisor.pid(e.sessionId);
+        if (pid) {
+          const aspect = engine?.captureAspect ?? 0;
+          const anchor = engine?.captureAnchor;
+          const minHeight = engine?.captureMinHeight ?? 0;
+          // Chrome cropping is for windowed frontends; fullscreen engines draw the
+          // game edge to edge, so trimming there would eat the picture.
+          const windowed = !services?.store.getSettings().fullscreen;
+          const cropTop = windowed ? engine?.captureCropTop ?? 0 : 0;
+          const cropBottom = windowed ? engine?.captureCropBottom ?? 0 : 0;
+          void clearShots().then(() =>
+            startShotHelper(
+          e.sessionId,
+          pid,
+          aspect,
+          anchor,
+          minHeight,
+          cropTop,
+          cropBottom,
+          engine?.captureContentAspect,
+          engine?.captureTopOnly,
+        ),
+          );
+        }
       }
     }
     if (e.state === 'exited' || e.state === 'crashed') {
-      void finishCoverCapture(e.sessionId, e.gameId);
+      const engineId = engineIdForSession(e.sessionId);
+      if (engineId === 'dolphin-lr') {
+        void finishHostCoverCapture(e.gameId).finally(() => forgetSessionEngine(e.sessionId));
+      } else {
+        void finishCoverCapture(e.sessionId, e.gameId);
+      }
       mainWindow?.restore();
       mainWindow?.focus();
     }

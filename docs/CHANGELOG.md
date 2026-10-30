@@ -2,6 +2,33 @@
 
 本文件记录每次发布的可见变化。技术细节在 `docs/STATE.md`，决策理由在 `docs/DECISIONS.md`，待办在 `docs/PROGRESS.md`。
 
+## 0.3.3 — 未发布 · libretro 宿主（Wii 菜单去 UIA）
+
+### 自写 libretro 宿主
+
+- 新增 `tools/libretro/`（C# / .NET Framework 4，`csc` 编译）+ `tools/build-libretro.ps1`，产物 `resources/tools/nest-libretro.exe`
+- 不依赖 RetroArch：SDL3（隐藏窗口 + OpenGL 4.5 Core）托管 `dolphin_libretro.dll`，负责 environment 回调、视频、音频、输入、主循环
+- 实测：GC 直读 600 帧、Wii Menu 900 帧均 exit 0、约 59.6 fps；截图经 glReadPixels 正常
+
+### Wii 系统菜单去 UIA
+
+- `resources/engines/dolphin-lr.json` + `src/main/libretro.ts`：Wii Menu 改为宿主 `--rom wii-menu.wad` 启动
+- 删除 Dolphin Qt 的 Wii 系统菜单分支（`dolphin.json` 的 `systemArgsBySystem.wii`、WAD/NAND 前置检查、`-b -n` 参数重写）
+- WAD 缺失/宿主缺失时不再回退 UIA，直接给出明确错误（`missing-wii-menu` / `libretro-host-missing`）
+- NGC 主菜单仍走 Qt+UIA：libretro 核心要求内容且无内容启动会崩溃（源码 `Boot.cpp` 无条件读 `game->path`），已在系统备注中注明限制
+
+### 输入与封面
+
+- 宿主输入由核心 descriptors 驱动：GC A/B/X/Y/L/R/Z/Start、左右摇杆（±32767）、C 摇杆；Wii A/B/1/2/+/−/Home/Shake/Tilt；键盘默认表 + 手柄轴；Wii 鼠标→右摇杆指针
+- `--keys` 覆盖：Nest 把 `settings.controls` 的自定义键位映射成宿主 action 传给引擎
+- 封面：libretro 会话跳过 `nest-capture`，宿主 `--shot-dir/--shot-every` 周期存帧并跳过黑帧，退出后取最新非黑帧
+
+### 工程
+
+- VC++ 14.51 运行时（`msvcp140/vcruntime140/vcruntime140_1/concrt140`）随包放在 `resources/tools/`
+- `docs/PLAN-LIBRETRO.md` 记录 CLI 契约与踩坑（VC++ 运行时、`retro_hw_render_callback` 偏移、异步 retro_run、Null 后端不可用）
+- 测试：56 条（新增 libretro 10 + 接线 6）
+
 ## 0.3.1 — 2026-10-30 · 免安装携带版
 
 ### 扫描（修朋友反馈的“3DS 游戏扫不到”）

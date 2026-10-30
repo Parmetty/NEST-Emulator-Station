@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdirSync, existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { mkdirSync, existsSync, readFileSync, readdirSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain, nativeImage, shell } from 'electron';
@@ -35,6 +35,14 @@ import {
   type ControlPaths,
 } from './controls';
 import { EngineRegistry, buildArgs } from './engines';
+import {
+  findWiiMenuWad,
+  hostKeysSpec,
+  libretroAvailability,
+  libretroShotDir,
+  stageLibretroRuntime,
+  type LibretroPaths,
+} from './libretro';
 import { scanFolder } from './scanner';
 import { Store } from './store';
 import { Supervisor } from './supervisor';
@@ -63,6 +71,50 @@ export function shotsDir(): string {
 /** All Dolphin state (NAND, memcards, config) lives under this one folder. */
 function dolphinUserDir(): string {
   return path.join(app.getPath('userData'), 'dolphin');
+}
+
+/** Folders the libretro host/core need, resolved for dev and packaged builds. */
+function libretroPaths(): LibretroPaths {
+  const resources = app.isPackaged
+    ? process.resourcesPath
+    : path.join(app.getAppPath(), 'resources');
+  return {
+    toolsDir: path.join(resources, 'tools'),
+    enginesDir: enginesDir(),
+    userData: app.getPath('userData'),
+  };
+}
+
+/**
+ * Which engine actually launched a session. System mode can deviate from
+ * `systems.ts` (libretro host instead of Dolphin Qt), and the cover pipeline has
+ * to know that; `index.ts` reads this map on launch events.
+ */
+const sessionEngines = new Map<string, string>();
+
+export function engineIdForSession(sessionId: string): string | undefined {
+  return sessionEngines.get(sessionId);
+}
+
+export function forgetSessionEngine(sessionId: string): void {
+  sessionEngines.delete(sessionId);
+}
+
+/** Clear frames from a previous session so a stale shot never becomes the cover. */
+function resetLibretroShots(dir: string): void {
+  try {
+    mkdirSync(dir, { recursive: true });
+    for (const name of readdirSync(dir)) {
+      if (!name.toLowerCase().endsWith('.png')) continue;
+      try {
+        unlinkSync(path.join(dir, name));
+      } catch {
+        /* a locked stale frame is harmless, it just loses the mtime race */
+      }
+    }
+  } catch {
+    /* the directory may not exist yet */
+  }
 }
 
 interface DolphinIpl {
@@ -692,35 +744,59 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   if (!system) return { ok: false, error: 'unknown-system' };
   if (system.state === 'locked') return { ok: false, error: 'not-supported' };
 
-  const engine = services.engines.get(
+  const preferred = services.engines.get(
     process.env.NEST_FAKE_ENGINE === '1' ? 'fake' : system.engine,
   );
-  if (!engine) return { ok: false, error: 'engine-manifest-missing' };
+  if (!preferred) return { ok: false, error: 'engine-manifest-missing' };
 
-  // Dolphin's two system modes have very different prerequisites. Check them
-  // before spawning anything so the UI can report a useful error instead of
-  // leaving the user with a Dolphin warning dialog.
+  // Wii system mode uses Nest's own libretro host exclusively — no Dolphin Qt
+  // fallback, no UIA fallback. The goal is that the Wii Menu never depends on
+  // GUI automation or the Dolphin menu language. A package without the host or
+  // core reports an explicit error instead of silently booting another way.
+  //
+  // GameCube Menu is deliberately NOT switched: the Dolphin libretro core has
+  // no content-free boot path (it crashes), so the GC menu still needs
+  // Dolphin Qt + UIA. See docs/PLAN-LIBRETRO.md ("无内容启动 核心不支持").
+  let engine = preferred;
+  if (mode === 'system' && systemId === 'wii' && preferred.id !== 'fake') {
+    const libretro = services.engines.get('dolphin-lr');
+    const availability = libretro ? libretroAvailability(libretroPaths()) : null;
+    if (!libretro || !availability?.available) {
+      console.error(
+        '[nest] Wii Menu 需要 libretro 宿主：缺少 resources/tools/nest-libretro.exe 或 ' +
+          'resources/engines/dolphin/dolphin_libretro.dll（本安装包不完整，请更新 Nest）。',
+      );
+      return { ok: false, error: 'libretro-host-missing' };
+    }
+    if (!findWiiMenuWad(app.getPath('userData'))) {
+      console.error(
+        '[nest] 缺少 Wii Menu WAD：请把自备的 wii-menu.wad 通过「设置 → 系统文件（自备）」导入。',
+      );
+      return { ok: false, error: 'missing-wii-menu' };
+    }
+    const staged = stageLibretroRuntime(libretroPaths());
+    if (!staged.ok) {
+      console.error(`[nest] libretro runtime staging failed: ${staged.errors.join('; ')}`);
+      return { ok: false, error: 'libretro-not-ready' };
+    }
+    engine = libretro;
+    console.log(
+      `[nest] system mode wii: libretro host only (staged ${staged.staged.length} item(s))`,
+    );
+  }
+
+  // Safety net: never hand a content-free boot to the libretro core.
+  if (mode === 'system' && engine.id === 'dolphin-lr' && systemId !== 'wii') {
+    return { ok: false, error: 'system-mode-not-supported-by-libretro-host' };
+  }
+
+  // NGC system mode still goes through Dolphin Qt + UIA (the libretro core has
+  // no GC menu entry); check its IPL prerequisite before spawning anything.
   let dolphinIpl: DolphinIpl | null = null;
-  let wiiFromNand = false;
   if (engine.id === 'dolphin') {
     if (mode === 'system' && systemId === 'ngc') {
       dolphinIpl = findDolphinIpl();
       if (!dolphinIpl) return { ok: false, error: 'missing-ipl' };
-    } else if (mode === 'system' && systemId === 'wii') {
-      const wad = path.join(dolphinUserDir(), 'wii-menu.wad');
-      if (!existsSync(wad)) {
-        const nandTitle = path.join(
-          dolphinUserDir(),
-          'Wii',
-          'title',
-          '00000001',
-          '00000002',
-          'content',
-          'title.tmd',
-        );
-        if (!existsSync(nandTitle)) return { ok: false, error: 'missing-wii-menu' };
-        wiiFromNand = true;
-      }
     }
   }
 
@@ -768,10 +844,20 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     engines: enginesDir(),
   });
 
-  // A WAD is the portable route, but an already-installed NAND system menu is
-  // even quieter: boot title 0000000100000002 directly.
-  if (engine.id === 'dolphin' && wiiFromNand) {
-    args = ['-u', dolphinUserDir(), '-b', '-n', '0000000100000002'];
+  // Pass the player's custom keyboard layout to the host. The host already has
+  // a sane default table; only overrides from the key-mapping panel are sent, so
+  // an untouched install produces no --keys argument at all.
+  if (engine.id === 'dolphin-lr') {
+    const controls = services.store.getSettings().controls;
+    const overrides = {
+      ...(controls?.['dolphin']?.keyboard ?? {}),
+      ...(controls?.['dolphin-lr']?.keyboard ?? {}),
+    };
+    const keys = hostKeysSpec(systemId, overrides);
+    if (keys) {
+      args = [...args, '--keys', keys];
+      console.log(`[nest] libretro keys: ${keys}`);
+    }
   }
 
   // mGBA (and most Qt frontends) only parse options that come before the ROM,
@@ -810,6 +896,14 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     applyControls(services, 'melonds', false);
   }
 
+  if (engine.id === 'dolphin-lr') {
+    // Staging is idempotent, but game mode needs it too when it is switched on
+    // later: the core cannot boot without `<sys>/dolphin-emu/Sys`.
+    const staged = stageLibretroRuntime(libretroPaths());
+    if (!staged.ok) return { ok: false, error: 'libretro-not-ready' };
+    resetLibretroShots(libretroShotDir(app.getPath('userData')));
+  }
+
   const sessionId = randomUUID();
   const game = rom ? services.store.games().find((g) => g.path === rom) : undefined;
   const started = services.supervisor.start({
@@ -823,6 +917,7 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     windowsHide: engine.kind === 'node',
   });
   if (!started) return { ok: false, error: 'already-running' };
+  sessionEngines.set(sessionId, engine.id);
 
   await services.store.recordSession(systemId, Date.now(), game?.id);
 

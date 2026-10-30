@@ -237,3 +237,13 @@ GameCube 确实有 IPL（Boot ROM）菜单，虽然少见但真实存在。3DS /
 
 据此已恢复 ares 自动写入，`docs/KEYS-ARES.md` 与测试同步更新。
 
+### D22 libretro 宿主（2026-10-31）
+
+**决定**：Wii Menu 的系统模式改由自写 libretro 宿主启动，不再用 Dolphin Qt + UIA；NGC 菜单继续用 Qt + UIA。
+
+**理由**：
+- UIA 依赖焦点、Qt 菜单展开时序、语言版本，且无法在无头环境工作；libretro 核心可以用 `--rom wii-menu.wad` 直接进菜单
+- GC 主菜单不可行：核心 `retro_load_game` 必须给内容（`Boot.cpp` 无条件读 `game->path`），空内容原生崩溃；带 GC 镜像 + `skip_gc_bios=disabled` 时 IPL 会自动引导光盘，不会停在菜单
+- 不引入 RetroArch：前端只需 environment/video/audio/input，约 2k 行 C# 即可，体积与可控性都更好
+
+**代价**：多一个宿主 exe（85 KB）+ VC++ 运行时（1.2 MB）+ core DLL（18 MB）；NGC 仍残留 UIA。

@@ -59,7 +59,10 @@ export class EngineRegistry {
     if (manifest.detect.paths.length === 0) return null;
     for (const candidate of manifest.detect.paths) {
       const expanded = expandPath(candidate).replace(/\{engines\}/g, this.dir);
-      if (existsSync(expanded)) return expanded;
+      // Manifests may hop out of the engines folder (`{engines}/../tools/...`),
+      // so normalise before anything uses dirname() on the result.
+      const resolved = path.normalize(expanded);
+      if (existsSync(resolved)) return resolved;
     }
     return null;
   }

@@ -27,3 +27,7 @@ resources/engines/melonds/wfcsettings.bin
 dist/
 -portable-profile/
 .profile-*/
+data/
+docs/evidence/libretro/runtime/
+docs/evidence/libretro/ref/
+*.log.crash.txt
