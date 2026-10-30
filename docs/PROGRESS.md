@@ -274,7 +274,7 @@ est-pads.exe（SDL3）检测后切 SDL 绑定。
 
 ### 5. 已知遗留
 
-- COV-2 封面黑帧：仍按 mtime 取最后一帧（nest-cover 方案已评审，未实现）
+- COV-2 封面黑帧：**用户决定不修**（根因是取「退出前最后一帧」，恰好落在过场/淡出黑屏时偶发；属可接受的偶发瑕疵，nest-cover 的挑帧方案归档不做）
 - NSIS 安装包：按 D20 暂不做
 - NDS DSi 模式未启用；Dolphin 的 select/Z/C-Stick 等扩展动作未映射
 - 自动构建脚本（`npm run portable` + `verify:portable`）方案已评审，未落地
