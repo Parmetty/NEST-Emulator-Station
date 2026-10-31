@@ -29,6 +29,18 @@
 - `docs/PLAN-LIBRETRO.md` 记录 CLI 契约与踩坑（VC++ 运行时、`retro_hw_render_callback` 偏移、异步 retro_run、Null 后端不可用）
 - 测试：56 条（新增 libretro 10 + 接线 6）
 
+### Wii U（Cemu 2.6）
+
+- 内置 Cemu 2.6（50 MB，MPL 2.0），引擎清单重写：`-g {rom}` 直读、`-t 0005001010040000` 进 Wii U Menu、
+  `-f` 全屏、16:9 封面裁切
+- 扫描器：`.wua / .wud / .wux` → Wii U
+- 系统文件（自备）新增两类导入：
+  - **Cemu keys.txt** → `resources/engines/cemu/portable/keys.txt`（校验 32 位十六进制行数，首次覆盖前备份 `keys.txt.before-nest`）
+  - **Wii U NAND（MLC）** → 只记路径（`settings.cemuMlc`），校验 `sys/title/00050010/10040000` 或 `usr/`
+- 启动参数：有 MLC 时插 `-m <mlc>`；系统菜单无 MLC 返回 `missing-wiiu-mlc`，缺 keys 返回 `missing-cemu-keys`
+- 便携模式：`resources/engines/cemu/portable/` 为运行时目录（keys/NAND/settings），
+  `tools/clean-engines.mjs` 打包前强制清空，`.gitignore` 忽略
+
 ## 0.3.1 — 2026-10-30 · 免安装携带版
 
 ### 扫描（修朋友反馈的“3DS 游戏扫不到”）

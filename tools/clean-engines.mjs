@@ -27,6 +27,10 @@ const RUNTIME_FILES = [
   'melonds/melonDS.toml',
   'melonds/melonDS.ini',
   'melonds/wfcsettings.bin',
+  'cemu/portable/keys.txt',
+  'cemu/portable/settings.xml',
+  'cemu/portable/controllerProfiles.xml',
+  'cemu/portable/gameProfiles.xml',
 ];
 
 for (const relativePath of RUNTIME_FILES) {
@@ -79,6 +83,29 @@ function scrubNestedRuntimeState() {
 }
 
 scrubNestedRuntimeState();
+
+/** Cemu portable/ holds the imported NAND, keys and user settings — never ship. */
+function scrubCemuPortable() {
+  const portableDir = join(enginesDir, 'cemu', 'portable');
+  if (!existsSync(portableDir)) return;
+  for (const entry of readdirSync(portableDir, { withFileTypes: true })) {
+    const full = join(portableDir, entry.name);
+    const rel = relative(root, full);
+    // keep the folder itself (Cemu needs it for portable mode)
+    if (entry.name === 'keys.txt' || entry.name === 'settings.xml') continue; // handled by RUNTIME_FILES
+    if (entry.isDirectory() && entry.name === 'mlc01') {
+      removed.push(rel);
+      if (!checkOnly) rmSync(full, { recursive: true, force: true });
+      continue;
+    }
+    if (entry.name.endsWith('.bin') || entry.name.endsWith('.xml')) {
+      removed.push(rel);
+      if (!checkOnly) rmSync(full, { force: true });
+    }
+  }
+}
+
+scrubCemuPortable();
 
 /** Anything still pointing at the build machine is a packaging bug. */
 const LOCAL_PATH_PATTERNS = [/[A-Za-z]:\\\\workstop/i, /[A-Za-z]:\/workstop/i, /[A-Za-z]:\\\\Users\\\\/i];

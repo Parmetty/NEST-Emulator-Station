@@ -36,7 +36,7 @@ export const SYSTEMS: SystemDef[] = [
   { id: 'nds',   name: 'Nintendo DS',       short: 'NDS',   year: 2004, kind: '掌机',   family: 'nintendo', engine: 'melonds',  image: 'consoles/nds.webp',  state: 'ready', systemMode: 'DS 固件菜单', note: '系统菜单需自备 NDS BIOS/firmware' },
   { id: 'wii',   name: 'Nintendo Wii',      short: 'Wii',   year: 2006, kind: '家用机', family: 'nintendo', engine: 'dolphin',  image: 'consoles/wii.webp',  state: 'ready', systemMode: 'Wii Menu', note: '需自备 wii-menu.wad（设置 → 系统文件（自备）导入）' },
   { id: '3ds',   name: 'Nintendo 3DS',      short: '3DS',   year: 2011, kind: '掌机',   family: 'nintendo', engine: 'azahar',   image: 'consoles/3ds.webp',  state: 'ready', note: '直读可用；无系统菜单（Azahar 不支持 HOME Menu）' },
-  { id: 'wiiu',  name: 'Wii U',             short: 'Wii U', year: 2012, kind: '家用机', family: 'nintendo', engine: 'cemu',     image: 'consoles/wiiu.webp', state: 'warn', note: '需自备引擎、MLC 与密钥（Cemu 未随包）' },
+    { id: 'wiiu',  name: 'Wii U',             short: 'Wii U', year: 2012, kind: '家用机', family: 'nintendo', engine: 'cemu',     image: 'consoles/wiiu.webp', state: 'ready', systemMode: 'Wii U Menu', note: '需自备 keys.txt 与 Wii U NAND（MLC）；Cemu 2.6 已内置' },
 
   { id: 'xbox',    name: 'Xbox',     short: 'XBX',  year: 2001, kind: '家用机', family: 'xbox', engine: 'xemu',    image: '', state: 'locked' },
   { id: 'xbox360', name: 'Xbox 360', short: 'X360', year: 2005, kind: '家用机', family: 'xbox', engine: 'xenia',   image: '', state: 'locked' },

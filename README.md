@@ -5,7 +5,7 @@
 
 ![Nest 首页](shots/app.png)
 
-> 当前：**0.3.2** —— Windows 桌面版 · 九台任天堂主机 · 五个内置引擎 · 免安装携带版
+> 当前：**0.3.2** —— Windows 桌面版 · 九台任天堂主机 · 六个内置引擎 · 免安装携带版
 
 ## 下载
 
@@ -37,7 +37,7 @@ SHA256  B5AE4AF8DDAC53CADACA1C8E493864FC3C23C65E0EBD0702594452422646AFA1
 | NGC | Dolphin 2609a | ✅ | ✅ GameCube Menu（需 IPL） |
 | Wii | Dolphin 2609a | 🟡 代码就绪，待镜像验证 | ✅ Wii Menu（需 WAD） |
 | 3DS | Azahar 2126.2 | ✅ | ❌ 引擎不支持 HOME Menu |
-| Wii U | — | 仅清单 | — |
+| Wii U | Cemu 2.6 | ✅ `.wua/.wud/.wux` | ✅ Wii U Menu（需自备 NAND/MLC + keys.txt） |
 
 其它能力：
 
@@ -111,7 +111,7 @@ src/
   main/controls/     各引擎的键盘绑定适配器（keymap + mgba/ares/dolphin/azahar/melonds）
   preload/           contextBridge 暴露的 window.nest
   renderer/          React：首页 + 游戏库覆盖层 + 设置面板
-resources/engines/   五个便携引擎 + 清单（加主机 = 加一份 JSON）
+resources/engines/   六个便携引擎 + 清单（加主机 = 加一份 JSON）
 resources/tools/     nest-capture / nest-input / nest-window / nest-menu / nest-pads
 tools/               C# 助手源码、打包清理脚本、运行器
 docs/                CHANGELOG / STATE / DECISIONS / PROGRESS / PLAN / KEYS-*
@@ -145,7 +145,7 @@ azahar/           3DS 配置与 NAND
 ## 已知限制
 
 - **封面可能截到黑帧**：目前取退出前最后一帧；全黑过场的游戏可能拿到黑封面（COV-2，已评审待实现）
-- **Wii 直读**代码就绪但尚无真实镜像验证；Wii U 仅清单（Cemu 未随包）
+- **Wii 直读**代码就绪但尚无真实镜像验证；**Wii U** 引擎已内置（Cemu 2.6），直读与系统菜单都需要自备 `keys.txt` 与 NAND（MLC）
 - **3DS 无系统菜单**（Azahar 不支持 HOME Menu）
 - **NGC 系统菜单**为 GUI 自动化（`File → Boot firmware` 类似路径），需要有效 IPL，Qt 菜单展开瞬间会短暂影响输入
 - **没有数字签名**：首次运行 SmartScreen 提示；个别环境需 `--no-sandbox`（启动脚本已带）
@@ -157,7 +157,7 @@ azahar/           3DS 配置与 NAND
 | --- | --- | --- |
 | P0–P2 | 骨架、IPC、引擎清单、扫描器、GBA/FC/SFC/N64 闭环 | ✅ |
 | P3 | Dolphin（NGC/Wii 直读 + 系统菜单）、3DS（Azahar）、NDS（melonDS） | ✅ |
-| P4 | Wii U（Cemu、MLC/密钥） | 未开始 |
+| P4 | Wii U（Cemu 2.6 + keys/MLC 导入） | 进行中 |
 | P5 | 封面质量、自动构建脚本、安装包（按需） | 进行中 |
 
 更细的状态见 [docs/CHANGELOG.md](docs/CHANGELOG.md)、[docs/STATE.md](docs/STATE.md)、[docs/PROGRESS.md](docs/PROGRESS.md)。

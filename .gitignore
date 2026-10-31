@@ -31,3 +31,7 @@ data/
 docs/evidence/libretro/runtime/
 docs/evidence/libretro/ref/
 *.log.crash.txt
+resources/engines/cemu/portable/mlc01/
+resources/engines/cemu/portable/keys.txt
+resources/engines/cemu/portable/settings.xml
+resources/engines/cemu/portable/*.bin

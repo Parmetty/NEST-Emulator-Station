@@ -27,7 +27,7 @@ export const CH = {
 } as const;
 
 /* ------------------------------------------------------------- firmware */
-export type FirmwareKind = 'gc-ipl' | 'wii-menu' | 'nds-bios';
+export type FirmwareKind = 'gc-ipl' | 'wii-menu' | 'nds-bios' | 'cemu-keys' | 'wiiu-mlc';
 
 export type FirmwareState = {
   kind: FirmwareKind;
@@ -68,6 +68,8 @@ export const settingsSchema = z.object({
   autoScan: z.boolean().optional(),
   /** Absolute folders the user added; re-scanned at boot and on demand. */
   scanRoots: z.array(z.string().min(1)).max(32).optional(),
+  /** Absolute path of the user's Wii U NAND/MLC dump (Cemu `-m`); never copied. */
+  cemuMlc: z.string().min(1).max(4096).optional(),
   controls: z
     .record(
       z.string().max(32),
@@ -112,6 +114,12 @@ export const engineManifestSchema = z.object({
       systemMode: z.string().nullable().default(null),
     })
     .default({ saveStates: false, systemMode: null }),
+
+  /**
+   * Legacy shorthand for `launch.fullscreenFlag`. Some manifests (Cemu) put it
+   * at the root; both places are accepted so the manifest stays readable.
+   */
+  fullscreenFlag: z.string().optional(),
 
   /**
    * Width/height of the emulated screen inside the window, used to crop cover
@@ -289,6 +297,8 @@ export interface Settings {
   scanRoots?: string[];
   /** Per-engine key overrides written by the key-mapping panel. */
   controls?: Record<string, EngineControls>;
+  /** Absolute path of the user's Wii U NAND/MLC dump (Cemu `-m`). */
+  cemuMlc?: string;
 }
 
 export interface LaunchEvent {

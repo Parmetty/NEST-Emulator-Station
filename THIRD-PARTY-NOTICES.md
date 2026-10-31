@@ -39,6 +39,15 @@ Nest's license.
   that makes Dolphin crash at startup. Microsoft permits redistributing these DLLs.
   See https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist
 
+### Cemu 2.6 — `resources/engines/cemu/`
+
+- Project: https://cemu.info/ · Source: https://github.com/cemu-project/Cemu
+- License: **MPL 2.0** (open source since Cemu 2.0). Upstream license text:
+  https://github.com/cemu-project/Cemu/blob/main/LICENSE
+- Covers Wii U. Redistributed unmodified.
+- `portable/` is intentionally empty in the bundle: it is created at runtime and holds the
+  user's own `keys.txt`, imported NAND (`mlc01/`) and settings. Packaging scrubs it
+  (`tools/clean-engines.mjs`); none of that is ever committed or shipped.
 ## Runtime dependencies (installed via npm, not vendored here)
 
 | Package | License |

@@ -36,6 +36,13 @@ import {
 } from './controls';
 import { EngineRegistry, buildArgs } from './engines';
 import {
+  applyCemuLaunchOptions,
+  cemuKeysPath,
+  copyCemuKeys,
+  countCemuKeys,
+  isValidWiiuMlc,
+} from './cemu';
+import {
   findWiiMenuWad,
   hostKeysSpec,
   libretroAvailability,
@@ -253,7 +260,7 @@ function ensureMelondsConfig(systemMode: boolean): boolean {
   return true;
 }
 
-function firmwareStates(): FirmwareState[] {
+function firmwareStates(services: Services): FirmwareState[] {
   const states: FirmwareState[] = [];
 
   const ipl = findDolphinIpl();
@@ -310,6 +317,53 @@ function firmwareStates(): FirmwareState[] {
     });
   }
 
+  const keysPath = cemuKeysPath(enginesDir());
+  if (existsSync(keysPath)) {
+    const keyCount = countCemuKeys(readFileSync(keysPath, 'utf8'));
+    states.push({
+      kind: 'cemu-keys',
+      label: 'Cemu keys.txt（Wii U 解密密钥）',
+      status: keyCount > 0 ? 'ok' : 'invalid',
+      path: keysPath,
+      detail: keyCount > 0 ? `${keyCount} 个有效密钥` : '没有 32 位十六进制 key 行',
+    });
+  } else {
+    states.push({
+      kind: 'cemu-keys',
+      label: 'Cemu keys.txt（Wii U 解密密钥）',
+      status: 'missing',
+      path: null,
+      detail: '未导入',
+    });
+  }
+
+  const mlc = services.store.getSettings().cemuMlc ?? null;
+  if (mlc && isValidWiiuMlc(mlc)) {
+    states.push({
+      kind: 'wiiu-mlc',
+      label: 'Wii U NAND（MLC 目录）',
+      status: 'ok',
+      path: mlc,
+      detail: `${mlc} · Wii U Menu title / usr 就绪`,
+    });
+  } else if (mlc) {
+    states.push({
+      kind: 'wiiu-mlc',
+      label: 'Wii U NAND（MLC 目录）',
+      status: 'invalid',
+      path: mlc,
+      detail: `${mlc} · 缺少 sys/title/00050010/10040000 或 usr/`,
+    });
+  } else {
+    states.push({
+      kind: 'wiiu-mlc',
+      label: 'Wii U NAND（MLC 目录）',
+      status: 'missing',
+      path: null,
+      detail: '未设置（只记录路径，不复制 NAND）',
+    });
+  }
+
   return states;
 }
 
@@ -318,15 +372,49 @@ function firmwareStates(): FirmwareState[] {
  * bundled or downloaded: the file is copied into Nest's own data folder so the
  * engine can find it, and the CRC decides which region folder an IPL belongs to.
  */
-async function pickFirmware(raw: unknown): Promise<{
+async function pickFirmware(services: Services, raw: unknown): Promise<{
   ok: boolean;
   canceled?: boolean;
   error?: string;
   state?: FirmwareState;
 }> {
   const kind = (raw as { kind?: unknown })?.kind;
-  if (kind !== 'gc-ipl' && kind !== 'wii-menu' && kind !== 'nds-bios') {
+  if (
+    kind !== 'gc-ipl' &&
+    kind !== 'wii-menu' &&
+    kind !== 'nds-bios' &&
+    kind !== 'cemu-keys' &&
+    kind !== 'wiiu-mlc'
+  ) {
     return { ok: false, error: 'bad-request' };
+  }
+
+  if (kind === 'cemu-keys') {
+    const picked = await dialog.showOpenDialog({
+      title: '选择 Cemu keys.txt',
+      properties: ['openFile'],
+      filters: [{ name: 'Cemu keys', extensions: ['txt'] }],
+    });
+    if (picked.canceled || picked.filePaths.length === 0) return { ok: true, canceled: true };
+    const result = copyCemuKeys(picked.filePaths[0], cemuKeysPath(enginesDir()));
+    if (!result.ok) {
+      return { ok: false, error: result.error === 'io-error' ? 'keys-io-error' : 'missing-cemu-keys' };
+    }
+    console.log(`[nest] cemu keys imported: ${result.keys} valid line(s) -> ${result.path}`);
+    return { ok: true, state: firmwareStates(services).find((state) => state.kind === kind) };
+  }
+
+  if (kind === 'wiiu-mlc') {
+    const picked = await dialog.showOpenDialog({
+      title: '选择 Wii U NAND / MLC 目录',
+      properties: ['openDirectory'],
+    });
+    if (picked.canceled || picked.filePaths.length === 0) return { ok: true, canceled: true };
+    const dir = path.normalize(picked.filePaths[0]);
+    if (!isValidWiiuMlc(dir)) return { ok: false, error: 'invalid-wiiu-mlc' };
+    await services.store.setSettings({ cemuMlc: dir });
+    console.log(`[nest] wiiu mlc set: ${dir}`);
+    return { ok: true, state: firmwareStates(services).find((state) => state.kind === kind) };
   }
 
   if (kind === 'nds-bios') {
@@ -355,7 +443,7 @@ async function pickFirmware(raw: unknown): Promise<{
     } catch (err) {
       return { ok: false, error: (err as Error).message };
     }
-    return { ok: true, state: firmwareStates().find((state) => state.kind === kind) };
+    return { ok: true, state: firmwareStates(services).find((state) => state.kind === kind) };
   }
 
   const picked = await dialog.showOpenDialog({
@@ -389,7 +477,7 @@ async function pickFirmware(raw: unknown): Promise<{
     return { ok: false, error: (err as Error).message };
   }
 
-  return { ok: true, state: firmwareStates().find((state) => state.kind === kind) };
+  return { ok: true, state: firmwareStates(services).find((state) => state.kind === kind) };
 }
 
 /** Attaches the saved cover as a data URL, so the renderer needs no protocol handler. */
@@ -679,9 +767,9 @@ export function registerIpc(services: Services): void {
     return { ok: services.supervisor.stop(sessionId) };
   });
 
-  ipcMain.handle(CH.firmwareStatus, () => firmwareStates());
+  ipcMain.handle(CH.firmwareStatus, () => firmwareStates(services));
 
-  ipcMain.handle(CH.pickFirmware, async (_event, raw) => pickFirmware(raw));
+  ipcMain.handle(CH.pickFirmware, async (_event, raw) => pickFirmware(services, raw));
 
   ipcMain.handle(CH.openHomepage, async (_event, raw) => {
     const url = String((raw as { url?: unknown })?.url ?? '');
@@ -844,6 +932,30 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     engines: enginesDir(),
   });
 
+  // Cemu: keys.txt lives in the portable folder (decryption is mandatory), the
+  // user's NAND/MLC is passed with `-m` and only stored as a path in settings.
+  // System mode (Wii U Menu) is refused without a usable MLC.
+  if (engine.id === 'cemu') {
+    const keys = cemuKeysPath(enginesDir());
+    if (!existsSync(keys)) {
+      console.error(
+        '[nest] Cemu 需要 keys.txt：请在「设置 → 系统文件（自备）」导入自备的 Wii U 解密密钥。',
+      );
+      return { ok: false, error: 'missing-cemu-keys' };
+    }
+    const mlc = services.store.getSettings().cemuMlc ?? null;
+    const cemu = applyCemuLaunchOptions({ mode, mlc, args });
+    if (!cemu.ok) {
+      console.error(
+        cemu.error === 'missing-wiiu-mlc'
+          ? '[nest] Wii U Menu 需要 NAND/MLC：请在「设置 → 系统文件（自备）」选择 MLC 目录。'
+          : `[nest] Wii U NAND 目录无效：${mlc ?? '(未设置)'}`,
+      );
+      return { ok: false, error: cemu.error };
+    }
+    args = cemu.args;
+  }
+
   // Pass the player's custom keyboard layout to the host. The host already has
   // a sane default table; only overrides from the key-mapping panel are sent, so
   // an untouched install produces no --keys argument at all.
@@ -864,8 +976,9 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   // so everything we add goes in front of the argument list.
   const extras: string[] = [];
   const settings = services.store.getSettings();
-  if (settings.fullscreen && engine.launch.fullscreenFlag) {
-    extras.push(engine.launch.fullscreenFlag);
+  const fullscreenFlag = engine.launch.fullscreenFlag ?? engine.fullscreenFlag;
+  if (settings.fullscreen && fullscreenFlag) {
+    extras.push(fullscreenFlag);
   }
   if (engine.launch.configFlag && engine.launch.screenshotPathOption) {
     const dir = shotsDir();

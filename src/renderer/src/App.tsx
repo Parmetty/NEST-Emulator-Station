@@ -340,7 +340,13 @@ export default function App() {
       const result = await window.nest.pickFirmware(kind).catch(() => null);
       if (!result || result.canceled) return;
       if (!result.ok) {
-        say(result.error === 'ipl-not-recognized' ? '这个 IPL 不是 Dolphin 认可的转储' : '导入失败');
+        const messages: Record<string, string> = {
+          'ipl-not-recognized': '这个 IPL 不是 Dolphin 认可的转储',
+          'missing-cemu-keys': 'keys.txt 里没有有效的 32 位十六进制密钥行',
+          'invalid-wiiu-mlc': '这个目录不是 Wii U NAND（缺少 sys/title/00050010/10040000 或 usr/）',
+          'keys-io-error': '读取 / 写入 keys.txt 失败',
+        };
+        say(messages[result.error ?? ''] ?? '导入失败');
         return;
       }
       say(result.state?.status === 'ok' ? '已导入并校验通过' : '已导入，但校验未通过');
@@ -634,6 +640,9 @@ export default function App() {
         'missing-wii-menu': '缺少 wii-menu.wad：请在「设置 → 系统文件（自备）」中导入自备的 Wii 系统菜单',
         'libretro-host-missing': '本安装包缺少 libretro 宿主或核心，无法启动 Wii Menu，请更新或重装 Nest',
         'libretro-not-ready': 'libretro 运行目录准备失败，请查看 nest.log',
+        'missing-wiiu-mlc': '缺少 Wii U NAND（MLC）：请到「设置 → 系统文件（自备）」选择 MLC 目录',
+        'invalid-wiiu-mlc': 'Wii U NAND 目录无效：缺少 sys/title/00050010/10040000 或 usr/',
+        'missing-cemu-keys': '缺少 Cemu keys.txt：请到「设置 → 系统文件（自备）」导入自备密钥',
       };
       say(map[result.error ?? ''] ?? `启动失败（${result.error}）`);
       return;
@@ -1194,12 +1203,26 @@ export default function App() {
                   <span>
                     {item.label}
                     <small>
-                      {item.status === 'ok' ? '已就绪' : item.status === 'invalid' ? '校验未通过' : '未导入'}
+                      {item.status === 'ok'
+                        ? item.kind === 'wiiu-mlc'
+                          ? '已设置'
+                          : item.kind === 'cemu-keys'
+                            ? '已导入'
+                            : '已就绪'
+                        : item.status === 'invalid'
+                          ? item.kind === 'wiiu-mlc'
+                            ? '目录无效'
+                            : item.kind === 'cemu-keys'
+                              ? '没有有效密钥'
+                              : '校验未通过'
+                          : item.kind === 'wiiu-mlc'
+                            ? '未设置'
+                            : '未导入'}
                       {item.detail ? ` · ${item.detail}` : ''}
                     </small>
                   </span>
                   <button className="ghost-btn" onClick={() => void importFirmware(item.kind)}>
-                    选择文件…
+                    {item.kind === 'wiiu-mlc' ? '选择目录…' : '选择文件…'}
                   </button>
                 </div>
               ))}

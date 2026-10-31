@@ -291,3 +291,22 @@ est-pads.exe（SDL3）检测后切 SDL 绑定。
 - 资产 `Nest-0.3.2-portable.zip`（245,728,360 B）已上传；SHA256 `B5AE4AF8DDAC53CADACA1C8E493864FC3C23C65E0EBD0702594452422646AFA1`
 - 标签 `v0.3.2` 已推送；`main` 与标签指向同一提交（v0.3.2 之后另有文档提交，标签保持在发布点）
 - README 重写：旧版还停留在 beta 0.2，现更新为 0.3.2 状态（下载链接 + SHA256、主机×引擎×系统菜单矩阵、键位/固件/便携模式说明、架构与 docs 索引）
+
+---
+
+## 2026-11-01 进度（Wii U / Cemu 接入）
+
+### Wii U（Cemu 2.6）
+
+- 下载并内置 Cemu 2.6（`cemu-2.6-windows-x64.zip`，校验 OK，`Cemu.exe -v` = 2.6）
+- 引擎清单重写（旧版 `systemArgs: ["-b"]` 是错的）：直读 `-g {rom}`、系统菜单 `-t 0005001010040000`、全屏 `-f`
+- 扫描器加 `.wua/.wud/.wux`；系统页 Wii U 状态改为可用并显示「Wii U Menu」
+- 固件中心：Cemu keys.txt 导入（32 位十六进制校验 + 首次备份）、Wii U NAND 目录校验（只记路径）
+- 启动校验：缺 keys → `missing-cemu-keys`；系统模式缺 MLC → `missing-wiiu-mlc`
+- 打包清理：`clean-engines` 清 `cemu/portable/`（keys/NAND/settings），`.gitignore` 忽略
+- 测试：68 条全绿（新增 12 条 wiiu 测试）
+
+### 待办
+
+- 等用户提供 keys.txt 与 NAND（MLC）后做真机直读/系统菜单验证
+- dolphin_libretro GC 主菜单补丁（需要 MSVC 工具链，已挂起）
