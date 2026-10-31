@@ -1,0 +1,68 @@
+diff --git a/Source/Core/DolphinLibretro/Boot.cpp b/Source/Core/DolphinLibretro/Boot.cpp
+index 3a3b873..f17960d 100644
+--- a/Source/Core/DolphinLibretro/Boot.cpp
++++ b/Source/Core/DolphinLibretro/Boot.cpp
+@@ -687,12 +687,15 @@ bool retro_load_game(const struct retro_game_info* game)
+   VideoBackendBase::PopulateBackendInfo(wsi);
+   NOTICE_LOG_FMT(VIDEO, "Using GFX backend: {}", Config::Get(Config::MAIN_GFX_BACKEND));
+ 
++  const bool no_content = !game || !game->path || game->path[0] == '\0';
+   std::vector<std::string> normalized_game_paths;
+-  normalized_game_paths.push_back(Libretro::VFile::NormalizePath(game->path));
++  if (!no_content)
++    normalized_game_paths.push_back(Libretro::VFile::NormalizePath(game->path));
+   std::string folder_path_str;
+   std::string filename_str;
+   std::string extension;
+-  SplitPath(normalized_game_paths.front(), &folder_path_str, &filename_str, &extension);
++  if (!no_content)
++    SplitPath(normalized_game_paths.front(), &folder_path_str, &filename_str, &extension);
+   fs::path folder_path(folder_path_str);
+   fs::path filename(filename_str);
+   std::transform(extension.begin(), extension.end(), extension.begin(),
+@@ -710,7 +713,7 @@ bool retro_load_game(const struct retro_game_info* game)
+   }
+ #endif
+ 
+-  if (extension == ".m3u" || extension == ".m3u8")
++  if (!no_content && (extension == ".m3u" || extension == ".m3u8"))
+   {
+     normalized_game_paths = ReadM3UFile(normalized_game_paths.front(), folder_path_str);
+     if (normalized_game_paths.empty())
+@@ -739,7 +742,19 @@ bool retro_load_game(const struct retro_game_info* game)
+   }
+ 
+   const bool disc_based_games_boot_to_wii_menu = Libretro::GetOption<bool>(Libretro::Options::core::DISC_BASED_GAMES_BOOT_TO_WII_MENU, false);
+-  std::unique_ptr<BootParameters> boot_params = BootParameters::GenerateFromFile(normalized_game_paths);
++  std::unique_ptr<BootParameters> boot_params;
++  if (no_content)
++  {
++    // Frontends may request "no content" to boot the GameCube IPL menu.
++    // BootParameters::IPL takes a DiscIO::Region; MAIN_FALLBACK_REGION is that type.
++    const DiscIO::Region region = Config::Get(Config::MAIN_FALLBACK_REGION);
++    INFO_LOG_FMT(BOOT, "No content supplied, booting GameCube IPL");
++    boot_params = std::make_unique<BootParameters>(BootParameters::IPL{region});
++  }
++  else
++  {
++    boot_params = BootParameters::GenerateFromFile(normalized_game_paths);
++  }
+ 
+   if (disc_based_games_boot_to_wii_menu)
+   {
+@@ -767,13 +782,13 @@ bool retro_load_game(const struct retro_game_info* game)
+ 
+   if (!BootManager::BootCore(Core::System::GetInstance(), std::move(boot_params), wsi))
+   {
+-    ERROR_LOG_FMT(BOOT, "Could not boot {}", game->path);
++    ERROR_LOG_FMT(BOOT, "Could not boot {}", game ? game->path : "");
+     return false;
+   }
+ 
+   Libretro::Input::InitStage2();
+ 
+-  const bool importCheats = Libretro::GetOption<bool>(retroarch_core::CHEATS_IMPORT, true);
++  const bool importCheats = !no_content && Libretro::GetOption<bool>(retroarch_core::CHEATS_IMPORT, true);
+ 
+   if (importCheats)
+   {

@@ -326,7 +326,12 @@ namespace NestLibretro
                       " block_extract=" + systemInfo.block_extract);
 
             // ---- load content ----
+            // The Dolphin core has no no-game support: retro_load_game dereferences
+            // game->path unconditionally (DolphinLibretro/Boot.cpp:691), so a NULL
+            // path crashes inside the core. Passing an ordinary non-NULL empty
+            // string makes it return false cleanly instead.
             RetroGameInfo gameInfo = new RetroGameInfo();
+            gameInfo.path = Native.AllocUtf8(string.Empty);
             if (!string.IsNullOrEmpty(_romPath))
             {
                 _romPath = Path.GetFullPath(_romPath);
@@ -381,10 +386,12 @@ namespace NestLibretro
             bool loaded = LibretroCore.LoadGame(ref gameInfo);
             if (!loaded)
             {
-                Log.Error("retro_load_game failed");
-                LibretroCore.Deinit();
-                LibretroCore.Free();
-                Sdl3.SDL_Quit();
+                // A half-initialised Dolphin core (video backend up, no content)
+                // never finishes its shutdown: retro_deinit blocks forever and the
+                // process hangs. Report the failure and leave the process.
+                Log.Error("retro_load_game failed; aborting without core teardown");
+                Log.Flush();
+                Environment.Exit(3);
                 return 3;
             }
 
