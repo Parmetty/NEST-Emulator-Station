@@ -2,6 +2,15 @@
 
 本文件记录每次发布的可见变化。技术细节在 `docs/STATE.md`，决策理由在 `docs/DECISIONS.md`，待办在 `docs/PROGRESS.md`。
 
+## 未发布 — DSi 模式（melonDS ConsoleType=1）
+
+- 主机墙新增 **Nintendo DSi**（2008），引擎 melonDS；DSiWare / DSi 增强转储（`.dsi/.ids/.srl`）归到 DSi
+- 设置 →「系统文件（自备）」新增 **DSi BIOS + 固件 + NAND** 导入：选目录，校验 bios7/bios9 64 KB、firmware 128 KB、nand 0xF000000
+- 导入时自动裁掉真实 dump 尾部多出的 64 字节 eMMC CID 元数据（melonDS 只认 0xF000000）
+- 启动 DSi 游戏 / DSi Menu 时写 melonDS `ConsoleType=1` 与 `[DSi]` 四个路径键；切回 NDS 恢复 `ConsoleType=0`
+- TOML 管理抽成纯函数 `src/main/melonds-config.ts`，新增 10 条单测（总计 78）
+- 主机插图暂用 NDS 图占位（DSi 照片授权待定）
+
 ## 0.4.0-beta.1 — 2026-11-01 · 自写 libretro 宿主 + Wii U（Cemu）接入
 
 便携包：Nest-0.4.0-beta.1-portable.zip 268 MB（解压 640 MB / 3172 文件）
