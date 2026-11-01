@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ndsModelConsole } from '../src/shared/systems';
 import {
   DSI_BIOS_SIZES,
+  MELONDS_DEFAULT_GEOMETRY,
   DSI_NAND_SIZE,
   dsiSizeProblem,
   melondsManagedKeys,
@@ -17,16 +18,13 @@ const dsiPaths = {
   nand: 'C:\\Nest\\melonds\\dsi\\nand.bin',
 };
 
-const dsiOptions: MelondsConfigOptions = { console: 'dsi', systemMode: false, paths: dsiPaths };
-const ndsOptions: MelondsConfigOptions = {
-  console: 'nds',
-  systemMode: false,
-  paths: {
-    bios7: 'C:\\Nest\\melonds\\bios\\bios7.bin',
-    bios9: 'C:\\Nest\\melonds\\bios\\bios9.bin',
-    firmware: 'C:\\Nest\\melonds\\bios\\firmware.bin',
-  },
+const ndsPaths = {
+  bios7: 'C:\\Nest\\melonds\\bios\\bios7.bin',
+  bios9: 'C:\\Nest\\melonds\\bios\\bios9.bin',
+  firmware: 'C:\\Nest\\melonds\\bios\\firmware.bin',
 };
+const dsiOptions: MelondsConfigOptions = { console: 'dsi', systemMode: false, paths: dsiPaths, dsPaths: ndsPaths };
+const ndsOptions: MelondsConfigOptions = { console: 'nds', systemMode: false, paths: ndsPaths };
 
 describe('melonDS TOML patching', () => {
   it('writes the DSi console switch and dump paths', () => {
@@ -38,6 +36,9 @@ describe('melonDS TOML patching', () => {
     expect(out).toContain('ExternalBIOSEnable = 1');
     // Windows paths become forward slashes and stay quoted.
     expect(out).toContain('BIOS7Path = "C:/Nest/melonds/dsi/bios7.bin"');
+    // melonDS loads the DS boot ROMs even in DSi mode.
+    expect(out).toContain('[DS]');
+    expect(out).toContain('BIOS7Path = "C:/Nest/melonds/bios/bios7.bin"');
     expect(out).toContain('NANDPath = "C:/Nest/melonds/dsi/nand.bin"');
     expect(out).not.toContain('\\');
   });
@@ -85,6 +86,19 @@ describe('melonDS TOML patching', () => {
     expect(text).toContain('[DSi]');
     expect(text).toContain('Name = "x"');
     expect(text).toContain('NANDPath = "C:/a/b.bin"');
+  });
+
+  it('writes the 2x window geometry on first launch', () => {
+    const out = patchMelondsToml('', { ...ndsOptions, defaultGeometry: MELONDS_DEFAULT_GEOMETRY });
+    expect(out).toContain('[Instance0.Window0]');
+    expect(out).toContain(`Geometry = "${MELONDS_DEFAULT_GEOMETRY}"`);
+    expect(out).toContain('IntegerScaling = 1');
+  });
+
+  it('keeps an existing window geometry', () => {
+    const existing = '[Instance0.Window0]\nGeometry = "custom"\n';
+    const out = patchMelondsToml(existing, ndsOptions);
+    expect(out).toContain('Geometry = "custom"');
   });
 
   it('models every managed key per console', () => {

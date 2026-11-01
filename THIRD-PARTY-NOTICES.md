@@ -116,11 +116,15 @@ launches emulators you provide and scans files you already own.
 - **Nintendo DS Lite**：Evan-Amos，公有领域 — https://commons.wikimedia.org/wiki/File:Nintendo-DS-Lite-Black-Open.png
 - CC BY-SA 3.0 全文：https://creativecommons.org/licenses/by-sa/3.0/
 - 修改方式：裁切透明边距、灰度化、缩放至 1500px 宽、转为 webp；修改后的图片同样按 CC BY-SA 3.0 提供
-### melonDS 1.1 — `resources/engines/melonds/`
+### melonDS — `resources/engines/melonds/`
 
 - Project: https://melonds.kuribo64.net/ · Source: https://github.com/melonDS-emu/melonDS
 - License: **GPLv3**
-- Covers Nintendo DS. Ships without external BIOS files: melonDS 1.1 falls back to
+- 构建来源：melonDS **master CI 构建**（GitHub Actions 2026-10-27，commit `1e65444`，
+  SHA256 `2497971044B53F1C12A342A91852C491F0D4529291EB16B3B9EBDB296B5CFF77`）。
+  官方 1.1 的 `preloadROMs()` 缺 `&& !boot`，无 ROM 时无法用 `-b always` 启动固件菜单；
+  该修复只在 master，等 1.2 发布后换回正式版。
+- Covers Nintendo DS. Ships without external BIOS files: melonDS falls back to
   its built-in FreeBIOS, so direct boot works out of the box.
 - Runtime files (`melonDS.toml`, `wfcsettings.bin`) are generated next to the
   executable on first launch and are git-ignored.

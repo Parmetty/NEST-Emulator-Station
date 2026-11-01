@@ -53,6 +53,7 @@ import {
 import {
   DSI_BIOS_SIZES,
   DSI_NAND_SIZE,
+  MELONDS_DEFAULT_GEOMETRY,
   dsiSizeProblem,
   patchMelondsToml,
   type MelondsConsole,
@@ -243,8 +244,11 @@ export function dsiFirmwareProblem(files: Required<MelondsFirmwarePaths>): strin
  */
 function ensureMelondsConfig(console: MelondsConsole, systemMode: boolean): boolean {
   const configPath = path.join(enginesDir(), 'melonds', 'melonDS.toml');
-  const paths: MelondsFirmwarePaths | null = console === 'dsi' ? dsiBiosFiles() : ndsBiosFiles();
+  const dsPaths = ndsBiosFiles();
+  const paths: MelondsFirmwarePaths | null = console === 'dsi' ? dsiBiosFiles() : dsPaths;
   if (!paths) return false;
+  // melonDS loads the DS boot ROMs even in DSi mode, so both sets are required.
+  if (console === 'dsi' && !dsPaths) return false;
   if (console === 'dsi' && dsiFirmwareProblem(paths as Required<MelondsFirmwarePaths>)) return false;
 
   let current = '';
@@ -254,7 +258,14 @@ function ensureMelondsConfig(console: MelondsConsole, systemMode: boolean): bool
     current = '';
   }
 
-  const patched = patchMelondsToml(current, { console, systemMode, paths });
+  const hasGeometry = /^\s*Geometry\s*=/m.test(current);
+  const patched = patchMelondsToml(current, {
+    console,
+    systemMode,
+    paths,
+    dsPaths,
+    defaultGeometry: hasGeometry ? null : MELONDS_DEFAULT_GEOMETRY,
+  });
   try {
     mkdirSync(path.dirname(configPath), { recursive: true });
     writeFileSync(configPath, patched, 'utf8');
@@ -1087,7 +1098,13 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
       return { ok: false, error: 'dsi-menu-unsupported' };
     }
     if (!ensureMelondsConfig(melondsConsole, mode === 'system')) {
-      return { ok: false, error: melondsConsole === 'dsi' ? 'missing-dsi-firmware' : 'missing-nds-bios' };
+      const dsBiosReady = ndsBiosFiles() !== null;
+      const error = !dsBiosReady
+        ? 'missing-nds-bios'
+        : melondsConsole === 'dsi'
+          ? 'missing-dsi-firmware'
+          : 'missing-nds-bios';
+      return { ok: false, error };
     }
     applyControls(services, 'melonds', false);
   }

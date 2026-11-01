@@ -26,10 +26,25 @@ export interface MelondsConfigOptions {
   systemMode: boolean;
   /** `null` when the dumps are missing (caller should abort the launch). */
   paths: MelondsFirmwarePaths | null;
+  /**
+   * DSi mode still needs the DS boot ROMs (melonDS loads them while bringing up
+   * the console), so the DS paths are written alongside the DSi ones.
+   */
+  dsPaths?: MelondsFirmwarePaths | null;
+  /** Set when the config has no window geometry yet (first launch). */
+  defaultGeometry?: string | null;
 }
 
 /** Sizes melonDS expects for the DSi dumps. */
 export const DSI_BIOS_SIZES = { bios7: 65536, bios9: 65536, firmware: 131072 } as const;
+/**
+ * Default emulator window (2x the DS screen, 512x768 client area). melonDS only
+ * honours a saved QWidget geometry blob, so this is the base64 blob captured
+ * from a 2x window; it is written only when the config has no geometry yet, and
+ * melonDS then persists whatever size the player picks.
+ */
+export const MELONDS_DEFAULT_GEOMETRY =
+  'AdnQywADAAAAAAB/AAAAPAAAAoAAAANbAAAAfwAAAFoAAAKAAAADWwAAAAAAAAAABgAAAAB/AAAAWgAAAoAAAANb';
 /** melonDS requires the DSi NAND image to be exactly 0xF000000 bytes. */
 export const DSI_NAND_SIZE = 0xf000000;
 
@@ -72,12 +87,23 @@ export function melondsManagedKeys(options: MelondsConfigOptions): TomlKey[] {
     managed.push(['Emu', 'DirectBoot', systemMode ? 'false' : 'true']);
   }
 
+  // Bigger default window (melonDS restores SizeHint from the geometry blob).
+  if (options.defaultGeometry) {
+    managed.push(['Instance0.Window0', 'Geometry', `"${options.defaultGeometry}"`]);
+  }
+  managed.push(['Instance0.Window0', 'IntegerScaling', '1']);
+
   if (!paths) return managed;
 
   const posix = (value: string) => value.replace(/\\/g, '/');
   const quoted = (value: string) => `"${posix(value)}"`;
 
   if (which === 'dsi') {
+    if (options.dsPaths) {
+      managed.push(['DS', 'BIOS7Path', quoted(options.dsPaths.bios7)]);
+      managed.push(['DS', 'BIOS9Path', quoted(options.dsPaths.bios9)]);
+      managed.push(['DS', 'FirmwarePath', quoted(options.dsPaths.firmware)]);
+    }
     managed.push(['DSi', 'BIOS7Path', quoted(paths.bios7)]);
     managed.push(['DSi', 'BIOS9Path', quoted(paths.bios9)]);
     managed.push(['DSi', 'FirmwarePath', quoted(paths.firmware)]);
