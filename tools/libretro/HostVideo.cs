@@ -92,6 +92,15 @@ namespace NestLibretro
         public static bool HasFrame { get { return _hasFrame; } }
         public static long FrameCount { get { return _frameCount; } }
         public static int Width { get { return _width; } }
+
+        /// <summary>Current SDL window size in pixels (0x0 when there is no window).</summary>
+        public static bool WindowSize(out int width, out int height)
+        {
+            width = 0;
+            height = 0;
+            if (_window == IntPtr.Zero) return false;
+            return Sdl3.SDL_GetWindowSizeInPixels(_window, out width, out height) && width > 0 && height > 0;
+        }
         public static int Height { get { return _height; } }
         public static bool GlActive { get { return _glActive; } }
         public static bool HwRenderActive { get { return _hwRenderActive; } }

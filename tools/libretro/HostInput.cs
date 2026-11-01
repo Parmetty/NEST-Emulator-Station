@@ -598,40 +598,40 @@ namespace NestLibretro
 
             if (_mouseEnabled)
             {
-                float dx;
-                float dy;
-                uint buttons = Sdl3.SDL_GetRelativeMouseState(out dx, out dy);
-
-                _mouseDeltaX = ClampToShort((int)(dx * 1200.0f));
-                _mouseDeltaY = ClampToShort((int)(dy * 1200.0f));
-
-                if (Math.Abs(dx) > 0.001f || Math.Abs(dy) > 0.001f)
+                // Absolute pointer: the Dolphin core's "Mouse controls IR" mode
+                // (dolphin_ir_mode=2) reads RETRO_DEVICE_POINTER axes, which are
+                // absolute positions in the -0x8000..0x7FFF range, not deltas.
+                // Feed the real cursor position inside the window scaled to that
+                // range so the Wiimote IR cursor lands where the mouse is.
+                int winW, winH;
+                if (HostVideo.WindowSize(out winW, out winH))
                 {
-                    _pointerX = ClampFloat(_pointerX + dx * 1800.0f);
-                    _pointerY = ClampFloat(_pointerY + dy * 1800.0f);
+                    float mx, my;
+                    uint buttons = Sdl3.SDL_GetMouseState(out mx, out my);
+                    _pointerX = AxisFromWindowPosition(mx, winW);
+                    _pointerY = AxisFromWindowPosition(my, winH);
+                    _pointerPressed = (buttons & 1) != 0;
+                    _mouseDeltaX = 0;
+                    _mouseDeltaY = 0;
+
+                    // Wii Remote: a mouse click doubles as the A button, which is
+                    // what every Wii Menu / channel interaction expects.
+                    if (_wiiMode && _pointerPressed)
+                    {
+                        int aId = IdOf("A");
+                        if (aId >= 0) mask |= (ushort)(1 << aId);
+                    }
                 }
                 else
                 {
-                    _pointerX *= 0.85f;
-                    _pointerY *= 0.85f;
-                }
-
-                if ((buttons & 1) != 0) _pointerPressed = true;
-                else _pointerPressed = false;
-
-                // Wii IR (dolphin_ir_mode=1) reads the right analog stick as a
-                // relative pointer; only feed the mouse there in Wii mode so the
-                // GameCube C stick is not moved by cursor motion.
-                if (_wiiMode)
-                {
-                    if (Math.Abs(_mouseDeltaX) > 0) rightX = _mouseDeltaX;
-                    if (Math.Abs(_mouseDeltaY) > 0) rightY = _mouseDeltaY;
+                    _pointerPressed = false;
                 }
             }
             else
             {
                 _mouseDeltaX = 0;
                 _mouseDeltaY = 0;
+                _pointerPressed = false;
             }
 
             _mask = mask;
@@ -680,6 +680,19 @@ namespace NestLibretro
             if (value > AnalogFull) return AnalogFull;
             if (value < -AnalogFull) return -AnalogFull;
             return value;
+        }
+
+        /// <summary>Window pixel coordinate -> libretro pointer axis (<c>-0x8000..0x7FFF</c>).</summary>
+        private static short AxisFromWindowPosition(float position, int size)
+        {
+            if (size <= 1) return 0;
+            float normalized = position / (float)size;
+            if (normalized < 0.0f) normalized = 0.0f;
+            if (normalized > 1.0f) normalized = 1.0f;
+            int value = (int)Math.Round(normalized * 65535.0f) - 32768;
+            if (value > 32767) value = 32767;
+            if (value < -32768) value = -32768;
+            return (short)value;
         }
 
         private static float ClampFloat(float value)

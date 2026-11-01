@@ -295,6 +295,21 @@ namespace NestLibretro
                 HostEnvironment.AddOverride(CoreOptions[i][0], CoreOptions[i][1]);
             }
 
+            // Dolphin's Wiimote IR defaults to "right analog stick" (ir_mode=1),
+            // which feels wrong for a mouse. ir_mode=2 makes the core read the
+            // frontend pointer axes, which HostInput feeds as absolute cursor
+            // coordinates. Only apply this when the user did not override it.
+            bool irModeOverridden = false;
+            for (int i = 0; i < CoreOptions.Count; i++)
+            {
+                if (string.Equals(CoreOptions[i][0], "dolphin_ir_mode", StringComparison.OrdinalIgnoreCase)) irModeOverridden = true;
+            }
+            if (!irModeOverridden && Path.GetFileName(_corePath).IndexOf("dolphin", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                HostEnvironment.AddOverride("dolphin_ir_mode", "2");
+                Log.Write("default core option: dolphin_ir_mode=2 (mouse controls Wiimote IR)");
+            }
+
             HostVideo.Init(_scale, _fullscreen, _headless);
             HostInput.Init(_headless);
             HostInput.Configure(_keySpec, !_noMouse);
@@ -390,7 +405,6 @@ namespace NestLibretro
                 // never finishes its shutdown: retro_deinit blocks forever and the
                 // process hangs. Report the failure and leave the process.
                 Log.Error("retro_load_game failed; aborting without core teardown");
-                Log.Flush();
                 Environment.Exit(3);
                 return 3;
             }
