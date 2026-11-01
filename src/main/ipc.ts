@@ -52,6 +52,7 @@ import {
 } from './libretro';
 import {
   DSI_BIOS_SIZES,
+  DSI_NAND_FOOTER,
   DSI_NAND_SIZE,
   MELONDS_DEFAULT_GEOMETRY,
   dsiSizeProblem,
@@ -503,22 +504,20 @@ async function pickFirmware(services: Services, raw: unknown): Promise<{
       for (const [name, dest] of wanted) {
         const found = entries.find((entry) => entry.toLowerCase() === name);
         if (!found) return { ok: false, error: `missing-${name}` };
-        let buffer = readFileSync(path.join(sourceDir, found));
-        if (name === 'nand.bin' && buffer.length === DSI_NAND_SIZE + 64) {
-          // Real dumps often carry a 64 byte eMMC CID trailer; melonDS wants the
-          // raw 0xF000000 image, so trim it on import.
-          console.log('[nest] dsi nand: trimming 64 byte eMMC footer');
-          buffer = buffer.subarray(0, DSI_NAND_SIZE);
-        }
-        const expected =
+        const buffer = readFileSync(path.join(sourceDir, found));
+        // NAND dumps keep the 64-byte nocash footer; melonDS needs it (it reads
+        // the footer from the end of the image), so never trim it here.
+        const nandOk =
+          buffer.length === DSI_NAND_SIZE || buffer.length === DSI_NAND_SIZE + DSI_NAND_FOOTER;
+        const ok =
           name === 'bios7.bin'
-            ? DSI_BIOS_SIZES.bios7
+            ? buffer.length === DSI_BIOS_SIZES.bios7
             : name === 'bios9.bin'
-              ? DSI_BIOS_SIZES.bios9
+              ? buffer.length === DSI_BIOS_SIZES.bios9
               : name === 'firmware.bin'
-                ? DSI_BIOS_SIZES.firmware
-                : DSI_NAND_SIZE;
-        if (buffer.length !== expected) {
+                ? buffer.length === DSI_BIOS_SIZES.firmware
+                : nandOk;
+        if (!ok) {
           return { ok: false, error: `bad-size-${name}` };
         }
         writeFileSync(path.join(targetDir, dest), buffer);
@@ -1091,12 +1090,6 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   // only with real BIOS/firmware dumps; FreeBIOS cannot show the DS menu.
   if (engine.id === 'melonds') {
     const melondsConsole = ndsModelConsole(services.store.getSettings().ndsModel);
-    // melonDS cannot boot the DSi firmware (SPI firmware reports not bootable),
-    // so DSi/DSiLL models only support direct game boot; the DS/DSL menu works
-    // through the CLI flag `-b always`.
-    if (melondsConsole === 'dsi' && mode === 'system') {
-      return { ok: false, error: 'dsi-menu-unsupported' };
-    }
     if (!ensureMelondsConfig(melondsConsole, mode === 'system')) {
       const dsBiosReady = ndsBiosFiles() !== null;
       const error = !dsBiosReady

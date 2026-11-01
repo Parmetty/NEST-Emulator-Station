@@ -33,7 +33,7 @@ describe('melonDS TOML patching', () => {
     expect(out).toContain('ConsoleType = 1');
     expect(out).toContain('ExternalBIOSEnable = true');
     expect(out).toContain('[DSi]');
-    expect(out).toContain('ExternalBIOSEnable = 1');
+    expect(out).toContain('ExternalBIOSEnable = true');
     // Windows paths become forward slashes and stay quoted.
     expect(out).toContain('BIOS7Path = "C:/Nest/melonds/dsi/bios7.bin"');
     // melonDS loads the DS boot ROMs even in DSi mode.
@@ -123,8 +123,12 @@ describe('DSi dump validation', () => {
     expect(dsiSizeProblem(valid)).toBeNull();
   });
 
-  it('rejects a NAND with the 64 byte eMMC footer', () => {
-    expect(dsiSizeProblem({ ...valid, nand: DSI_NAND_SIZE + 64 })).toContain('nand.bin');
+  it('accepts a NAND with the 64 byte nocash footer (melonDS reads it)', () => {
+    expect(dsiSizeProblem({ ...valid, nand: DSI_NAND_SIZE + 64 })).toBeNull();
+  });
+
+  it('rejects a truncated NAND', () => {
+    expect(dsiSizeProblem({ ...valid, nand: DSI_NAND_SIZE - 64 })).toContain('nand.bin');
   });
 
   it('rejects mismatched BIOS sizes', () => {

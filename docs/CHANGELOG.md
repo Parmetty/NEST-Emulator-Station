@@ -9,8 +9,9 @@
 - **NDS 系统模式改为命令行 `melonDS.exe -b always`**，不再依赖 UIA 菜单自动化
   （melonDS 1.1 的 `preloadROMs` 缺少 `&& !boot`，无 ROM 时直接 return，只能停在欢迎页；
   该问题在 master 已修复，因此内置引擎换成 master CI 构建 `1e65444`，2026-10-27）
-- **DSi / DSiLL 不提供系统模式**：melonDS 至今无法引导 DSi 固件菜单
-  （master 实测仍报 "This firmware is not bootable."），仅支持直接启动游戏；界面说明原因并拦截
+- **DSi / DSiLL 系统模式可用**：melonDS 支持引导 DSi Menu，前提是
+  ① NAND 保留末尾 64 字节 nocash footer（`DSi eMMC CID/CPU`），② `[DSi] ExternalBIOSEnable` 写成布尔 `true`
+  （写成整数 1 会被当成 false，回落到 FreeBIOS 后黑屏）
 - DSi 模式除 `[DSi]` 四条路径外，还需同时写入 `[DS]` 三条路径（melonDS 启动时仍会加载 DS boot ROM）
 - melonDS 默认窗口从 256×384 调到 **512×768（2 倍等比例，整数缩放）**
 - **NGC 系统模式的 UIA 提速**：去掉启动前固定的 3 秒等待，改为窗口/菜单栏就绪后立即操作，

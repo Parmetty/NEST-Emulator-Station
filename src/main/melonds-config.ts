@@ -45,8 +45,10 @@ export const DSI_BIOS_SIZES = { bios7: 65536, bios9: 65536, firmware: 131072 } a
  */
 export const MELONDS_DEFAULT_GEOMETRY =
   'AdnQywADAAAAAAB/AAAAPAAAAoAAAANbAAAAfwAAAFoAAAKAAAADWwAAAAAAAAAABgAAAAB/AAAAWgAAAoAAAANb';
-/** melonDS requires the DSi NAND image to be exactly 0xF000000 bytes. */
+/** Raw DSi NAND content (256 MiB). A valid image may also carry a 64-byte footer. */
 export const DSI_NAND_SIZE = 0xf000000;
+/** Size of the nocash footer ("DSi eMMC CID/CPU" + CID + console id). */
+export const DSI_NAND_FOOTER = 0x40;
 
 export type TomlKey = [section: string, key: string, rawValue: string];
 
@@ -61,11 +63,15 @@ export interface DsiDumpSizes {
 export function dsiSizeProblem(sizes: DsiDumpSizes): string | null {
   const check = (actual: number, expected: number, label: string): string | null =>
     actual === expected ? null : `${label} 大小异常（${actual} 字节，应为 ${expected}）`;
+  // melonDS reads the nocash footer from the end of the file (or from the
+  // backup copy at 0xFF800), so both the trimmed and the footer-preserving
+  // dumps are accepted. Trimming is not required and must not be done.
+  const nandOk = sizes.nand === DSI_NAND_SIZE || sizes.nand === DSI_NAND_SIZE + DSI_NAND_FOOTER;
   return (
     check(sizes.bios7, DSI_BIOS_SIZES.bios7, 'bios7.bin') ??
     check(sizes.bios9, DSI_BIOS_SIZES.bios9, 'bios9.bin') ??
     check(sizes.firmware, DSI_BIOS_SIZES.firmware, 'firmware.bin') ??
-    check(sizes.nand, DSI_NAND_SIZE, 'nand.bin')
+    (nandOk ? null : `nand.bin 大小异常（${sizes.nand} 字节，应为 0xF000000 或 0xF000040）`)
   );
 }
 
@@ -80,7 +86,7 @@ export function melondsManagedKeys(options: MelondsConfigOptions): TomlKey[] {
     managed.push(['Emu', 'ConsoleType', '1']);
     managed.push(['Emu', 'ExternalBIOSEnable', 'true']);
     managed.push(['Emu', 'DirectBoot', systemMode ? 'false' : 'true']);
-    managed.push(['DSi', 'ExternalBIOSEnable', '1']);
+    managed.push(['DSi', 'ExternalBIOSEnable', 'true']);
   } else {
     managed.push(['Emu', 'ConsoleType', '0']);
     managed.push(['Emu', 'ExternalBIOSEnable', systemMode ? 'true' : 'false']);

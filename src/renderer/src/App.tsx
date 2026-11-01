@@ -654,7 +654,6 @@ export default function App() {
         'libretro-host-missing': '本安装包缺少 libretro 宿主或核心，无法启动 Wii Menu，请更新或重装 Nest',
         'libretro-not-ready': 'libretro 运行目录准备失败，请查看 nest.log',
         'missing-dsi-firmware': '缺少 DSi 固件：请到「设置 → 系统文件（自备）」导入 DSi BIOS + 固件 + NAND',
-        'dsi-menu-unsupported': 'melonDS 不支持 DSi 系统菜单（DSi 固件不可引导），请改用 DS / DSL 机型或直接启动游戏',
         'missing-wiiu-mlc': '缺少 Wii U NAND（MLC）：请到「设置 → 系统文件（自备）」选择 MLC 目录',
         'invalid-wiiu-mlc': 'Wii U NAND 目录无效：缺少 sys/title/00050010/10040000 或 usr/',
         'missing-cemu-keys': '缺少 Cemu keys.txt：请到「设置 → 系统文件（自备）」导入自备密钥',
@@ -994,12 +993,6 @@ export default function App() {
             </p>
             {selectedSystem.note ? <p className="note">{selectedSystem.note}</p> : null}
 
-            {activeModel?.consoleType === 'dsi' ? (
-              <p className="note">
-                melonDS 无法引导 DSi 固件菜单；DSi / DSiLL 机型仅支持直接启动游戏（不提供系统模式）。
-              </p>
-            ) : null}
-
             {ndsModels.length > 0 ? (
               <div className="models">
                 {NDS_MODEL_GROUPS.map((group) => (
@@ -1054,7 +1047,7 @@ export default function App() {
                   <button className="key" onClick={() => void openShelf(selectedSystem)}>
                     <kbd>A</kbd>进入
                   </button>
-                  {selectedSystem.systemMode && activeModel?.consoleType !== 'dsi' ? (
+                  {selectedSystem.systemMode ? (
                     <button className="key" onClick={() => askEnter(selectedSystem, 'system')}>
                       <kbd>X</kbd>系统模式
                     </button>

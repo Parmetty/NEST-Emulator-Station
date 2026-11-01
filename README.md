@@ -33,7 +33,7 @@ SHA256  235753F404CCFF3494D6A4C25861265C23B624F99BE5DAC4CA0DAD504D99CA22
 | FC | ares v148 | ✅ | — |
 | SFC | ares v148 | ✅ | — |
 | N64 | ares v148 | ✅ | — |
-| NDS / DSi | melonDS（master CI 构建） | ✅ | ✅ DS 菜单（命令行 `-b always`，无 UIA）；DSi/DSiLL 仅直读（melonDS 不支持 DSi 固件引导） |
+| NDS / DSi | melonDS（master CI 构建） | ✅ | ✅ DS 菜单与 DSi Menu（命令行 `-b always`，无 UIA；DSi 需 DSi 固件 + 带 footer 的 NAND） |
 | NGC | Dolphin 2609a | ✅ | ✅ GameCube Menu（需 IPL，Qt+UIA） |
 | Wii | Dolphin 2609a / libretro 宿主 | 🟡 代码就绪，待镜像验证 | ✅ Wii Menu（WAD，经 libretro 宿主，无 UIA） |
 | 3DS | Azahar 2126.2 | ✅ | ❌ 引擎不支持 HOME Menu |
