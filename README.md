@@ -117,7 +117,7 @@ src/
 resources/engines/   六个便携引擎 + 清单（加主机 = 加一份 JSON）
 resources/tools/     nest-capture / nest-input / nest-window / nest-menu / nest-pads / **nest-libretro**
 tools/               C# 助手源码（capture/input/window/menu/pads）、libretro 宿主（C#）、Wii U 安装工具、打包清理脚本、运行器
-docs/                CHANGELOG / STATE / DECISIONS / PROGRESS / PLAN / KEYS-*
+docs/                HISTORY（项目主日志）/ CHANGELOG / STATE / DECISIONS / PROGRESS / PLAN / KEYS-*
 ```
 
 设计约定：
@@ -168,7 +168,7 @@ cemu/             keys.txt、MLC 路径记录
 | P4 | Wii U（Cemu 2.6 + keys/MLC 导入） | 引擎完成，系统菜单实验性 |
 | P5 | 封面质量、Cemu 键位适配、自动构建脚本、安装包（按需） | 进行中 |
 
-更细的状态见 [docs/CHANGELOG.md](docs/CHANGELOG.md)、[docs/STATE.md](docs/STATE.md)、[docs/PROGRESS.md](docs/PROGRESS.md)。
+项目主日志见 [docs/HISTORY.md](docs/HISTORY.md)，发布级变化见 [docs/CHANGELOG.md](docs/CHANGELOG.md)，现状见 [docs/STATE.md](docs/STATE.md)，逐日进展见 [docs/PROGRESS.md](docs/PROGRESS.md)。
 
 ## 法律
 

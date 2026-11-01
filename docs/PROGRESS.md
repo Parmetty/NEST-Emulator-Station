@@ -1,5 +1,7 @@
 # Nest 开发进度与待办
 
+> 项目里程碑与各版本主线见 [HISTORY.md](HISTORY.md)；本文件只记逐日进度与待办。
+
 > 更新于 2026-10-28（Asia/Shanghai）｜基线 `main @ 0d04026`｜版本 `0.2.0`，最新 tag `v0.2.0-beta.1`（`2d075a5`）
 > 依据：`git log/show`、`docs/STATE.md`、`docs/PLAN.md`、`docs/DECISIONS.md`、`docs/RELEASE.md`、`README.md`、`resources/engines/*.json`、`src/shared/systems.ts`、`src/main/{ipc,index,scanner}.ts`、`resources/tools/*`
 
