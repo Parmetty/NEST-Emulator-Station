@@ -5,17 +5,17 @@
 
 ![Nest 首页](shots/app.png)
 
-> 当前：**0.3.2** —— Windows 桌面版 · 九台任天堂主机 · 六个内置引擎 · 免安装携带版
+> 当前：**0.4.0-beta.1** —— Windows 桌面版 · 九台任天堂主机 · 六个内置引擎 + 自写 libretro 宿主 · 免安装携带版
 
 ## 下载
 
 直接下免安装版，解压双击即可用，不需要安装 Node 或任何依赖：
 
-**[Nest-0.3.2-portable.zip](https://github.com/Parmetty/NEST-Emulator-Station/releases/download/v0.3.2/Nest-0.3.2-portable.zip)** · 234 MB · [Release 页面](https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.3.2)
+**[Nest-0.4.0-beta.1-portable.zip](https://github.com/Parmetty/NEST-Emulator-Station/releases/download/v0.4.0-beta.1/Nest-0.4.0-beta.1-portable.zip)** · 268 MB · [Release 页面](https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.4.0-beta.1)
 
 ```
-SHA256  B5AE4AF8DDAC53CADACA1C8E493864FC3C23C65E0EBD0702594452422646AFA1
-解压    598 MB / 2905 个文件
+SHA256  235753F404CCFF3494D6A4C25861265C23B624F99BE5DAC4CA0DAD504D99CA22
+解压    640 MB / 3172 个文件
 ```
 
 1. 解压到任意目录（可放 U 盘）
@@ -34,18 +34,19 @@ SHA256  B5AE4AF8DDAC53CADACA1C8E493864FC3C23C65E0EBD0702594452422646AFA1
 | SFC | ares v148 | ✅ | — |
 | N64 | ares v148 | ✅ | — |
 | NDS | melonDS 1.1 | ✅ | ✅ DS 固件菜单（需 BIOS/firmware） |
-| NGC | Dolphin 2609a | ✅ | ✅ GameCube Menu（需 IPL） |
-| Wii | Dolphin 2609a | 🟡 代码就绪，待镜像验证 | ✅ Wii Menu（需 WAD） |
+| NGC | Dolphin 2609a | ✅ | ✅ GameCube Menu（需 IPL，Qt+UIA） |
+| Wii | Dolphin 2609a / libretro 宿主 | 🟡 代码就绪，待镜像验证 | ✅ Wii Menu（WAD，经 libretro 宿主，无 UIA） |
 | 3DS | Azahar 2126.2 | ✅ | ❌ 引擎不支持 HOME Menu |
-| Wii U | Cemu 2.6 | ✅ `.wua/.wud/.wux` | ✅ Wii U Menu（需自备 NAND/MLC + keys.txt） |
+| Wii U | Cemu 2.6 | ✅ `.wua/.wud/.wux` | ⚠️ **实验性** Wii U Menu（Cemu 2.6 限制，见下方已知限制） |
 
 其它能力：
 
 - **主机墙**：9 台任天堂主机按发售年份排列，全屏照片 + 树状列表 + 信息卡；平台切换时年代标尺跟着换
 - **游戏库 + 自动扫描**：添加过的文件夹会在启动时自动重扫，新 ROM 自动出现；支持 `.cia` 与磁盘头 magic 判定 GC/Wii
 - **自动封面**：游戏运行期间由独立抓屏工具持续取帧，退出时存为封面（NDS/3DS 只截上屏）
+- **自写 libretro 宿主**：`resources/tools/nest-libretro.exe`（约 90 KB，C# + SDL3）托管官方 `dolphin_libretro.dll`，**Wii 系统菜单不再依赖 Dolphin Qt GUI 自动化**，直接加载 `wii-menu.wad` 进菜单；键盘 + 鼠标绝对指针（鼠标即 Wiimote 光标，左键 = A）
 - **键位面板**：mGBA / ares / Dolphin / Azahar / melonDS 五引擎键盘绑定可在 Nest 里改，保存立即生效；首次启动自动写默认布局，不覆盖你已有的自定义
-- **固件中心**：GameCube IPL（CRC32 白名单）、Wii 系统菜单 WAD、NDS BIOS+固件，一键导入
+- **固件中心**：GameCube IPL（CRC32 白名单）、Wii 系统菜单 WAD、NDS BIOS+固件、**Cemu keys.txt / Wii U NAND（MLC）**，一键导入（MLC 只记路径，不复制）
 - **便携模式**：库、封面、日志、引擎配置都留在程序目录，删 `data\` 即恢复出厂
 - **运行中高亮 / 进入前确认 / 右键移除**（只删库记录，绝不动磁盘上的 ROM）
 
@@ -55,7 +56,8 @@ SHA256  B5AE4AF8DDAC53CADACA1C8E493864FC3C23C65E0EBD0702594452422646AFA1
 |---|---|
 | GBA / NDS / 3DS | 方向键 = 十字键，Space = A，J = B，Q/E = L/R，Enter = Start，Backspace = Select |
 | FC / SFC / N64 | W/S/A/D = 十字键，J/K = A/B，U/I = X/Y（SFC），Q/E = L/R，Enter = Start，右 Shift = Select |
-| NGC / Wii | Dolphin GCPad 键盘布局 |
+| NGC / Wii 直读 | Dolphin GCPad 键盘布局 |
+| Wii 系统菜单 | 键盘 + 鼠标：鼠标即 Wiimote 光标（绝对定位，需 Cemu 无），左键 = A |
 
 细节见 [docs/KEYS-GBA.md](docs/KEYS-GBA.md)、[KEYS-DOLPHIN.md](docs/KEYS-DOLPHIN.md)、
 [KEYS-3DS.md](docs/KEYS-3DS.md)、[KEYS-ARES.md](docs/KEYS-ARES.md)。
@@ -97,7 +99,7 @@ npm run pack           # 免安装目录 + NSIS 安装包（默认不用，见 D
 
 ```bash
 npm run typecheck
-npm test               # 40 个用例：扫描/去重/清单/keymap/引擎配置写入/进程生命周期
+npm test               # 68 个用例：扫描/去重/清单/keymap/引擎配置写入/Wii U 导入/进程生命周期
 npm run build
 npm run smoke          # 窗口 + IPC + 渲染自检
 ```
@@ -109,11 +111,12 @@ src/
   shared/            纯数据与契约（主机表、zod schema、IPC 通道名）
   main/              主进程：窗口、IPC、库、引擎清单、进程监管、扫描器
   main/controls/     各引擎的键盘绑定适配器（keymap + mgba/ares/dolphin/azahar/melonds）
+  main/cemu.ts       Cemu keys.txt 导入、MLC 校验、启动参数组装
   preload/           contextBridge 暴露的 window.nest
   renderer/          React：首页 + 游戏库覆盖层 + 设置面板
 resources/engines/   六个便携引擎 + 清单（加主机 = 加一份 JSON）
-resources/tools/     nest-capture / nest-input / nest-window / nest-menu / nest-pads
-tools/               C# 助手源码、打包清理脚本、运行器
+resources/tools/     nest-capture / nest-input / nest-window / nest-menu / nest-pads / **nest-libretro**
+tools/               C# 助手源码（capture/input/window/menu/pads）、libretro 宿主（C#）、Wii U 安装工具、打包清理脚本、运行器
 docs/                CHANGELOG / STATE / DECISIONS / PROGRESS / PLAN / KEYS-*
 ```
 
@@ -138,6 +141,8 @@ nest.log          主进程日志
 dolphin/          GC IPL、Wii 菜单 WAD、NAND
 melonds/          NDS BIOS
 azahar/           3DS 配置与 NAND
+libretro/         自写宿主运行时目录（sys/save/日志）
+cemu/             keys.txt、MLC 路径记录
 ```
 
 没有遥测，除引擎官网外不联网。
@@ -145,7 +150,9 @@ azahar/           3DS 配置与 NAND
 ## 已知限制
 
 - **封面可能截到黑帧**：目前取退出前最后一帧；全黑过场的游戏可能拿到黑封面（COV-2，已评审待实现）
-- **Wii 直读**代码就绪但尚无真实镜像验证；**Wii U** 引擎已内置（Cemu 2.6），直读与系统菜单都需要自备 `keys.txt` 与 NAND（MLC）
+- **Wii 直读**代码就绪但尚无真实镜像验证
+- **Wii U Menu 为实验性**：Cemu 2.6 尚未实现 `nn_act.LoadConsoleAccount`，即使 MLC 正确，菜单目前只会停在背景画面；游戏直读不受影响。设置里的 MLC 行有 ? 提示说明两条获取路径（真机 dump / CDN 手工拼装）
+- **Wii 鼠标映射**：按屏幕录像标定（X 只覆盖过窗口宽度约 6%，左右两端可能还需微调）
 - **3DS 无系统菜单**（Azahar 不支持 HOME Menu）
 - **NGC 系统菜单**为 GUI 自动化（`File → Boot firmware` 类似路径），需要有效 IPL，Qt 菜单展开瞬间会短暂影响输入
 - **没有数字签名**：首次运行 SmartScreen 提示；个别环境需 `--no-sandbox`（启动脚本已带）
@@ -157,15 +164,16 @@ azahar/           3DS 配置与 NAND
 | --- | --- | --- |
 | P0–P2 | 骨架、IPC、引擎清单、扫描器、GBA/FC/SFC/N64 闭环 | ✅ |
 | P3 | Dolphin（NGC/Wii 直读 + 系统菜单）、3DS（Azahar）、NDS（melonDS） | ✅ |
-| P4 | Wii U（Cemu 2.6 + keys/MLC 导入） | 进行中 |
-| P5 | 封面质量、自动构建脚本、安装包（按需） | 进行中 |
+| P3.5 | 自写 libretro 宿主，Wii 系统菜单去 UIA | ✅ |
+| P4 | Wii U（Cemu 2.6 + keys/MLC 导入） | 引擎完成，系统菜单实验性 |
+| P5 | 封面质量、Cemu 键位适配、自动构建脚本、安装包（按需） | 进行中 |
 
 更细的状态见 [docs/CHANGELOG.md](docs/CHANGELOG.md)、[docs/STATE.md](docs/STATE.md)、[docs/PROGRESS.md](docs/PROGRESS.md)。
 
 ## 法律
 
 - 本仓库**不含**任何 ROM、BIOS、NAND 或密钥；只启动你提供的模拟器、扫描你已有的文件。
-- 内置引擎与许可证：mGBA（MPL 2.0）、ares（ISC）、Dolphin（GPLv2+）、Azahar（GPLv3）、melonDS（GPLv3）、SDL3（Zlib）。
+- 内置引擎与许可证：mGBA（MPL 2.0）、ares（ISC）、Dolphin（GPLv2+）、Azahar（GPLv3）、melonDS（GPLv3）、Cemu（MPL 2.0）、dolphin_libretro（GPLv2+）、SDL3（Zlib）。
 - 主机照片来自 Wikimedia Commons 的公有领域素材（Evan-Amos），已做裁切/去色/模糊处理；可被用户替换。
 - 各主机商标归各自权利人所有，本项目与任天堂、微软、索尼无关联。
 

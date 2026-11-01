@@ -2,7 +2,10 @@
 
 本文件记录每次发布的可见变化。技术细节在 `docs/STATE.md`，决策理由在 `docs/DECISIONS.md`，待办在 `docs/PROGRESS.md`。
 
-## 0.3.3 — 未发布 · libretro 宿主（Wii 菜单去 UIA）
+## 0.4.0-beta.1 — 2026-11-01 · 自写 libretro 宿主 + Wii U（Cemu）接入
+
+便携包：Nest-0.4.0-beta.1-portable.zip 268 MB（解压 640 MB / 3172 文件）
+SHA256 235753F404CCFF3494D6A4C25861265C23B624F99BE5DAC4CA0DAD504D99CA22
 
 ### 自写 libretro 宿主
 
@@ -22,6 +25,14 @@
 - 宿主输入由核心 descriptors 驱动：GC A/B/X/Y/L/R/Z/Start、左右摇杆（±32767）、C 摇杆；Wii A/B/1/2/+/−/Home/Shake/Tilt；键盘默认表 + 手柄轴；Wii 鼠标→右摇杆指针
 - `--keys` 覆盖：Nest 把 `settings.controls` 的自定义键位映射成宿主 action 传给引擎
 - 封面：libretro 会话跳过 `nest-capture`，宿主 `--shot-dir/--shot-every` 周期存帧并跳过黑帧，退出后取最新非黑帧
+
+
+### 发布前修复（11-01）
+
+- Wii 画面：默认 4:3 原生输出（dolphin_widescreen=disabled + spect_ratio 自动），EFB 倍率跟随窗口缩放，画面铺满窗口
+- Wii 鼠标：改为绝对 pointer + dolphin_ir_mode=2，按屏幕录像标定反向映射（X 0.765/0.132、Y 0.537/0.086），左键 = Wiimote A
+- 只启用端口 0 的 Wii Remote，去掉多余的 2/3/4 号光标
+- Wii U Menu 标记为**实验性**；设置里 MLC 行加 ? 提示（真机 dump / CDN 拼装两条路，及 Cemu 2.6 缺陷说明）
 
 ### 工程
 
