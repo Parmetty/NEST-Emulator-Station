@@ -2,13 +2,15 @@
 
 > 项目里程碑与各版本主线见 [HISTORY.md](HISTORY.md)；本文件只记逐日进度与待办。
 
-> 更新于 2026-10-28（Asia/Shanghai）｜基线 `main @ 0d04026`｜版本 `0.2.0`，最新 tag `v0.2.0-beta.1`（`2d075a5`）
-> 依据：`git log/show`、`docs/STATE.md`、`docs/PLAN.md`、`docs/DECISIONS.md`、`docs/RELEASE.md`、`README.md`、`resources/engines/*.json`、`src/shared/systems.ts`、`src/main/{ipc,index,scanner}.ts`、`resources/tools/*`
+> 更新于 2026-11-01（Asia/Shanghai）｜基线 `main @ 6c05163`｜版本 `0.4.0-beta.1`，最新 tag `v0.4.0-beta.1`（`4a7b667`）
+> 依据：`git log/tag`、`docs/HISTORY.md`、`docs/STATE.md`、`docs/DECISIONS.md`、`README.md`、`resources/engines/*.json`、`src/shared/systems.ts`、`src/main/*`
+>
+> 说明：顶部 §1–§2 是**当前快照**；§3 起是逐日进度与历史记录（2026-10-28 的旧分析保留备查）。
 
 ## 1. 一句话现状
 
 一个 Electron「主机启动站」：扫描 ROM → 卡片墙 → 内置引擎子进程启动 → 退出回 Nest 并自动生成封面。
-**GBA / FC / SFC / N64 全链路已验证可玩；NGC 直读已验证（真实 1.4 GB 镜像）；Wii 系统菜单可用（命令行直启 WAD）；NGC 系统菜单因缺命令行入口暂时搁置。**
+**九台任天堂主机全部接入：GBA/FC/SFC/N64/NDS/3DS/NGC 直读已验证；Wii 系统菜单经自写 libretro 宿主启动（无 UIA）；Wii U 引擎（Cemu 2.6）已内置，直读链路验证通过、系统菜单为实验性（Cemu 缺 `nn_act.LoadConsoleAccount`）。**
 
 ## 2. 能力矩阵（当前）
 
