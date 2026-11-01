@@ -310,3 +310,14 @@ est-pads.exe（SDL3）检测后切 SDL 绑定。
 
 - 等用户提供 keys.txt 与 NAND（MLC）后做真机直读/系统菜单验证
 - dolphin_libretro GC 主菜单补丁（需要 MSVC 工具链，已挂起）
+
+---
+
+## 2026-11-01 收尾：发布 0.4.0 Beta
+
+- 版本 0.3.2 → 0.4.0-beta.1；README / CHANGELOG / package-lock 同步
+- 便携包 Nest-0.4.0-beta.1-portable.zip 268 MB（解压 640 MB / 3172 文件）
+- SHA256 235753F404CCFF3494D6A4C25861265C23B624F99BE5DAC4CA0DAD504D99CA22
+- Release：https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.4.0-beta.1（prerelease）
+- 打包前备份并恢复 Cemu 运行时数据（370 MB MLC/keys），zip 内无 keys/MLC/运行时状态
+- 解压冒烟通过（smoke ok: renderer rendered）

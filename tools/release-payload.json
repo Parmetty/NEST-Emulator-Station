@@ -1,0 +1,8 @@
+{
+    "tag_name":  "v0.4.0-beta.1",
+    "name":  "Nest 0.4.0 Beta · 自写 libretro 宿主 + Wii U 接入",
+    "body":  "# Nest 0.4.0 Beta · 自写 libretro 宿主 + Wii U 接入\n\n\u003e Windows 免安装携带版。下载 `Nest-0.4.0-beta.1-portable.zip`，解压双击 **`启动 Nest.bat`** 即可。\n\n## 这个版本有什么\n\n### 自写 libretro 宿主（Wii 系统菜单去 UIA）\n\n- 新增 `nest-libretro.exe`（自写 C# 宿主，托管官方 `dolphin_libretro.dll`，不依赖 RetroArch/RetroArch 前端）\n- **Wii Menu 不再走 Dolphin Qt 的 GUI 自动化**：直接加载 `wii-menu.wad` 进菜单\n- 键鼠映射：鼠标 = Wiimote 光标（绝对定位，按屏幕录像标定），左键 = A\n- 同一套宿主也用于封面取帧（跳过黑帧）\n\n### Wii U（Cemu 2.6）\n\n- 内置 Cemu 2.6（MPL 2.0）\n- 支持 `.wua / .wud / .wux` 扫描与直读\n- 设置 →「系统文件（自备）」新增：Cemu keys.txt 导入、Wii U NAND（MLC）目录\n- **Wii U Menu 标记为实验性**：Cemu 2.6 尚未实现 `nn_act.LoadConsoleAccount`，即使 MLC 正确菜单目前也只停在背景；直读不受影响\n\n### 键位\n\n- mGBA / ares / Dolphin / Azahar / melonDS 五引擎键盘绑定（分引擎写配置，不覆盖自定义）\n- ares 采用源码确认的十进制 index 编码\n- Wii 系统菜单通过宿主内置默认 + Nest `--keys` 传递\n\n### 其它\n\n- 启动自动扫描、`.cia` 支持、磁盘头 magic 判断 GC/Wii\n- 固件中心、封面、运行中高亮、进入前确认\n- 便携模式：库/封面/日志/引擎配置都在解压目录 `data\\`\n\n## 下载信息\n\n| 项 | 值 |\n|---|---|\n| 文件 | `Nest-0.4.0-beta.1-portable.zip` |\n| 大小 | 268 MB（解压 640 MB / 3172 文件） |\n| SHA256 | `235753F404CCFF3494D6A4C25861265C23B624F99BE5DAC4CA0DAD504D99CA22` |\n\n## 首次使用\n\n1. 解压到任意目录\n2. 双击 `启动 Nest.bat`\n3. 点「扫描文件夹」指向 ROM 目录（之后每次启动自动重扫）\n4. 固件/密钥：设置 →「系统文件（自备）」\n\n## 已知限制\n\n- Wii U Menu 实验性（Cemu 2.6 账号 API 未实现）\n- Wii 直读尚无真实镜像验证\n- NGC 系统菜单仍是 Qt+UIA（libretro 核心无法无内容启动）\n- 无数字签名：首次运行 SmartScreen 提示，选「更多信息 → 仍要运行」\n- Cemu 键位尚未接入 Nest 键位面板（可在 Cemu 自身 GUI 配置）\n\n完整改动见 `docs/CHANGELOG.md` 的 0.4.0-beta.1 节。\n",
+    "draft":  false,
+    "prerelease":  true,
+    "make_latest":  "false"
+}
