@@ -321,3 +321,8 @@ est-pads.exe（SDL3）检测后切 SDL 绑定。
 - Release：https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.4.0-beta.1（prerelease）
 - 打包前备份并恢复 Cemu 运行时数据（370 MB MLC/keys），zip 内无 keys/MLC/运行时状态
 - 解压冒烟通过（smoke ok: renderer rendered）
+
+### 下次 release 待办
+
+- 启动方式：`Nest.exe` 直接双击为首选（数据在 `%APPDATA%\Nest`）；`启动 Nest.bat` 改为「便携数据模式」备用入口（0.4.0-beta.1 里说明文档仍是旧文案，需随包刷新）
+- 使用说明.txt 同步六引擎 + libretro 宿主

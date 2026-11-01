@@ -1,15 +1,16 @@
-Nest 0.3.0 · 免安装携带版
+Nest 0.4.0 Beta · 免安装携带版
 ================================
 
-解压后双击「启动 Nest.bat」即可，不需要安装、不写注册表。
+解压后直接双击「Nest.exe」即可，不需要安装、不写注册表。
+想让库/封面/日志跟着文件夹走（U 盘、换电脑），再双击「启动 Nest.bat」（便携数据模式，备用入口）。
 
 目录说明
 --------
-启动 Nest.bat          推荐入口：带便携数据模式启动（见下）
+Nest.exe               推荐入口：直接双击即可（数据在 %APPDATA%\Nest）
+启动 Nest.bat          备用入口：便携数据模式（数据留在本目录 data\）
 便携数据模式.bat        同上，单独一份方便复制
-Nest.exe               主程序（高级用户可直接双击，数据会落在 %APPDATA%\Nest）
-resources\engines\     mGBA / ares / Dolphin / Azahar / melonDS 五个引擎
-resources\tools\       抓屏、按键、窗口监视、UIA 菜单、手柄检测助手
+resources\engines\     mGBA / ares / Dolphin / Azahar / melonDS / Cemu 六个引擎
+resources\tools\       抓屏、按键、窗口监视、UIA 菜单、手柄检测、libretro 宿主
 data\                  便携数据目录（首次启动自动生成）
 
 便携数据模式
