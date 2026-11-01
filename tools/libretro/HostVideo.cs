@@ -222,7 +222,6 @@ namespace NestLibretro
             if (_headless) flags |= Sdl3.SDL_WINDOW_HIDDEN;
             else
             {
-                flags |= Sdl3.SDL_WINDOW_RESIZABLE;
                 if (_fullscreen) flags |= Sdl3.SDL_WINDOW_FULLSCREEN;
             }
 

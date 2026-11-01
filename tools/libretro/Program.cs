@@ -444,8 +444,15 @@ namespace NestLibretro
 
             // Pick a controller device for ports where the core did not list the
             // default joypad; joypad stays the default elsewhere.
+            // Only port 0 is driven by our keyboard/mouse mapping. Extra Wii
+            // Remote slots would render extra IR cursors that nothing controls.
+            LibretroCore.SetControllerPortDevice(1, 0);
+            LibretroCore.SetControllerPortDevice(2, 0);
+            LibretroCore.SetControllerPortDevice(3, 0);
+
             foreach (KeyValuePair<uint, uint[]> pair in HostEnvironment.ControllerDevices)
             {
+                if (pair.Key != 0) continue;
                 uint[] types = pair.Value;
                 uint chosen = 0;
                 bool hasJoypad = false;
