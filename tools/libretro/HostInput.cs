@@ -610,6 +610,14 @@ namespace NestLibretro
                     uint buttons = Sdl3.SDL_GetMouseState(out mx, out my);
                     float nx, ny;
                     HostVideo.WindowToVideo(mx, my, out nx, out ny);
+
+                    // Calibrated from the user's screen recording
+                    // (diag-shots/video-r1/CALIBRATION.md): the Wiimote hand cursor
+                    // followed the mouse with ~1.31x horizontal and ~2.48x vertical
+                    // sensitivity plus an offset, so feed the inverse map.
+                    nx = 0.7647f * nx + 0.1317f;
+                    ny = 0.5376f * ny + 0.0858f;
+
                     _pointerX = AxisFromNormalized(nx);
                     _pointerY = AxisFromNormalized(ny);
                     _pointerPressed = (buttons & 1) != 0;
