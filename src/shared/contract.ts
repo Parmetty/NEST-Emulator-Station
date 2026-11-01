@@ -76,6 +76,8 @@ export const settingsSchema = z.object({
   scanRoots: z.array(z.string().min(1)).max(32).optional(),
   /** Absolute path of the user's Wii U NAND/MLC dump (Cemu `-m`); never copied. */
   cemuMlc: z.string().min(1).max(4096).optional(),
+  /** NDS hardware revision: decides the illustration and melonDS console type. */
+  ndsModel: z.enum(['ds', 'dsl', 'dsi', 'dsill']).optional(),
   controls: z
     .record(
       z.string().max(32),
@@ -305,6 +307,8 @@ export interface Settings {
   controls?: Record<string, EngineControls>;
   /** Absolute path of the user's Wii U NAND/MLC dump (Cemu `-m`). */
   cemuMlc?: string;
+  /** NDS hardware revision: decides the illustration and melonDS console type. */
+  ndsModel?: 'ds' | 'dsl' | 'dsi' | 'dsill';
 }
 
 export interface LaunchEvent {

@@ -15,7 +15,7 @@ import type {
   SystemView,
 } from '@shared/contract';
 import { PAD_ACTIONS } from '@shared/contract';
-import { engineLabel, systemById } from '@shared/systems';
+import { engineLabel, ndsModelById, NDS_MODEL_GROUPS, systemById } from '@shared/systems';
 
 type Row =
   | { kind: 'family'; family: FamilyView }
@@ -241,7 +241,11 @@ export default function App() {
     (f) => f.id === (sel.type === 'family' ? sel.id : selectedSystem?.family),
   );
   const locked = selectedSystem ? selectedSystem.state === 'locked' : false;
-  const empty = !selectedSystem || locked || !selectedSystem.image;
+  const ndsModels = selectedSystem?.id === 'nds' ? (selectedSystem.models ?? []) : [];
+  const activeModel = ndsModels.length > 0 ? ndsModelById(settings.ndsModel) : null;
+  /** NDS uses the selected model's photo; every other console has one image. */
+  const photoImage = activeModel?.image ?? selectedSystem?.image ?? '';
+  const empty = !selectedSystem || locked || !photoImage;
 
   /* ------------------------------------------------------- photo swap */
   const [imgs, setImgs] = useState<[string, string]>(['', '']);
@@ -250,7 +254,7 @@ export default function App() {
   const frontRef = useRef(0);
 
   useEffect(() => {
-    const next = selectedSystem && !locked ? relpath(selectedSystem.image) : '';
+    const next = selectedSystem && !locked ? relpath(photoImage) : '';
     if (!next || next === photoRef.current) return;
     photoRef.current = next;
     const slot = 1 - frontRef.current;
@@ -261,7 +265,7 @@ export default function App() {
       return copy;
     });
     setFront(slot);
-  }, [selectedSystem, locked]);
+  }, [selectedSystem, locked, photoImage]);
 
   /* ----------------------------------------------------------- motion */
   const stageRef = useRef<HTMLDivElement | null>(null);
@@ -984,9 +988,35 @@ export default function App() {
               </p>
             ) : null}
             <p className="sub">
-              {selectedSystem.year} · {selectedSystem.kind} · {engineLabel(selectedSystem.engine)}
+              {activeModel ? activeModel.year : selectedSystem.year} · {selectedSystem.kind} ·{' '}
+              {engineLabel(selectedSystem.engine)}
             </p>
             {selectedSystem.note ? <p className="note">{selectedSystem.note}</p> : null}
+
+            {ndsModels.length > 0 ? (
+              <div className="models">
+                {NDS_MODEL_GROUPS.map((group) => (
+                  <div className="model-group" key={group.title}>
+                    <span className="model-title">{group.title}</span>
+                    <div className="model-row">
+                      {group.models.map((modelId) => {
+                        const model = ndsModels.find((entry) => entry.id === modelId);
+                        if (!model) return null;
+                        return (
+                          <button
+                            key={model.id}
+                            className={`model-chip${activeModel?.id === model.id ? ' is-on' : ''}`}
+                            onClick={() => void updateSetting({ ndsModel: model.id })}
+                          >
+                            {model.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
 
             {selectedSystem.state === 'locked' ? (
               <div className="keys">

@@ -107,6 +107,15 @@ launches emulators you provide and scans files you already own.
 - License: **Zlib** · https://github.com/libsdl-org/SDL
 - Shipped next to `nest-pads.exe` so Nest can enumerate controllers before
   launching an engine that supports gamepads (currently Azahar / mGBA).
+### 主机照片 — `src/renderer/public/consoles/*.webp`
+
+- 来源：Wikimedia Commons
+- NDS / NGC / Wii / GBA / SFC / FC / N64 / 3DS / Wii U：Evan-Amos 的公有领域素材（已裁切、去色、转 webp）
+- **Nintendo DSi**：Evan-Amos，**CC BY-SA 3.0** — https://commons.wikimedia.org/wiki/File:Nintendo-DSi-Bl-Open.png
+- **Nintendo DSi XL**：Evan-Amos，**CC BY-SA 3.0** — https://commons.wikimedia.org/wiki/File:Nintendo-DSi-XL-Burg.png
+- **Nintendo DS Lite**：Evan-Amos，公有领域 — https://commons.wikimedia.org/wiki/File:Nintendo-DS-Lite-Black-Open.png
+- CC BY-SA 3.0 全文：https://creativecommons.org/licenses/by-sa/3.0/
+- 修改方式：裁切透明边距、灰度化、缩放至 1500px 宽、转为 webp；修改后的图片同样按 CC BY-SA 3.0 提供
 ### melonDS 1.1 — `resources/engines/melonds/`
 
 - Project: https://melonds.kuribo64.net/ · Source: https://github.com/melonDS-emu/melonDS

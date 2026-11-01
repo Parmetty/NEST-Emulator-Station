@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { ndsModelConsole } from '../src/shared/systems';
 import {
   DSI_BIOS_SIZES,
   DSI_NAND_SIZE,
@@ -115,5 +116,19 @@ describe('DSi dump validation', () => {
   it('rejects mismatched BIOS sizes', () => {
     expect(dsiSizeProblem({ ...valid, bios7: 32768 })).toContain('bios7.bin');
     expect(dsiSizeProblem({ ...valid, firmware: 65536 })).toContain('firmware.bin');
+  });
+});
+
+describe('NDS model mapping', () => {
+  it('maps DS/DSL to the DS console and DSi/DSiLL to DSi', () => {
+    expect(ndsModelConsole('ds')).toBe('nds');
+    expect(ndsModelConsole('dsl')).toBe('nds');
+    expect(ndsModelConsole('dsi')).toBe('dsi');
+    expect(ndsModelConsole('dsill')).toBe('dsi');
+  });
+
+  it('falls back to the original DS', () => {
+    expect(ndsModelConsole(undefined)).toBe('nds');
+    expect(ndsModelConsole('nope')).toBe('nds');
   });
 });

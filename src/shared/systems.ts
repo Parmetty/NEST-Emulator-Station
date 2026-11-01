@@ -3,11 +3,30 @@
 export type FamilyId = 'nintendo' | 'xbox' | 'playstation';
 
 export type SystemId =
-  | 'fc' | 'sfc' | 'n64' | 'gba' | 'ngc' | 'nds' | 'dsi' | 'wii' | '3ds' | 'wiiu'
+  | 'fc' | 'sfc' | 'n64' | 'gba' | 'ngc' | 'nds' | 'wii' | '3ds' | 'wiiu'
   | 'xbox' | 'xbox360'
   | 'ps1' | 'ps2' | 'psp' | 'ps3';
 
 export type SystemState = 'ready' | 'warn' | 'locked';
+
+/** Model variants inside one console family (DS / DS Lite / DSi / DSi XL). */
+export type NdsModelId = 'ds' | 'dsl' | 'dsi' | 'dsill';
+
+export interface SystemModel {
+  id: NdsModelId;
+  /** Short label shown on the model chip, e.g. "DSL" or "DSiLL". */
+  label: string;
+  year: number;
+  image: string;
+  /** melonDS console type this model boots as. */
+  consoleType: 'nds' | 'dsi';
+}
+
+/** Two groups in the NDS info card; names use a slash to pair each revision. */
+export const NDS_MODEL_GROUPS: { title: string; models: NdsModelId[] }[] = [
+  { title: 'DS / DSL', models: ['ds', 'dsl'] },
+  { title: 'DSi / DSiLL', models: ['dsi', 'dsill'] },
+];
 
 export interface SystemDef {
   id: SystemId;
@@ -25,6 +44,8 @@ export interface SystemDef {
   note?: string;
   /** Real system menu this console can boot into, if any. */
   systemMode?: string;
+  /** Model revisions inside this console (NDS family). */
+  models?: SystemModel[];
 }
 
 export const SYSTEMS: SystemDef[] = [
@@ -33,9 +54,14 @@ export const SYSTEMS: SystemDef[] = [
   { id: 'n64',   name: 'Nintendo 64',       short: 'N64',   year: 1996, kind: '家用机', family: 'nintendo', engine: 'ares',     image: 'consoles/n64.webp',  state: 'ready' },
   { id: 'gba',   name: 'Game Boy Advance',  short: 'GBA',   year: 2001, kind: '掌机',   family: 'nintendo', engine: 'mgba',     image: 'consoles/gba.webp',  state: 'ready', note: 'BIOS 开机动画随游戏启动' },
   { id: 'ngc',   name: 'Nintendo GameCube', short: 'NGC',   year: 2001, kind: '家用机', family: 'nintendo', engine: 'dolphin',  image: 'consoles/ngc.webp',  state: 'ready', systemMode: 'GameCube Menu', note: '直读可用；系统菜单需自备对应区域 IPL.bin（NGC 主菜单受 libretro 核心限制，仍用 Qt 自动化）' },
-  { id: 'nds',   name: 'Nintendo DS',       short: 'NDS',   year: 2004, kind: '掌机',   family: 'nintendo', engine: 'melonds',  image: 'consoles/nds.webp',  state: 'ready', systemMode: 'DS 固件菜单', note: '系统菜单需自备 NDS BIOS/firmware' },
+  { id: 'nds',   name: 'Nintendo DS',       short: 'NDS',   year: 2004, kind: '掌机',   family: 'nintendo', engine: 'melonds',  image: 'consoles/nds.webp',  state: 'ready', systemMode: 'DS / DSi 菜单', note: '机型可选 DS / DSL / DSi / DSiLL；系统菜单需自备对应固件',
+    models: [
+      { id: 'ds',    label: 'DS',    year: 2004, image: 'consoles/nds.webp',   consoleType: 'nds' },
+      { id: 'dsl',   label: 'DSL',   year: 2006, image: 'consoles/ndsl.webp',  consoleType: 'nds' },
+      { id: 'dsi',   label: 'DSi',   year: 2008, image: 'consoles/dsi.webp',   consoleType: 'dsi' },
+      { id: 'dsill', label: 'DSiLL', year: 2009, image: 'consoles/dsill.webp', consoleType: 'dsi' },
+    ] },
   { id: 'wii',   name: 'Nintendo Wii',      short: 'Wii',   year: 2006, kind: '家用机', family: 'nintendo', engine: 'dolphin',  image: 'consoles/wii.webp',  state: 'ready', systemMode: 'Wii Menu', note: '需自备 wii-menu.wad（设置 → 系统文件（自备）导入）' },
-  { id: 'dsi',   name: 'Nintendo DSi',      short: 'DSi',   year: 2008, kind: '掌机',   family: 'nintendo', engine: 'melonds',  image: 'consoles/nds.webp',  state: 'ready', systemMode: 'DSi Menu', note: 'DSi 模式（melonDS ConsoleType=1）；需自备 DSi BIOS + 固件 + NAND（设置 → 系统文件）' },
   { id: '3ds',   name: 'Nintendo 3DS',      short: '3DS',   year: 2011, kind: '掌机',   family: 'nintendo', engine: 'azahar',   image: 'consoles/3ds.webp',  state: 'ready', note: '直读可用；无系统菜单（Azahar 不支持 HOME Menu）' },
     { id: 'wiiu',  name: 'Wii U',             short: 'Wii U', year: 2012, kind: '家用机', family: 'nintendo', engine: 'cemu',     image: 'consoles/wiiu.webp', state: 'warn', systemMode: 'Wii U Menu（实验性）', note: '直读需自备 keys.txt 与游戏；Wii U Menu 目前受 Cemu 2.6 限制（只能到背景），标记为实验性' },
 
@@ -55,6 +81,18 @@ export const FAMILIES: { id: FamilyId; name: string; locked: boolean }[] = [
 ];
 
 export const systemById = new Map(SYSTEMS.map((s) => [s.id, s]));
+
+/** All NDS model variants (DS, DS Lite, DSi, DSi XL). */
+export const NDS_MODELS: SystemModel[] = SYSTEMS.find((s) => s.id === 'nds')?.models ?? [];
+
+export function ndsModelById(id: string | null | undefined): SystemModel {
+  return NDS_MODELS.find((model) => model.id === id) ?? NDS_MODELS[0];
+}
+
+/** Which melonDS console type the selected model needs. */
+export function ndsModelConsole(id: string | null | undefined): 'nds' | 'dsi' {
+  return ndsModelById(id).consoleType;
+}
 
 export function systemsOf(family: FamilyId): SystemDef[] {
   return SYSTEMS.filter((s) => s.family === family).sort((a, b) => a.year - b.year);

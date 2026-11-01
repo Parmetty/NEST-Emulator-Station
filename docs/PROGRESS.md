@@ -24,7 +24,7 @@
 | GBA 2001 | ✅ 已验证 | —（BIOS 动画随游戏走） | mGBA 0.10.5 | 可玩 |
 | NGC 2001 | ✅ 已验证 | ✅ GameCube Menu（Qt+UIA，需 IPL） | Dolphin 2609a | 可玩 |
 | Wii 2006 | 🟡 代码就绪、无真实镜像 | ✅ Wii Menu（WAD，经 libretro 宿主） | Dolphin 2609a + nest-libretro | 菜单可用 |
-| NDS 2004 | ✅ 已验证 | ✅ DS 固件菜单（需 BIOS/firmware） | melonDS 1.1 | 可玩 |
+| NDS / DSi 2004/2008 | ✅ 已验证（DS） | ✅ DS / DSi 菜单（机型可选，需对应固件） | melonDS 1.1 | 可玩 |
 | DSi | 🟡 代码就绪（素材已备） | ✅ DSi Menu（需 DSi 固件） 🟡 待验证 | melonDS 1.1（ConsoleType=1） | 待真实转储验证 |
 | 3DS 2011 | ✅ 已验证（自制程序） | ❌ Azahar 不支持 HOME Menu | Azahar 2126.2 | 可玩 |
 | Wii U 2012 | 🟡 链路验证（假 .wua），无真实游戏 | ⚠️ 实验性：Wii U Menu 只到背景 | Cemu 2.6 | 直读待验 |
@@ -33,7 +33,7 @@
 - 内置引擎 **353 MB**（mGBA 41.5 + ares 42.6 + Dolphin 75.1 + Azahar 101.8 + melonDS 41.5 + Cemu 50.4，不含运行时 MLC/keys）+ `nest-libretro.exe`（90 KB，自写宿主）。
 - 9 台任天堂主机全部在 `SYSTEMS` 中，6 台 Xbox/PS 预留平台标记 `locked`。
 - 键位适配器覆盖 5 个引擎（mGBA/ares/Dolphin/Azahar/melonDS）；Cemu 键位未接入。
-- 测试：typecheck 通过，单测 **78** 条。
+- 测试：typecheck 通过，单测 **80** 条。
 
 > 以下 §3 起为历史记录。当前里程碑见 [HISTORY.md](HISTORY.md)，发布级变化见 [CHANGELOG.md](CHANGELOG.md)。
 

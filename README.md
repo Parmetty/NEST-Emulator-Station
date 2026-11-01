@@ -100,7 +100,7 @@ npm run pack           # 免安装目录 + NSIS 安装包（默认不用，见 D
 
 ```bash
 npm run typecheck
-npm test               # 78 个用例：扫描/去重/清单/keymap/引擎配置写入/DSi 配置/Wii U 导入/进程生命周期
+npm test               # 80 个用例：扫描/去重/清单/keymap/引擎配置写入/DSi 配置/Wii U 导入/进程生命周期
 npm run build
 npm run smoke          # 窗口 + IPC + 渲染自检
 ```
@@ -176,7 +176,8 @@ cemu/             keys.txt、MLC 路径记录
 
 - 本仓库**不含**任何 ROM、BIOS、NAND 或密钥；只启动你提供的模拟器、扫描你已有的文件。
 - 内置引擎与许可证：mGBA（MPL 2.0）、ares（ISC）、Dolphin（GPLv2+）、Azahar（GPLv3）、melonDS（GPLv3）、Cemu（MPL 2.0）、dolphin_libretro（GPLv2+）、SDL3（Zlib）。
-- 主机照片来自 Wikimedia Commons 的公有领域素材（Evan-Amos），已做裁切/去色/模糊处理；可被用户替换。
+- 主机照片来自 Wikimedia Commons：多数为公有领域素材（Evan-Amos），已做裁切/去色/模糊处理；
+  DSi 与 DSi XL 两张为 **CC BY-SA 3.0**（Evan-Amos），署名与许可证见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。
 - 各主机商标归各自权利人所有，本项目与任天堂、微软、索尼无关联。
 
 完整第三方清单见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)，引擎配置与键位细节见 `docs/`。

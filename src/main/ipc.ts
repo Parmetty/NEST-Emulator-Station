@@ -24,7 +24,7 @@ import {
   type ScanResult,
   type SystemView,
 } from '../shared/contract';
-import { FAMILIES, systemsOf, systemById, type SystemId } from '../shared/systems';
+import { FAMILIES, ndsModelConsole, systemsOf, systemById, type SystemId } from '../shared/systems';
 import {
   applyEngineControls,
   CONTROL_ENGINE_IDS,
@@ -1079,7 +1079,10 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   // melonDS boots its firmware menu from the GUI (File → Boot firmware) and
   // only with real BIOS/firmware dumps; FreeBIOS cannot show the DS menu.
   if (engine.id === 'melonds') {
-    if (!ensureMelondsConfig(systemId === 'dsi' ? 'dsi' : 'nds', mode === 'system')) return { ok: false, error: systemId === 'dsi' ? 'missing-dsi-firmware' : 'missing-nds-bios' };
+    const melondsConsole = ndsModelConsole(services.store.getSettings().ndsModel);
+    if (!ensureMelondsConfig(melondsConsole, mode === 'system')) {
+      return { ok: false, error: melondsConsole === 'dsi' ? 'missing-dsi-firmware' : 'missing-nds-bios' };
+    }
     applyControls(services, 'melonds', false);
   }
 

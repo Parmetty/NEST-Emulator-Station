@@ -2,14 +2,17 @@
 
 本文件记录每次发布的可见变化。技术细节在 `docs/STATE.md`，决策理由在 `docs/DECISIONS.md`，待办在 `docs/PROGRESS.md`。
 
-## 未发布 — DSi 模式（melonDS ConsoleType=1）
+## 未发布 — NDS 机型（DS / DSL / DSi / DSiLL）
 
-- 主机墙新增 **Nintendo DSi**（2008），引擎 melonDS；DSiWare / DSi 增强转储（`.dsi/.ids/.srl`）归到 DSi
-- 设置 →「系统文件（自备）」新增 **DSi BIOS + 固件 + NAND** 导入：选目录，校验 bios7/bios9 64 KB、firmware 128 KB、nand 0xF000000
-- 导入时自动裁掉真实 dump 尾部多出的 64 字节 eMMC CID 元数据（melonDS 只认 0xF000000）
-- 启动 DSi 游戏 / DSi Menu 时写 melonDS `ConsoleType=1` 与 `[DSi]` 四个路径键；切回 NDS 恢复 `ConsoleType=0`
-- TOML 管理抽成纯函数 `src/main/melonds-config.ts`，新增 10 条单测（总计 78）
-- 主机插图暂用 NDS 图占位（DSi 照片授权待定）
+- 主机墙保持一个 **NDS** 入口；右下信息卡拆成两组机型：**DS / DSL** 与 **DSi / DSiLL**，
+  切换机型会同时切换插图（NDS、NDS Lite、DSi、DSi XL 四张）与年份
+- 机型选择存进设置（`settings.ndsModel`）；启动 NDS 游戏 / 系统菜单时按机型写
+  melonDS `ConsoleType`（DS/DSL=0，DSi/DSiLL=1）
+- 设置 →「系统文件（自备）」新增 **DSi BIOS + 固件 + NAND** 导入：选目录，校验
+  bios7/bios9 64 KB、firmware 128 KB、nand 0xF000000；导入时自动裁掉真实 dump 尾部
+  64 字节 eMMC CID 元数据
+- melonDS TOML 管理抽成纯函数 `src/main/melonds-config.ts`，新增 12 条单测（总计 80）
+- 新插图：DS Lite（公有领域）、DSi / DSi XL（CC BY-SA 3.0，Evan-Amos，见 THIRD-PARTY-NOTICES）
 
 ## 0.4.0-beta.1 — 2026-11-01 · 自写 libretro 宿主 + Wii U（Cemu）接入
 
