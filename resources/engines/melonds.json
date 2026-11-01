@@ -1,7 +1,7 @@
 {
   "id": "melonds",
   "name": "melonDS",
-  "systems": ["nds", "dsi"],
+  "systems": ["nds"],
   "kind": "native",
   "detect": {
     "paths": [
@@ -31,6 +31,6 @@
   },
   "capabilities": {
     "saveStates": true,
-    "systemMode": null
+    "systemMode": "DS 固件菜单"
   }
 }

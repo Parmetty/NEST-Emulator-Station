@@ -6,6 +6,10 @@
 
 - 主机墙保持一个 **NDS** 入口；右下信息卡拆成两组机型：**DS / DSL** 与 **DSi / DSiLL**，
   切换机型会同时切换插图（NDS、NDS Lite、DSi、DSi XL 四张）与年份
+- **DSi / DSiLL 不提供系统模式**：melonDS 无法引导 DSi 固件菜单（源码 `NeedsDirectBoot` 判定 DSi 固件不可引导），
+  仅支持直接启动游戏；界面会说明原因，后端也有拦截
+- 尝试过用 `melonDS.exe -b always` 替代 NDS 系统模式的 UIA 自动化，实测该 1.1 构建不生效
+  （直接运行会停在欢迎页），因此 NDS 系统模式继续使用菜单自动化
 - 机型选择存进设置（`settings.ndsModel`）；启动 NDS 游戏 / 系统菜单时按机型写
   melonDS `ConsoleType`（DS/DSL=0，DSi/DSiLL=1）
 - 设置 →「系统文件（自备）」新增 **DSi BIOS + 固件 + NAND** 导入：选目录，校验

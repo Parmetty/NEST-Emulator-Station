@@ -1080,6 +1080,12 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   // only with real BIOS/firmware dumps; FreeBIOS cannot show the DS menu.
   if (engine.id === 'melonds') {
     const melondsConsole = ndsModelConsole(services.store.getSettings().ndsModel);
+    // melonDS cannot boot the DSi firmware (SPI firmware reports not bootable),
+    // so DSi/DSiLL models only support direct game boot; the DS/DSL menu works
+    // through the CLI flag `-b always`.
+    if (melondsConsole === 'dsi' && mode === 'system') {
+      return { ok: false, error: 'dsi-menu-unsupported' };
+    }
     if (!ensureMelondsConfig(melondsConsole, mode === 'system')) {
       return { ok: false, error: melondsConsole === 'dsi' ? 'missing-dsi-firmware' : 'missing-nds-bios' };
     }
