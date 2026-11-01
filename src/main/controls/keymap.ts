@@ -7,9 +7,9 @@
  */
 import { PAD_ACTIONS, type KeyboardBindings, type PadAction } from '../../shared/contract';
 
-export const CONTROL_ENGINE_IDS = ['mgba', 'ares', 'dolphin', 'azahar', 'melonds'] as const;
+export const CONTROL_ENGINE_IDS = ['mgba', 'ares', 'dolphin', 'azahar', 'melonds', 'cemu'] as const;
 
-export const WRITABLE_ENGINE_IDS = ['mgba', 'ares', 'dolphin', 'azahar', 'melonds'] as const;
+export const WRITABLE_ENGINE_IDS = ['mgba', 'ares', 'dolphin', 'azahar', 'melonds', 'cemu'] as const;
 export type ControlEngineId = (typeof CONTROL_ENGINE_IDS)[number];
 
 export function isPadAction(value: string): value is PadAction {
@@ -74,6 +74,67 @@ for (let i = 1; i <= 12; i += 1) QT_TO_CODE.set(0x0100002f + i, `F${i}`);
 
 export function qtToCode(value: number): string | null {
   return QT_TO_CODE.get(value) ?? null;
+}
+
+/* ----------------------------------------------------- Windows VK codes */
+/**
+ * Cemu stores keyboard bindings as Windows virtual-key codes. Letters/digits use
+ * their ASCII values, the special keys use the VK_* constants below.
+ */
+const NAMED_VK: Record<string, number> = {
+  Backspace: 0x08,
+  Tab: 0x09,
+  Enter: 0x0d,
+  ShiftLeft: 0x10,
+  ShiftRight: 0x10,
+  ControlLeft: 0x11,
+  ControlRight: 0x11,
+  AltLeft: 0x12,
+  AltRight: 0x12,
+  Escape: 0x1b,
+  Space: 0x20,
+  PageUp: 0x21,
+  PageDown: 0x22,
+  End: 0x23,
+  Home: 0x24,
+  ArrowLeft: 0x25,
+  ArrowUp: 0x26,
+  ArrowRight: 0x27,
+  ArrowDown: 0x28,
+  Insert: 0x2d,
+  Delete: 0x2e,
+  Semicolon: 0xba,
+  Equal: 0xbb,
+  Comma: 0xbc,
+  Minus: 0xbd,
+  Period: 0xbe,
+  Slash: 0xbf,
+  Backquote: 0xc0,
+  BracketLeft: 0xdb,
+  Backslash: 0xdc,
+  BracketRight: 0xdd,
+  Quote: 0xde,
+};
+
+export function codeToVk(code: string): number | null {
+  if (/^Key[A-Z]$/.test(code)) return code.charCodeAt(3);
+  if (/^Digit[0-9]$/.test(code)) return code.charCodeAt(5);
+  const fn = /^F([1-9]|1[0-2])$/.exec(code);
+  if (fn) return 0x70 + Number(fn[1]) - 1;
+  return Object.prototype.hasOwnProperty.call(NAMED_VK, code) ? NAMED_VK[code] : null;
+}
+
+const VK_TO_CODE = new Map<number, string>();
+for (const [code, value] of Object.entries(NAMED_VK)) VK_TO_CODE.set(value, code);
+VK_TO_CODE.set(0x10, 'ShiftRight');
+VK_TO_CODE.set(0x11, 'ControlRight');
+VK_TO_CODE.set(0x12, 'AltRight');
+for (let i = 0; i < 26; i += 1) VK_TO_CODE.set(0x41 + i, `Key${String.fromCharCode(0x41 + i)}`);
+for (let i = 0; i < 10; i += 1) VK_TO_CODE.set(0x30 + i, `Digit${i}`);
+for (let i = 0; i < 12; i += 1) VK_TO_CODE.set(0x70 + i, `F${i + 1}`);
+
+export function vkToCode(value: number): string | null {
+  return VK_TO_CODE.get(value) ?? null;
 }
 
 /* --------------------------------------------------------- Dolphin names */
@@ -348,6 +409,20 @@ export const DEFAULT_KEYBOARD: Record<ControlEngineId, KeyboardBindings> = {
     select: 'Backspace',
   },
   melonds: {
+    up: 'ArrowUp',
+    down: 'ArrowDown',
+    left: 'ArrowLeft',
+    right: 'ArrowRight',
+    a: 'Space',
+    b: 'KeyJ',
+    x: 'KeyK',
+    y: 'KeyL',
+    l: 'KeyQ',
+    r: 'KeyE',
+    start: 'Enter',
+    select: 'Backspace',
+  },
+  cemu: {
     up: 'ArrowUp',
     down: 'ArrowDown',
     left: 'ArrowLeft',

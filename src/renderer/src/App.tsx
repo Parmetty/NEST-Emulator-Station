@@ -26,7 +26,7 @@ type Selection = { type: 'family' | 'system'; id: string };
 const SHELF_COLUMNS = 5;
 
 /** Consoles with editable keyboard bindings, in the order the chips are shown. */
-const KEY_SYSTEMS = (['gba', 'fc', 'sfc', 'n64', 'nds', 'ngc', 'wii', '3ds'] as const).flatMap((id) => {
+const KEY_SYSTEMS = (['gba', 'fc', 'sfc', 'n64', 'nds', 'ngc', 'wii', '3ds', 'wiiu'] as const).flatMap((id) => {
   const system = systemById.get(id);
   return system ? [system] : [];
 });

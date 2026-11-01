@@ -2,7 +2,18 @@
 
 本文件记录每次发布的可见变化。技术细节在 `docs/STATE.md`，决策理由在 `docs/DECISIONS.md`，待办在 `docs/PROGRESS.md`。
 
-## 未发布 — NDS 机型（DS / DSL / DSi / DSiLL）
+## 未发布 — NDS 机型 + Cemu 键位
+
+### Cemu（Wii U）键位接入面板
+
+- 设置 →「键位」新增 **Wii U**，可改 Cemu 的 Wii U GamePad 键盘绑定
+- 写入 `portable/controllerProfiles/controller0.xml`（Cemu 的键盘 API + Windows VK 码），
+  并确保 `settings.xml` 的 `ControllerProfiles` 为 true
+- 已有手配 profile 不会被启动覆盖；键位面板保存时才重写并保留 `.before-nest` 备份
+- 映射表见 `docs/KEYS-CEMU.md`（按钮 ID 来自 Cemu 源码 `VPADController.h`）
+- 单测新增 6 条（渲染/解析/自定义保留/强制覆盖/settings 开关），总计 **89**
+
+### NDS / DSi 机型（DS / DSL / DSi / DSiLL）
 
 - 主机墙保持一个 **NDS** 入口；右下信息卡拆成两组机型：**DS / DSL** 与 **DSi / DSiLL**，
   切换机型会同时切换插图（NDS、NDS Lite、DSi、DSi XL 四张）与年份

@@ -32,7 +32,7 @@
 
 - 内置引擎 **353 MB**（mGBA 41.5 + ares 42.6 + Dolphin 75.1 + Azahar 101.8 + melonDS 41.5 + Cemu 50.4，不含运行时 MLC/keys）+ `nest-libretro.exe`（90 KB，自写宿主）。
 - 9 台任天堂主机全部在 `SYSTEMS` 中，6 台 Xbox/PS 预留平台标记 `locked`。
-- 键位适配器覆盖 5 个引擎（mGBA/ares/Dolphin/Azahar/melonDS）；Cemu 键位未接入。
+- 键位适配器覆盖 6 个引擎（mGBA/ares/Dolphin/Azahar/melonDS/Cemu）。
 - 测试：typecheck 通过，单测 **80** 条。
 
 > 以下 §3 起为历史记录。当前里程碑见 [HISTORY.md](HISTORY.md)，发布级变化见 [CHANGELOG.md](CHANGELOG.md)。

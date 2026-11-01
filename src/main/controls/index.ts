@@ -8,6 +8,7 @@
 import path from 'node:path';
 import type { KeyboardBindings } from '../../shared/contract';
 import { applyAzaharControls, readAzaharControls, readAzaharMode } from './azahar';
+import { applyCemuControls, readCemuControls } from './cemu';
 import { applyAresControls, readAresControls } from './ares';
 import { applyDolphinControls, readDolphinControls } from './dolphin';
 import { applyMgbaControls, readMgbaControls } from './mgba';
@@ -64,6 +65,8 @@ function engineDirs(
       return { configDir: path.join(paths.userData, 'dolphin', 'Config') };
     case 'azahar':
       return { root: path.join(paths.userData, 'azahar') };
+    case 'cemu':
+      return { engineDir: engineDir ?? path.join(paths.enginesDir, 'cemu') };
     default:
       return {};
   }
@@ -103,6 +106,9 @@ export function applyEngineControls(
     case 'ares':
       result = applyAresControls(dirs.engineDir!, bindings, force);
       break;
+    case 'cemu':
+      result = applyCemuControls(dirs.engineDir!, bindings, force);
+      break;
     default:
       return unsupported;
   }
@@ -127,6 +133,8 @@ export function readEngineControls(
       return readAzaharControls(dirs.root!);
     case 'ares':
       return readAresControls(dirs.engineDir!);
+    case 'cemu':
+      return readCemuControls(dirs.engineDir!);
     default:
       return null;
   }

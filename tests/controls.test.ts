@@ -108,7 +108,7 @@ describe('keymap', () => {
   });
 
   it('marks every adapter engine as supported', () => {
-    for (const engineId of ['mgba', 'ares', 'dolphin', 'azahar', 'melonds']) {
+    for (const engineId of ['mgba', 'ares', 'dolphin', 'azahar', 'melonds', 'cemu']) {
       expect(isControlsSupported(engineId)).toBe(true);
     }
     expect(isControlsSupported('nope')).toBe(false);
