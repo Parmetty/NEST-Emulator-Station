@@ -33,10 +33,9 @@ SHA256  235753F404CCFF3494D6A4C25861265C23B624F99BE5DAC4CA0DAD504D99CA22
 | FC | ares v148 | ✅ | — |
 | SFC | ares v148 | ✅ | — |
 | N64 | ares v148 | ✅ | — |
-| NDS | melonDS 1.1 | ✅ | ✅ DS 固件菜单（需 BIOS/firmware） |
+| NDS / DSi | melonDS（master CI 构建） | ✅ | ✅ DS 菜单（命令行 `-b always`，无 UIA）；DSi/DSiLL 仅直读（melonDS 不支持 DSi 固件引导） |
 | NGC | Dolphin 2609a | ✅ | ✅ GameCube Menu（需 IPL，Qt+UIA） |
 | Wii | Dolphin 2609a / libretro 宿主 | 🟡 代码就绪，待镜像验证 | ✅ Wii Menu（WAD，经 libretro 宿主，无 UIA） |
-| DSi | melonDS 1.1 | 🟡 代码就绪，待真实转储验证 | 🟡 DSi Menu（需 DSi BIOS + 固件 + NAND） |
 | 3DS | Azahar 2126.2 | ✅ | ❌ 引擎不支持 HOME Menu |
 | Wii U | Cemu 2.6 | ✅ `.wua/.wud/.wux` | ⚠️ **实验性** Wii U Menu（Cemu 2.6 限制，见下方已知限制） |
 
