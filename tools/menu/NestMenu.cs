@@ -188,17 +188,21 @@ internal static class Program
     {
         Log("start pid=" + pid + " top=" + (topText ?? "-") + " menu=" + menuText + " item=" + itemText);
 
+        var started = DateTime.Now;
         IntPtr window = IntPtr.Zero;
-        for (int i = 0; i < 80 && window == IntPtr.Zero; i++)
+        for (int i = 0; i < 200 && window == IntPtr.Zero; i++)
         {
             try { Process.GetProcessById(pid); }
             catch { Log("process gone"); return 0; }
             window = FindWindow(pid, title);
-            if (window == IntPtr.Zero) Thread.Sleep(250);
+            if (window == IntPtr.Zero) Thread.Sleep(120);
         }
         if (window == IntPtr.Zero) { Log("window never appeared"); return 1; }
 
-        Thread.Sleep(Math.Min(delayMs, 3000));
+        // No fixed pre-delay: the menu bar appears a few hundred ms after the
+        // window, and polling for it is both faster and more reliable than
+        // guessing how long Dolphin needs to initialise.
+        Log("window ready after " + (int)((DateTime.Now - started).TotalMilliseconds) + " ms");
 
         AutomationElement root;
         try { root = AutomationElement.FromHandle(window); }
@@ -206,7 +210,7 @@ internal static class Program
 
         // Qt only materialises submenu children while the frame is active.
         try { root.SetFocus(); } catch { }
-        Thread.Sleep(200);
+        Thread.Sleep(80);
 
         AutomationElement parent = null;
         AutomationElement openMenu = null;
@@ -232,7 +236,7 @@ internal static class Program
                     }
                     if (top == null)
                     {
-                        Thread.Sleep(500);
+                        Thread.Sleep(120);
                         if (attempt == 10 || attempt == 25)
                         {
                             try { root = AutomationElement.FromHandle(window); } catch { }
@@ -245,7 +249,7 @@ internal static class Program
                     if (Expand(top))
                     {
                         openMenu = top;
-                        Thread.Sleep(400);
+                        Thread.Sleep(120);
                         parent = FindByName(root, menuText, top.Current.Name);
                         if (parent == null)
                         {
@@ -300,13 +304,13 @@ internal static class Program
             {
                 if (!Expand(parent)) { Log("cannot expand: " + parent.Current.Name); return 1; }
                 Log("expanded " + parent.Current.Name);
-                Thread.Sleep(500);
+                Thread.Sleep(120);
 
                 target = null;
-                for (int attempt = 0; attempt < 12 && target == null; attempt++)
+                for (int attempt = 0; attempt < 20 && target == null; attempt++)
                 {
                     target = FindByName(root, itemText, parent.Current.Name);
-                    if (target == null) Thread.Sleep(250);
+                    if (target == null) Thread.Sleep(100);
                 }
                 if (target == null) { Log("submenu item not found: " + itemText); return 1; }
             }
@@ -318,7 +322,7 @@ internal static class Program
                 return 1;
             }
             ((InvokePattern)invoke).Invoke();
-            Log("invoked " + target.Current.Name);
+            Log("invoked " + target.Current.Name + " after " + (int)((DateTime.Now - started).TotalMilliseconds) + " ms");
         }
         finally
         {
@@ -329,7 +333,7 @@ internal static class Program
 
         if (minimize)
         {
-            Thread.Sleep(1500);
+            Thread.Sleep(200);
             ShowWindow(window, SW_MINIMIZE);
             Log("launcher minimized");
         }

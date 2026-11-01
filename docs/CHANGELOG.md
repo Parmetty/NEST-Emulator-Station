@@ -13,6 +13,8 @@
   （master 实测仍报 "This firmware is not bootable."），仅支持直接启动游戏；界面说明原因并拦截
 - DSi 模式除 `[DSi]` 四条路径外，还需同时写入 `[DS]` 三条路径（melonDS 启动时仍会加载 DS boot ROM）
 - melonDS 默认窗口从 256×384 调到 **512×768（2 倍等比例，整数缩放）**
+- **NGC 系统模式的 UIA 提速**：去掉启动前固定的 3 秒等待，改为窗口/菜单栏就绪后立即操作，
+  轮询间隔 500ms→120ms；实测从 spawn 到点中菜单约 2.8 秒（原先 5 秒以上），不再有「卡住」感
 - 机型选择存进设置（`settings.ndsModel`）；启动 NDS 游戏 / 系统菜单时按机型写
   melonDS `ConsoleType`（DS/DSL=0，DSi/DSiLL=1）
 - 设置 →「系统文件（自备）」新增 **DSi BIOS + 固件 + NAND** 导入：选目录，校验

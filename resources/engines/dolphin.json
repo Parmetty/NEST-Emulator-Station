@@ -24,7 +24,7 @@
     "item": "NTSC-U",
     "title": "Dolphin",
     "renderTitle": "JIT64",
-    "delay": 3000,
+    "delay": 0,
     "minimize": true
   },
   "captureMinHeight": 240,
