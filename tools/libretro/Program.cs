@@ -304,6 +304,24 @@ namespace NestLibretro
             {
                 if (string.Equals(CoreOptions[i][0], "dolphin_ir_mode", StringComparison.OrdinalIgnoreCase)) irModeOverridden = true;
             }
+            // Native 4:3 by default: the core's framebuffer is 4:3, so disabling
+            // the Wii widescreen flag and letting the aspect be auto-detected
+            // gives a 1:1 picture that fills the 4:3 window (no bars, no stretch).
+            // Users can override both with --core-option.
+            if (Path.GetFileName(_corePath).IndexOf("dolphin", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                bool widescreenOverridden = false;
+                bool aspectOverridden = false;
+                for (int i = 0; i < CoreOptions.Count; i++)
+                {
+                    if (string.Equals(CoreOptions[i][0], "dolphin_widescreen", StringComparison.OrdinalIgnoreCase)) widescreenOverridden = true;
+                    if (string.Equals(CoreOptions[i][0], "dolphin_aspect_ratio", StringComparison.OrdinalIgnoreCase)) aspectOverridden = true;
+                }
+                if (!widescreenOverridden) HostEnvironment.AddOverride("dolphin_widescreen", "disabled");
+                if (!aspectOverridden) HostEnvironment.AddOverride("dolphin_aspect_ratio", "0");
+                Log.Write("default core options: dolphin_widescreen=disabled, dolphin_aspect_ratio=0 (4:3 native)");
+            }
+
             if (!irModeOverridden && Path.GetFileName(_corePath).IndexOf("dolphin", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 HostEnvironment.AddOverride("dolphin_ir_mode", "2");
