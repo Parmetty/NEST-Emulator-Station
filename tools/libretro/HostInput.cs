@@ -608,8 +608,10 @@ namespace NestLibretro
                 {
                     float mx, my;
                     uint buttons = Sdl3.SDL_GetMouseState(out mx, out my);
-                    _pointerX = AxisFromWindowPosition(mx, winW);
-                    _pointerY = AxisFromWindowPosition(my, winH);
+                    float nx, ny;
+                    HostVideo.WindowToVideo(mx, my, out nx, out ny);
+                    _pointerX = AxisFromNormalized(nx);
+                    _pointerY = AxisFromNormalized(ny);
                     _pointerPressed = (buttons & 1) != 0;
                     _mouseDeltaX = 0;
                     _mouseDeltaY = 0;
@@ -680,6 +682,17 @@ namespace NestLibretro
             if (value > AnalogFull) return AnalogFull;
             if (value < -AnalogFull) return -AnalogFull;
             return value;
+        }
+
+        /// <summary>Normalized 0..1 position -> libretro pointer axis (<c>-0x8000..0x7FFF</c>).</summary>
+        private static short AxisFromNormalized(float normalized)
+        {
+            if (normalized < 0.0f) normalized = 0.0f;
+            if (normalized > 1.0f) normalized = 1.0f;
+            int value = (int)Math.Round(normalized * 65535.0f) - 32768;
+            if (value > 32767) value = 32767;
+            if (value < -32768) value = -32768;
+            return (short)value;
         }
 
         /// <summary>Window pixel coordinate -> libretro pointer axis (<c>-0x8000..0x7FFF</c>).</summary>

@@ -215,8 +215,8 @@ namespace NestLibretro
         {
             if (_window != IntPtr.Zero) return;
 
-            int width = _videoWidth > 0 ? _videoWidth : 640;
-            int height = _videoHeight > 0 ? _videoHeight : 480;
+            int width = 640;
+            int height = 480;
 
             ulong flags = Sdl3.SDL_WINDOW_OPENGL;
             if (_headless) flags |= Sdl3.SDL_WINDOW_HIDDEN;
@@ -294,8 +294,9 @@ namespace NestLibretro
 
         private static uint OnGetCurrentFramebuffer()
         {
-            // 0 == the default framebuffer is the render target.
-            return 0;
+            // The Dolphin core draws into the default framebuffer at its own
+            // fixed surface size; we copy that surface into an FBO and scale it.
+            return 0u;
         }
 
         private static IntPtr OnGetProcAddress(IntPtr symbol)
@@ -550,6 +551,7 @@ namespace NestLibretro
         {
             if (_hwRenderActive && _glActive)
             {
+                MatchWindowToCoreViewport();
                 if (capture) CaptureGlFrame();
 
                 if (!Sdl3.SDL_GL_SwapWindow(_window))
@@ -640,9 +642,9 @@ namespace NestLibretro
         {
             try
             {
-                int width;
-                int height;
-                if (!Sdl3.SDL_GetWindowSizeInPixels(_window, out width, out height) || width <= 0 || height <= 0)
+                int width = _coreVpWidth > 0 ? _coreVpWidth : 0;
+                int height = _coreVpHeight > 0 ? _coreVpHeight : 0;
+                if (width <= 0 || height <= 0)
                 {
                     width = _hwWidth > 0 ? _hwWidth : (_videoWidth > 0 ? _videoWidth : 640);
                     height = _hwHeight > 0 ? _hwHeight : (_videoHeight > 0 ? _videoHeight : 480);
@@ -915,6 +917,202 @@ namespace NestLibretro
             }
             Log.Write("fullscreen = " + _fullscreen);
         }
+
+
+        // ------------------------------------------------------------------
+        // Render target FBO (hardware rendering)
+        // ------------------------------------------------------------------
+
+        private static uint _fbo;
+        private static uint _fboTex;
+        private static bool _fboReady;
+        private static int _fboW;
+        private static int _fboH;
+
+        private static int _destX;
+        private static int _destY;
+        private static int _destW;
+        private static int _destH;
+
+        private const uint GL_TEXTURE_2D = 0x0DE1;
+        private const uint GL_RGBA8 = 0x8058;
+        private const uint GL_RGBA = 0x1908;
+        private const uint GL_UNSIGNED_BYTE = 0x1401;
+        private const uint GL_READ_FRAMEBUFFER = 0x8CA8;
+        private const uint GL_DRAW_FRAMEBUFFER = 0x8CA9;
+        private const uint GL_COLOR_BUFFER_BIT = 0x4000;
+        private const uint GL_NEAREST = 0x2600;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void GlGenFramebuffersFn(int n, out uint ids);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void GlGenTexturesFn(int n, out uint ids);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void GlBindTextureFn(uint target, uint texture);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void GlTexImage2DFn(uint target, int level, int internalFormat, int width, int height,
+            int border, uint format, uint type, IntPtr pixels);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void GlFramebufferTexture2DFn(uint target, uint attachment, uint textarget, uint texture,
+            int level);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void GlCopyTexSubImage2DFn(uint target, int level, int xoffset, int yoffset,
+            int x, int y, int width, int height);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void GlBlitFramebufferFn(int srcX0, int srcY0, int srcX1, int srcY1,
+            int dstX0, int dstY0, int dstX1, int dstY1, uint mask, uint filter);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void GlViewportFn(int x, int y, int width, int height);
+
+        /// <summary>Creates the offscreen render target the core draws into.</summary>
+        private static bool EnsureFbo()
+        {
+            if (_fboReady) return true;
+            if (!_glActive) return false;
+
+            int width = _hwWidth > 0 ? _hwWidth : (_videoWidth > 0 ? _videoWidth : 640);
+            int height = _hwHeight > 0 ? _hwHeight : (_videoHeight > 0 ? _videoHeight : 528);
+            if (width <= 0 || height <= 0) { width = 640; height = 528; }
+
+            IntPtr genFbProc = GlProc("glGenFramebuffers");
+            IntPtr bindFbProc = GlProc("glBindFramebuffer");
+            IntPtr genTexProc = GlProc("glGenTextures");
+            IntPtr bindTexProc = GlProc("glBindTexture");
+            IntPtr texImageProc = GlProc("glTexImage2D");
+            IntPtr fbTexProc = GlProc("glFramebufferTexture2D");
+            if (genFbProc == IntPtr.Zero || bindFbProc == IntPtr.Zero || genTexProc == IntPtr.Zero ||
+                bindTexProc == IntPtr.Zero || texImageProc == IntPtr.Zero || fbTexProc == IntPtr.Zero)
+            {
+                Log.Error("GL: FBO entry points unavailable");
+                return false;
+            }
+
+            Sdl3.SDL_GL_MakeCurrent(_window, _glContext);
+
+            var genFb = (GlGenFramebuffersFn)Marshal.GetDelegateForFunctionPointer(genFbProc, typeof(GlGenFramebuffersFn));
+            var bindFb = (GlBindFramebufferFn)Marshal.GetDelegateForFunctionPointer(bindFbProc, typeof(GlBindFramebufferFn));
+            var genTex = (GlGenTexturesFn)Marshal.GetDelegateForFunctionPointer(genTexProc, typeof(GlGenTexturesFn));
+            var bindTex = (GlBindTextureFn)Marshal.GetDelegateForFunctionPointer(bindTexProc, typeof(GlBindTextureFn));
+            var texImage = (GlTexImage2DFn)Marshal.GetDelegateForFunctionPointer(texImageProc, typeof(GlTexImage2DFn));
+            var fbTex = (GlFramebufferTexture2DFn)Marshal.GetDelegateForFunctionPointer(fbTexProc, typeof(GlFramebufferTexture2DFn));
+
+            uint tex;
+            genTex(1, out tex);
+            bindTex(GL_TEXTURE_2D, tex);
+            texImage(GL_TEXTURE_2D, 0, (int)GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, IntPtr.Zero);
+            bindTex(GL_TEXTURE_2D, 0);
+
+            uint fbo;
+            genFb(1, out fbo);
+            bindFb(Sdl3.GL_FRAMEBUFFER, fbo);
+            fbTex(Sdl3.GL_FRAMEBUFFER, Sdl3.GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
+            bindFb(Sdl3.GL_FRAMEBUFFER, 0);
+
+            _fbo = fbo;
+            _fboTex = tex;
+            _fboW = width;
+            _fboH = height;
+            _fboReady = true;
+            Log.Write("GL: render target FBO created " + width + "x" + height);
+            return true;
+        }
+
+        private static int _coreVpWidth;
+        private static int _coreVpHeight;
+        private static bool _viewportChecked;
+
+        /// <summary>
+        /// The Dolphin core ignores the window size and draws into a fixed
+        /// viewport inside whatever framebuffer it got. Read that viewport once
+        /// and resize our window to it, so the picture fills the window exactly
+        /// (and mouse coordinates map 1:1).
+        /// </summary>
+        private static void MatchWindowToCoreViewport()
+        {
+            if (_viewportChecked) return;
+            IntPtr proc = GlProc("glGetIntegerv");
+            if (proc == IntPtr.Zero) return;
+
+            int[] vp = new int[4];
+            // glGetIntegerv needs a real pointer; use a marshalled buffer.
+            IntPtr buf = Marshal.AllocHGlobal(4 * sizeof(int));
+            try
+            {
+                ((GlGetIntegervPtrFn)Marshal.GetDelegateForFunctionPointer(proc, typeof(GlGetIntegervPtrFn)))(GL_VIEWPORT, buf);
+                vp[0] = Marshal.ReadInt32(buf, 0);
+                vp[1] = Marshal.ReadInt32(buf, 4);
+                vp[2] = Marshal.ReadInt32(buf, 8);
+                vp[3] = Marshal.ReadInt32(buf, 12);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(buf);
+            }
+
+            if (vp[2] <= 0 || vp[3] <= 0) return;
+            _coreVpWidth = vp[2];
+            _coreVpHeight = vp[3];
+            _viewportChecked = true;
+            Log.Write("core viewport = " + vp[0] + "," + vp[1] + " " + vp[2] + "x" + vp[3]);
+
+            if (_fullscreen || _window == IntPtr.Zero) return;
+            int winW, winH;
+            if (!Sdl3.SDL_GetWindowSizeInPixels(_window, out winW, out winH)) return;
+            // The Dolphin core always blits its 640x480 output into the lower-left
+            // corner, whatever the window size is, so match the window to that
+            // surface instead of to the reported GL viewport.
+            int targetW = 640 * (_scale < 1 ? 1 : _scale);
+            int targetH = 480 * (_scale < 1 ? 1 : _scale);
+            if (winW != targetW || winH != targetH)
+            {
+                Sdl3.SDL_SetWindowSize(_window, targetW, targetH);
+                Log.Write("window resized to core surface " + targetW + "x" + targetH);
+            }
+        }
+
+        /// <summary>Window pixel position -> normalized position inside the video rect.</summary>
+        public static void WindowToVideo(float mouseX, float mouseY, out float nx, out float ny)
+        {
+            nx = 0.5f;
+            ny = 0.5f;
+            int winW, winH;
+            if (_window == IntPtr.Zero || !Sdl3.SDL_GetWindowSizeInPixels(_window, out winW, out winH) || winW <= 0 || winH <= 0)
+                return;
+            // The core's output is 16:9 letterboxed inside the window; map the
+            // cursor into that visible rect, not the whole window.
+            double aspect = HostEnvironment.Geometry.aspect_ratio;
+            if (aspect < 0.5 || aspect > 3.0) aspect = 16.0 / 9.0;
+            int destW = winW;
+            int destH = (int)Math.Round(destW / aspect);
+            if (destH > winH)
+            {
+                destH = winH;
+                destW = (int)Math.Round(destH * aspect);
+            }
+            int destX = (winW - destW) / 2;
+            int destY = (winH - destH) / 2;
+
+            nx = (mouseX - destX) / (float)destW;
+            ny = (mouseY - destY) / (float)destH;
+            if (nx < 0f) nx = 0f;
+            if (nx > 1f) nx = 1f;
+            if (ny < 0f) ny = 0f;
+            if (ny > 1f) ny = 1f;
+        }
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void GlGetIntegervPtrFn(uint pname, IntPtr data);
+
+        private const uint GL_VIEWPORT = 0x0BA2;
+
+        public static bool FboActive { get { return _fboReady; } }
 
         public static void Close()
         {

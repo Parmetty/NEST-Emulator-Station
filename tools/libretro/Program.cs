@@ -310,6 +310,22 @@ namespace NestLibretro
                 Log.Write("default core option: dolphin_ir_mode=2 (mouse controls Wiimote IR)");
             }
 
+            // Match the core's internal resolution to the window scale: Dolphin
+            // always blits its surface at (640x480 * internal resolution) into the
+            // lower-left corner, so raising the EFB scale is what actually fills
+            // a larger window.
+            bool efbOverridden = false;
+            for (int i = 0; i < CoreOptions.Count; i++)
+            {
+                if (string.Equals(CoreOptions[i][0], "dolphin_efb_scale", StringComparison.OrdinalIgnoreCase)) efbOverridden = true;
+            }
+            if (!efbOverridden && Path.GetFileName(_corePath).IndexOf("dolphin", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                int efbScale = _scale < 1 ? 1 : (_scale > 12 ? 12 : _scale);
+                HostEnvironment.AddOverride("dolphin_efb_scale", efbScale.ToString());
+                Log.Write("default core option: dolphin_efb_scale=" + efbScale + " (window scale " + _scale + ")");
+            }
+
             HostVideo.Init(_scale, _fullscreen, _headless);
             HostInput.Init(_headless);
             HostInput.Configure(_keySpec, !_noMouse);
