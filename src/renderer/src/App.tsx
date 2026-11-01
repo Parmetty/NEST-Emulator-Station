@@ -122,6 +122,7 @@ export default function App() {
   const [settings, setSettings] = useState<Settings>({ minimizeOnLaunch: true, fullscreen: false });
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [firmware, setFirmware] = useState<FirmwareState[]>([]);
+  const [mlcTipOpen, setMlcTipOpen] = useState(false);
   const [controls, setControls] = useState<ControlsPayload | null>(null);
   const [controlsFailed, setControlsFailed] = useState(false);
   const [keySystemId, setKeySystemId] = useState('gba');
@@ -1202,6 +1203,16 @@ export default function App() {
                 <div className="fw-row" key={item.kind}>
                   <span>
                     {item.label}
+                    {item.kind === 'wiiu-mlc' ? (
+                      <button
+                        type="button"
+                        className="tip-btn"
+                        title="关于 Wii U NAND（MLC）"
+                        onClick={() => setMlcTipOpen((v) => !v)}
+                      >
+                        ?
+                      </button>
+                    ) : null}
                     <small>
                       {item.status === 'ok'
                         ? item.kind === 'wiiu-mlc'
@@ -1226,6 +1237,18 @@ export default function App() {
                   </button>
                 </div>
               ))}
+
+              {mlcTipOpen ? (
+                <p className="dlg-note tip-note">
+                  Wii U NAND（MLC）可以来自：① 你自己的 Wii U 真机 dump（推荐）；②
+                  和本项目一样，用任天堂 CDN 的系统 title 手工拼装（流程见仓库
+                  docs/WIIU-CDN-MLC.md，需自备 keys.txt）。
+                  <br />
+                  注意：Cemu 2.6 尚未实现 nn_act.LoadConsoleAccount，即使 MLC
+                  正确，Wii U Menu 目前也只会停在背景画面，所以该功能标记为「实验性」。
+                  游戏直读不受影响。
+                </p>
+              ) : null}
 
               <h2>游戏文件夹（自动扫描）</h2>
               <p className="dlg-note">
