@@ -36,6 +36,7 @@ SHA256  235753F404CCFF3494D6A4C25861265C23B624F99BE5DAC4CA0DAD504D99CA22
 | NDS | melonDS 1.1 | ✅ | ✅ DS 固件菜单（需 BIOS/firmware） |
 | NGC | Dolphin 2609a | ✅ | ✅ GameCube Menu（需 IPL，Qt+UIA） |
 | Wii | Dolphin 2609a / libretro 宿主 | 🟡 代码就绪，待镜像验证 | ✅ Wii Menu（WAD，经 libretro 宿主，无 UIA） |
+| DSi | melonDS 1.1 | 🟡 代码就绪，待真实转储验证 | 🟡 DSi Menu（需 DSi BIOS + 固件 + NAND） |
 | 3DS | Azahar 2126.2 | ✅ | ❌ 引擎不支持 HOME Menu |
 | Wii U | Cemu 2.6 | ✅ `.wua/.wud/.wux` | ⚠️ **实验性** Wii U Menu（Cemu 2.6 限制，见下方已知限制） |
 
@@ -46,7 +47,7 @@ SHA256  235753F404CCFF3494D6A4C25861265C23B624F99BE5DAC4CA0DAD504D99CA22
 - **自动封面**：游戏运行期间由独立抓屏工具持续取帧，退出时存为封面（NDS/3DS 只截上屏）
 - **自写 libretro 宿主**：`resources/tools/nest-libretro.exe`（约 90 KB，C# + SDL3）托管官方 `dolphin_libretro.dll`，**Wii 系统菜单不再依赖 Dolphin Qt GUI 自动化**，直接加载 `wii-menu.wad` 进菜单；键盘 + 鼠标绝对指针（鼠标即 Wiimote 光标，左键 = A）
 - **键位面板**：mGBA / ares / Dolphin / Azahar / melonDS 五引擎键盘绑定可在 Nest 里改，保存立即生效；首次启动自动写默认布局，不覆盖你已有的自定义
-- **固件中心**：GameCube IPL（CRC32 白名单）、Wii 系统菜单 WAD、NDS BIOS+固件、**Cemu keys.txt / Wii U NAND（MLC）**，一键导入（MLC 只记路径，不复制）
+- **固件中心**：GameCube IPL（CRC32 白名单）、Wii 系统菜单 WAD、NDS BIOS+固件、**DSi BIOS+固件+NAND**、**Cemu keys.txt / Wii U NAND（MLC）**，一键导入（MLC 只记路径，不复制）
 - **便携模式**：库、封面、日志、引擎配置都留在程序目录，删 `data\` 即恢复出厂
 - **运行中高亮 / 进入前确认 / 右键移除**（只删库记录，绝不动磁盘上的 ROM）
 
@@ -99,7 +100,7 @@ npm run pack           # 免安装目录 + NSIS 安装包（默认不用，见 D
 
 ```bash
 npm run typecheck
-npm test               # 68 个用例：扫描/去重/清单/keymap/引擎配置写入/Wii U 导入/进程生命周期
+npm test               # 78 个用例：扫描/去重/清单/keymap/引擎配置写入/DSi 配置/Wii U 导入/进程生命周期
 npm run build
 npm run smoke          # 窗口 + IPC + 渲染自检
 ```
@@ -112,6 +113,7 @@ src/
   main/              主进程：窗口、IPC、库、引擎清单、进程监管、扫描器
   main/controls/     各引擎的键盘绑定适配器（keymap + mgba/ares/dolphin/azahar/melonds）
   main/cemu.ts       Cemu keys.txt 导入、MLC 校验、启动参数组装
+  main/melonds-config.ts  melonDS TOML 管理（NDS / DSi 切换，纯函数）
   preload/           contextBridge 暴露的 window.nest
   renderer/          React：首页 + 游戏库覆盖层 + 设置面板
 resources/engines/   六个便携引擎 + 清单（加主机 = 加一份 JSON）

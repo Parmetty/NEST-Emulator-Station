@@ -50,6 +50,14 @@ import {
   stageLibretroRuntime,
   type LibretroPaths,
 } from './libretro';
+import {
+  DSI_BIOS_SIZES,
+  DSI_NAND_SIZE,
+  dsiSizeProblem,
+  patchMelondsToml,
+  type MelondsConsole,
+  type MelondsFirmwarePaths,
+} from './melonds-config';
 import { scanFolder } from './scanner';
 import { Store } from './store';
 import { Supervisor } from './supervisor';
@@ -196,64 +204,60 @@ function ndsBiosFiles(): { bios7: string; bios9: string; firmware: string } | nu
   return { bios7, bios9, firmware };
 }
 
+/** DSi firmware set (BIOS7/BIOS9/firmware/NAND), separate from the DS one. */
+function dsiBiosDir(): string {
+  return path.join(app.getPath('userData'), 'melonds', 'dsi');
+}
+
+function dsiBiosFiles(): Required<MelondsFirmwarePaths> | null {
+  const dir = dsiBiosDir();
+  const files = {
+    bios7: path.join(dir, 'bios7.bin'),
+    bios9: path.join(dir, 'bios9.bin'),
+    firmware: path.join(dir, 'firmware.bin'),
+    nand: path.join(dir, 'nand.bin'),
+  };
+  if (!Object.values(files).every((entry) => existsSync(entry))) return null;
+  return files;
+}
+
+/** Size-based sanity check for the DSi dumps (catches truncated copies). */
+export function dsiFirmwareProblem(files: Required<MelondsFirmwarePaths>): string | null {
+  try {
+    return dsiSizeProblem({
+      bios7: statSync(files.bios7).size,
+      bios9: statSync(files.bios9).size,
+      firmware: statSync(files.firmware).size,
+      nand: statSync(files.nand).size,
+    });
+  } catch {
+    return 'DSi 固件文件无法读取';
+  }
+}
+
+
 /**
  * melonDS 1.1 stores its settings in `melonDS.toml` next to the executable.
- * Nest only manages the few keys it needs: external BIOS (so the real firmware
- * menu can boot) and the paths to the user's dumps.
+ * Nest only manages the few keys it needs: which console to emulate, external
+ * BIOS (so the real firmware menu can boot) and the paths to the user's dumps.
  */
-function ensureMelondsConfig(systemMode: boolean): boolean {
+function ensureMelondsConfig(console: MelondsConsole, systemMode: boolean): boolean {
   const configPath = path.join(enginesDir(), 'melonds', 'melonDS.toml');
-  const bios = ndsBiosFiles();
-  if (systemMode && !bios) return false;
+  const paths: MelondsFirmwarePaths | null = console === 'dsi' ? dsiBiosFiles() : ndsBiosFiles();
+  if (!paths) return false;
+  if (console === 'dsi' && dsiFirmwareProblem(paths as Required<MelondsFirmwarePaths>)) return false;
 
-  const managed: Array<[string, string, string]> = [
-    ['Emu', 'ConsoleType', '0'],
-    ['Emu', 'ExternalBIOSEnable', systemMode ? 'true' : 'false'],
-    ['Emu', 'DirectBoot', systemMode ? 'false' : 'true'],
-  ];
-  if (bios) {
-    const posix = (value: string) => value.replace(/\\/g, '/');
-    managed.push(['DS', 'BIOS7Path', `"${posix(bios.bios7)}"`]);
-    managed.push(['DS', 'BIOS9Path', `"${posix(bios.bios9)}"`]);
-    managed.push(['DS', 'FirmwarePath', `"${posix(bios.firmware)}"`]);
-  }
-
-  let lines: string[] = [];
+  let current = '';
   try {
-    lines = readFileSync(configPath, 'utf8').split(/\r?\n/);
+    current = readFileSync(configPath, 'utf8');
   } catch {
-    lines = [];
+    current = '';
   }
 
-  for (const [section, key, value] of managed) {
-    const header = `[${section}]`;
-    let sectionIndex = lines.indexOf(header);
-    if (sectionIndex < 0) {
-      lines.push(header);
-      sectionIndex = lines.length - 1;
-    }
-    let end = lines.length;
-    for (let i = sectionIndex + 1; i < lines.length; i += 1) {
-      if (lines[i].startsWith('[')) {
-        end = i;
-        break;
-      }
-    }
-    const keyLine = `${key} = ${value}`;
-    let replaced = false;
-    for (let i = sectionIndex + 1; i < end; i += 1) {
-      if (lines[i].startsWith(`${key} `) || lines[i].startsWith(`${key}=`)) {
-        lines[i] = keyLine;
-        replaced = true;
-        break;
-      }
-    }
-    if (!replaced) lines.splice(end, 0, keyLine);
-  }
-
+  const patched = patchMelondsToml(current, { console, systemMode, paths });
   try {
     mkdirSync(path.dirname(configPath), { recursive: true });
-    writeFileSync(configPath, `${lines.join('\n')}\n`, 'utf8');
+    writeFileSync(configPath, patched, 'utf8');
   } catch {
     return false;
   }
@@ -314,6 +318,26 @@ function firmwareStates(services: Services): FirmwareState[] {
       label: 'NDS BIOS + 固件（固件菜单）',
       status: 'missing',
       path: null,
+    });
+  }
+
+  const dsi = dsiBiosFiles();
+  if (dsi) {
+    const problem = dsiFirmwareProblem(dsi);
+    states.push({
+      kind: 'dsi-firmware',
+      label: 'DSi BIOS + 固件 + NAND',
+      status: problem ? 'invalid' : 'ok',
+      path: dsiBiosDir(),
+      detail: problem ?? 'bios7 / bios9 / firmware / nand 就绪',
+    });
+  } else {
+    states.push({
+      kind: 'dsi-firmware',
+      label: 'DSi BIOS + 固件 + NAND',
+      status: 'missing',
+      path: null,
+      detail: '未导入（DSi Menu 需要全部四个文件）',
     });
   }
 
@@ -383,6 +407,7 @@ async function pickFirmware(services: Services, raw: unknown): Promise<{
     kind !== 'gc-ipl' &&
     kind !== 'wii-menu' &&
     kind !== 'nds-bios' &&
+    kind !== 'dsi-firmware' &&
     kind !== 'cemu-keys' &&
     kind !== 'wiiu-mlc'
   ) {
@@ -439,12 +464,61 @@ async function pickFirmware(services: Services, raw: unknown): Promise<{
         if (!found) return { ok: false, error: `missing-${name}` };
         writeFileSync(path.join(targetDir, dest), readFileSync(path.join(sourceDir, found)));
       }
-      ensureMelondsConfig(false);
+      ensureMelondsConfig('nds', false);
     } catch (err) {
       return { ok: false, error: (err as Error).message };
     }
     return { ok: true, state: firmwareStates(services).find((state) => state.kind === kind) };
   }
+
+  if (kind === 'dsi-firmware') {
+    // DSi needs four dumps; pick the folder that holds them.
+    const folder = await dialog.showOpenDialog({
+      title: '选择包含 bios7.bin / bios9.bin / firmware.bin / nand.bin 的 DSi 固件目录',
+      properties: ['openDirectory'],
+    });
+    if (folder.canceled || folder.filePaths.length === 0) return { ok: true, canceled: true };
+    const sourceDir = folder.filePaths[0];
+    try {
+      const entries = readdirSync(sourceDir);
+      const wanted: Array<[name: string, dest: string]> = [
+        ['bios7.bin', 'bios7.bin'],
+        ['bios9.bin', 'bios9.bin'],
+        ['firmware.bin', 'firmware.bin'],
+        ['nand.bin', 'nand.bin'],
+      ];
+      const targetDir = dsiBiosDir();
+      mkdirSync(targetDir, { recursive: true });
+      for (const [name, dest] of wanted) {
+        const found = entries.find((entry) => entry.toLowerCase() === name);
+        if (!found) return { ok: false, error: `missing-${name}` };
+        let buffer = readFileSync(path.join(sourceDir, found));
+        if (name === 'nand.bin' && buffer.length === DSI_NAND_SIZE + 64) {
+          // Real dumps often carry a 64 byte eMMC CID trailer; melonDS wants the
+          // raw 0xF000000 image, so trim it on import.
+          console.log('[nest] dsi nand: trimming 64 byte eMMC footer');
+          buffer = buffer.subarray(0, DSI_NAND_SIZE);
+        }
+        const expected =
+          name === 'bios7.bin'
+            ? DSI_BIOS_SIZES.bios7
+            : name === 'bios9.bin'
+              ? DSI_BIOS_SIZES.bios9
+              : name === 'firmware.bin'
+                ? DSI_BIOS_SIZES.firmware
+                : DSI_NAND_SIZE;
+        if (buffer.length !== expected) {
+          return { ok: false, error: `bad-size-${name}` };
+        }
+        writeFileSync(path.join(targetDir, dest), buffer);
+      }
+      ensureMelondsConfig('dsi', false);
+    } catch (err) {
+      return { ok: false, error: (err as Error).message };
+    }
+    return { ok: true, state: firmwareStates(services).find((state) => state.kind === kind) };
+  }
+
 
   const picked = await dialog.showOpenDialog({
     title: kind === 'gc-ipl' ? '选择 GameCube IPL（ipl.bin）' : '选择 Wii 系统菜单 WAD',
@@ -1005,7 +1079,7 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   // melonDS boots its firmware menu from the GUI (File → Boot firmware) and
   // only with real BIOS/firmware dumps; FreeBIOS cannot show the DS menu.
   if (engine.id === 'melonds') {
-    if (!ensureMelondsConfig(mode === 'system')) return { ok: false, error: 'missing-nds-bios' };
+    if (!ensureMelondsConfig(systemId === 'dsi' ? 'dsi' : 'nds', mode === 'system')) return { ok: false, error: systemId === 'dsi' ? 'missing-dsi-firmware' : 'missing-nds-bios' };
     applyControls(services, 'melonds', false);
   }
 

@@ -343,6 +343,14 @@ export default function App() {
       if (!result.ok) {
         const messages: Record<string, string> = {
           'ipl-not-recognized': '这个 IPL 不是 Dolphin 认可的转储',
+          'missing-bios7.bin': 'DSi 固件目录里缺少 bios7.bin',
+          'missing-bios9.bin': 'DSi 固件目录里缺少 bios9.bin',
+          'missing-firmware.bin': 'DSi 固件目录里缺少 firmware.bin',
+          'missing-nand.bin': 'DSi 固件目录里缺少 nand.bin',
+          'bad-size-bios7.bin': 'bios7.bin 大小不对（DSi 应为 64 KB）',
+          'bad-size-bios9.bin': 'bios9.bin 大小不对（DSi 应为 64 KB）',
+          'bad-size-firmware.bin': 'firmware.bin 大小不对（DSi 应为 128 KB）',
+          'bad-size-nand.bin': 'nand.bin 大小不对（应为 0xF000000 = 240 MB）',
           'missing-cemu-keys': 'keys.txt 里没有有效的 32 位十六进制密钥行',
           'invalid-wiiu-mlc': '这个目录不是 Wii U NAND（缺少 sys/title/00050010/10040000 或 usr/）',
           'keys-io-error': '读取 / 写入 keys.txt 失败',
@@ -641,6 +649,7 @@ export default function App() {
         'missing-wii-menu': '缺少 wii-menu.wad：请在「设置 → 系统文件（自备）」中导入自备的 Wii 系统菜单',
         'libretro-host-missing': '本安装包缺少 libretro 宿主或核心，无法启动 Wii Menu，请更新或重装 Nest',
         'libretro-not-ready': 'libretro 运行目录准备失败，请查看 nest.log',
+        'missing-dsi-firmware': '缺少 DSi 固件：请到「设置 → 系统文件（自备）」导入 DSi BIOS + 固件 + NAND',
         'missing-wiiu-mlc': '缺少 Wii U NAND（MLC）：请到「设置 → 系统文件（自备）」选择 MLC 目录',
         'invalid-wiiu-mlc': 'Wii U NAND 目录无效：缺少 sys/title/00050010/10040000 或 usr/',
         'missing-cemu-keys': '缺少 Cemu keys.txt：请到「设置 → 系统文件（自备）」导入自备密钥',
@@ -1233,7 +1242,7 @@ export default function App() {
                     </small>
                   </span>
                   <button className="ghost-btn" onClick={() => void importFirmware(item.kind)}>
-                    {item.kind === 'wiiu-mlc' ? '选择目录…' : '选择文件…'}
+                    {item.kind === 'wiiu-mlc' || item.kind === 'dsi-firmware' ? '选择目录…' : '选择文件…'}
                   </button>
                 </div>
               ))}

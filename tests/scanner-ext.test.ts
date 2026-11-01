@@ -33,9 +33,12 @@ describe('scanner extensions', () => {
   });
 
   it('covers DS and N64-adjacent formats people actually keep on disk', () => {
-    expect(EXT_TO_SYSTEM.dsi).toBe('nds');
-    expect(EXT_TO_SYSTEM.ids).toBe('nds');
-    expect(EXT_TO_SYSTEM.srl).toBe('nds');
+    // DSiWare / DSi-enhanced dumps get their own console so melonDS can switch
+    // to ConsoleType=1; plain .nds stays on the DS.
+    expect(EXT_TO_SYSTEM.dsi).toBe('dsi');
+    expect(EXT_TO_SYSTEM.ids).toBe('dsi');
+    expect(EXT_TO_SYSTEM.srl).toBe('dsi');
+    expect(EXT_TO_SYSTEM.nds).toBe('nds');
     expect(EXT_TO_SYSTEM.wia).toBe('wii');
     expect(EXT_TO_SYSTEM.gcz).toBe('ngc');
   });

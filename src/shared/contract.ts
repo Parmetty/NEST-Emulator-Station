@@ -27,7 +27,13 @@ export const CH = {
 } as const;
 
 /* ------------------------------------------------------------- firmware */
-export type FirmwareKind = 'gc-ipl' | 'wii-menu' | 'nds-bios' | 'cemu-keys' | 'wiiu-mlc';
+export type FirmwareKind =
+  | 'gc-ipl'
+  | 'wii-menu'
+  | 'nds-bios'
+  | 'dsi-firmware'
+  | 'cemu-keys'
+  | 'wiiu-mlc';
 
 export type FirmwareState = {
   kind: FirmwareKind;

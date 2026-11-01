@@ -3,7 +3,7 @@
 export type FamilyId = 'nintendo' | 'xbox' | 'playstation';
 
 export type SystemId =
-  | 'fc' | 'sfc' | 'n64' | 'gba' | 'ngc' | 'nds' | 'wii' | '3ds' | 'wiiu'
+  | 'fc' | 'sfc' | 'n64' | 'gba' | 'ngc' | 'nds' | 'dsi' | 'wii' | '3ds' | 'wiiu'
   | 'xbox' | 'xbox360'
   | 'ps1' | 'ps2' | 'psp' | 'ps3';
 
@@ -35,6 +35,7 @@ export const SYSTEMS: SystemDef[] = [
   { id: 'ngc',   name: 'Nintendo GameCube', short: 'NGC',   year: 2001, kind: '家用机', family: 'nintendo', engine: 'dolphin',  image: 'consoles/ngc.webp',  state: 'ready', systemMode: 'GameCube Menu', note: '直读可用；系统菜单需自备对应区域 IPL.bin（NGC 主菜单受 libretro 核心限制，仍用 Qt 自动化）' },
   { id: 'nds',   name: 'Nintendo DS',       short: 'NDS',   year: 2004, kind: '掌机',   family: 'nintendo', engine: 'melonds',  image: 'consoles/nds.webp',  state: 'ready', systemMode: 'DS 固件菜单', note: '系统菜单需自备 NDS BIOS/firmware' },
   { id: 'wii',   name: 'Nintendo Wii',      short: 'Wii',   year: 2006, kind: '家用机', family: 'nintendo', engine: 'dolphin',  image: 'consoles/wii.webp',  state: 'ready', systemMode: 'Wii Menu', note: '需自备 wii-menu.wad（设置 → 系统文件（自备）导入）' },
+  { id: 'dsi',   name: 'Nintendo DSi',      short: 'DSi',   year: 2008, kind: '掌机',   family: 'nintendo', engine: 'melonds',  image: 'consoles/nds.webp',  state: 'ready', systemMode: 'DSi Menu', note: 'DSi 模式（melonDS ConsoleType=1）；需自备 DSi BIOS + 固件 + NAND（设置 → 系统文件）' },
   { id: '3ds',   name: 'Nintendo 3DS',      short: '3DS',   year: 2011, kind: '掌机',   family: 'nintendo', engine: 'azahar',   image: 'consoles/3ds.webp',  state: 'ready', note: '直读可用；无系统菜单（Azahar 不支持 HOME Menu）' },
     { id: 'wiiu',  name: 'Wii U',             short: 'Wii U', year: 2012, kind: '家用机', family: 'nintendo', engine: 'cemu',     image: 'consoles/wiiu.webp', state: 'warn', systemMode: 'Wii U Menu（实验性）', note: '直读需自备 keys.txt 与游戏；Wii U Menu 目前受 Cemu 2.6 限制（只能到背景），标记为实验性' },
 
