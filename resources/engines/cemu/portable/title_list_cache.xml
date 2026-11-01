@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<title_list>
+ <title titleId="0005001010040000" version="226" sdk_version="21211" group_id="00000400" app_type="90000001">
+  <region>1</region>
+  <name>Wii Uメニュー</name>
+  <format>1</format>
+  <path>E:/workstop/nest/resources/engines/cemu/portable/mlc01/sys/title/00050010/10040000</path>
+ </title>
+ <title titleId="0005001010047000" version="178" sdk_version="21211" group_id="00000400" app_type="90000022">
+  <region>1</region>
+  <name>本体設定</name>
+  <format>1</format>
+  <path>E:/workstop/nest/resources/engines/cemu/portable/mlc01/sys/title/00050010/10047000</path>
+ </title>
+ <title titleId="0005001010048000" version="137" sdk_version="21203" group_id="00000400" app_type="90000020">
+  <region>1</region>
+  <name>保護者による使用制限</name>
+  <format>1</format>
+  <path>E:/workstop/nest/resources/engines/cemu/portable/mlc01/sys/title/00050010/10048000</path>
+ </title>
+ <title titleId="0005001010049000" version="103" sdk_version="21003" group_id="00000400" app_type="90000021">
+  <region>1</region>
+  <name>User Settings</name>
+  <format>1</format>
+  <path>E:/workstop/nest/resources/engines/cemu/portable/mlc01/sys/title/00050010/10049000</path>
+ </title>
+ <title titleId="000500101004a000" version="50" sdk_version="20909" group_id="00000400" app_type="90000020">
+  <region>1</region>
+  <name>Miiスタジオ</name>
+  <format>1</format>
+  <path>E:/workstop/nest/resources/engines/cemu/portable/mlc01/sys/title/00050010/1004a000</path>
+ </title>
+ <title titleId="000500101004b000" version="65" sdk_version="20909" group_id="00000400" app_type="90000021">
+  <region>1</region>
+  <name>アカウント設定</name>
+  <format>1</format>
+  <path>E:/workstop/nest/resources/engines/cemu/portable/mlc01/sys/title/00050010/1004b000</path>
+ </title>
+ <title titleId="000500101004c000" version="53" sdk_version="20910" group_id="00000400" app_type="90000020">
+  <region>1</region>
+  <name>毎日のきろく</name>
+  <format>1</format>
+  <path>E:/workstop/nest/resources/engines/cemu/portable/mlc01/sys/title/00050010/1004c000</path>
+ </title>
+ <title titleId="000500101004d000" version="85" sdk_version="21003" group_id="00000400" app_type="90000021">
+  <region>1</region>
+  <name>おしらせリスト</name>
+  <format>1</format>
+  <path>E:/workstop/nest/resources/engines/cemu/portable/mlc01/sys/title/00050010/1004d000</path>
+ </title>
+ <title titleId="000500101004e000" version="129" sdk_version="20804" group_id="00000400" app_type="90000020">
+  <region>1</region>
+  <name>安全に使用するために</name>
+  <format>1</format>
+  <path>E:/workstop/nest/resources/engines/cemu/portable/mlc01/sys/title/00050010/1004e000</path>
+ </title>
+ <title titleId="000500101005a000" version="55" sdk_version="21003" group_id="00000400" app_type="90000020">
+  <region>1</region>
+  <name>Wii U Chat</name>
+  <format>1</format>
+  <path>E:/workstop/nest/resources/engines/cemu/portable/mlc01/sys/title/00050010/1005a000</path>
+ </title>
+</title_list>
