@@ -10,27 +10,32 @@
 一个 Electron「主机启动站」：扫描 ROM → 卡片墙 → 内置引擎子进程启动 → 退出回 Nest 并自动生成封面。
 **GBA / FC / SFC / N64 全链路已验证可玩；NGC 直读已验证（真实 1.4 GB 镜像）；Wii 系统菜单可用（命令行直启 WAD）；NGC 系统菜单因缺命令行入口暂时搁置。**
 
-## 2. 能力矩阵
+## 2. 能力矩阵（当前）
 
 图例：**已验证** = 有真实 ROM/镜像/系统文件的运行记录；**代码就绪** = 参数与路径已接但无真实内容验证；**未实现** = 只有清单。
 
-| 主机（年） | 直读 | 系统模式 | 引擎 / 体积 | 结论 |
+| 主机（年） | 直读 | 系统模式 | 引擎 | 结论 |
 | --- | --- | --- | --- | --- |
-| FC 1983 | ✅ 已验证 | — | ares v148 / 42.6 MB | 可玩 |
-| SFC 1990 | ✅ 已验证 | — | ares v148 / 42.6 MB | 可玩 |
-| N64 1996 | ✅ 已验证 | ✖ 未实现（64DD IPL 只是设想） | ares v148 / 42.6 MB | 可玩 |
-| GBA 2001 | ✅ 已验证 | —（BIOS 动画随游戏走） | mGBA 0.10.5 / 41.5 MB | 可玩 |
-| NGC 2001 | ✅ 已验证（`GVCJ08` 日版 1.4 GB `.gcm`） | ⏸ 搁置（UIA 方案已撤） | Dolphin 2609a / 57.0 MB | 直读可玩 |
-| Wii 2006 | 🟡 代码就绪、未验证（无真实镜像） | ✅ 已验证：`-b -e wii-menu.wad` | Dolphin 2609a / 57.0 MB | 系统菜单可用 |
-| NDS 2004 | ✖ 未接（melonDS 未随包） | ✖ 未实现 | 仅清单 | 未验证 |
-| 3DS 2011 | ✖ 未接（Citra 未随包） | ✖ 未实现 | 仅清单 | 未验证 |
-| Wii U 2012 | ✖ 未接（Cemu 未随包） | ✖ 未实现（`-b` 未验证） | 仅清单 | 未验证 |
-| Xbox / 360、PS1/2/PSP/PS3 | ✖ 锁定预留 | — | 仅清单 | 未验证 |
+| FC 1983 | ✅ 已验证 | — | ares v148 | 可玩 |
+| SFC 1990 | ✅ 已验证 | — | ares v148 | 可玩 |
+| N64 1996 | ✅ 已验证 | ✖ 未实现 | ares v148 | 可玩 |
+| GBA 2001 | ✅ 已验证 | —（BIOS 动画随游戏走） | mGBA 0.10.5 | 可玩 |
+| NGC 2001 | ✅ 已验证 | ✅ GameCube Menu（Qt+UIA，需 IPL） | Dolphin 2609a | 可玩 |
+| Wii 2006 | 🟡 代码就绪、无真实镜像 | ✅ Wii Menu（WAD，经 libretro 宿主） | Dolphin 2609a + nest-libretro | 菜单可用 |
+| NDS 2004 | ✅ 已验证 | ✅ DS 固件菜单（需 BIOS/firmware） | melonDS 1.1 | 可玩 |
+| DSi | — | ✖ 未实现（素材已备：BIOS/NAND） | melonDS（ConsoleType=1 待接） | 待接入 |
+| 3DS 2011 | ✅ 已验证（自制程序） | ❌ Azahar 不支持 HOME Menu | Azahar 2126.2 | 可玩 |
+| Wii U 2012 | 🟡 链路验证（假 .wua），无真实游戏 | ⚠️ 实验性：Wii U Menu 只到背景 | Cemu 2.6 | 直读待验 |
+| Xbox/PS 预留 | ✖ 锁定 | — | — | — |
 
-- 内置引擎合计 **141.2 MB**（mGBA 41.5 + ares 42.6 + Dolphin 57.0）；另有 9 份仅探测清单 + `fake` 测试引擎，共 13 份。
+- 内置引擎 **353 MB**（mGBA 41.5 + ares 42.6 + Dolphin 75.1 + Azahar 101.8 + melonDS 41.5 + Cemu 50.4，不含运行时 MLC/keys）+ `nest-libretro.exe`（90 KB，自写宿主）。
 - 9 台任天堂主机全部在 `SYSTEMS` 中，6 台 Xbox/PS 预留平台标记 `locked`。
+- 键位适配器覆盖 5 个引擎（mGBA/ares/Dolphin/Azahar/melonDS）；Cemu 键位未接入。
+- 测试：typecheck 通过，单测 **68** 条。
 
-## 3. 本期完成（自 `v0.2.0-beta.1`）
+> 以下 §3 起为历史记录。当前里程碑见 [HISTORY.md](HISTORY.md)，发布级变化见 [CHANGELOG.md](CHANGELOG.md)。
+
+## 3. 历史：0.2.0 时期的提交（截至 2026-10-28，保留备查）
 
 | 提交 | 一句话 |
 | --- | --- |
