@@ -27,6 +27,7 @@ node tools/clean-engines.mjs --check   # exit 0 = 引擎配置里没有本地路
 
 版本号：`package.json` 的 `version` 是唯一来源。目录名、zip 名、checksums 都从它取。
 Release 标题只写「软件名 + 版本」（如 `Nest 0.4.1-beta.1`），主题/亮点放正文，不要塞进标题。
+注意：GitHub 的侧栏「最新版本」只认非 prerelease 的 release；如果希望 beta 显示为最新，创建时不要勾 `prerelease`（版本号本身仍可带 beta）。
 同时在 `docs/CHANGELOG.md` 顶部加一个 `## <version> — <日期> · <主题>` 段落。
 
 ---

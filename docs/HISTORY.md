@@ -21,7 +21,7 @@
 
 ## v0.4.1-beta.1 · 2026-11-03
 
-**主题：NDS/DSi 整条线打通 + 设置重构成御三家结构。** 发布类型：prerelease
+**主题：NDS/DSi 整条线打通 + 设置重构成御三家结构。** 发布类型：Latest（无预发布标记；版本号仍为 beta，侧栏显示为最新版本）
 发布页：https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.4.1-beta.1
 便携包：`Nest-0.4.1-beta.1-portable.zip`
 
