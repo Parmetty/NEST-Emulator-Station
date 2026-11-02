@@ -2,7 +2,15 @@
 
 本文件记录每次发布的可见变化。技术细节在 `docs/STATE.md`，决策理由在 `docs/DECISIONS.md`，待办在 `docs/PROGRESS.md`。
 
-## 未发布 — NDS 机型 + Cemu 键位
+## 未发布 — GBA 金手指 + NDS 机型 + Cemu 键位
+
+### GBA 金手指
+
+- GBA 游戏卡右键菜单新增「金手指…」：直接编辑 mGBA 的 `.cheats` 内容
+- 默认写入 ROM 旁的 `<游戏名>.cheats`（mGBA 启动自动加载）；ROM 文件夹只读时回退到 Nest 数据目录并用 `-c` 传入
+- 支持 GameShark / Action Replay / CodeBreaker / PARv3 纯文本格式
+- 文档 `docs/CHEATS-GBA.md`；单测覆盖路径、规范化、只读回退与启动参数
+- 键位面板新增 Cemu（Wii U GamePad）键盘绑定
 
 ### Cemu（Wii U）键位接入面板
 

@@ -3,6 +3,7 @@ import type {
   EngineControls,
   FirmwareKind,
   FirmwareState,
+  GbaCheatFile,
   GameRecord,
   HomePayload,
   LaunchEvent,
@@ -31,6 +32,8 @@ export interface NestApi {
     controls: EngineControls,
   ): Promise<{ ok: boolean; applied?: string[]; error?: string }>;
   resetControls(engineId: string): Promise<{ ok: boolean; error?: string }>;
+  gbaCheats(rom: string): Promise<GbaCheatFile>;
+  gbaCheatsSave(rom: string, text: string): Promise<GbaCheatFile>;
   firmwareStatus(): Promise<FirmwareState[]>;
   pickFirmware(
     kind: FirmwareKind,

@@ -46,6 +46,7 @@ SHA256  235753F404CCFF3494D6A4C25861265C23B624F99BE5DAC4CA0DAD504D99CA22
 - **自动封面**：游戏运行期间由独立抓屏工具持续取帧，退出时存为封面（NDS/3DS 只截上屏）
 - **自写 libretro 宿主**：`resources/tools/nest-libretro.exe`（约 90 KB，C# + SDL3）托管官方 `dolphin_libretro.dll`，**Wii 系统菜单不再依赖 Dolphin Qt GUI 自动化**，直接加载 `wii-menu.wad` 进菜单；键盘 + 鼠标绝对指针（鼠标即 Wiimote 光标，左键 = A）
 - **键位面板**：mGBA / ares / Dolphin / Azahar / melonDS / Cemu 六引擎键盘绑定可在 Nest 里改，保存立即生效；首次启动自动写默认布局，不覆盖你已有的自定义
+- **GBA 金手指**：游戏右键「金手指…」编辑 mGBA `.cheats`，保存后启动自动生效（见 [docs/CHEATS-GBA.md](docs/CHEATS-GBA.md)）
 - **固件中心**：GameCube IPL（CRC32 白名单）、Wii 系统菜单 WAD、NDS BIOS+固件、**DSi BIOS+固件+NAND**、**Cemu keys.txt / Wii U NAND（MLC）**，一键导入（MLC 只记路径，不复制）
 - **便携模式**：库、封面、日志、引擎配置都留在程序目录，删 `data\` 即恢复出厂
 - **运行中高亮 / 进入前确认 / 右键移除**（只删库记录，绝不动磁盘上的 ROM）

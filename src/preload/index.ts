@@ -11,6 +11,7 @@ import {
   type ScanResult,
   type FirmwareKind,
   type FirmwareState,
+  type GbaCheatFile,
   type Settings,
 } from '../shared/contract';
 
@@ -56,6 +57,11 @@ const api = {
 
   resetControls: (engineId: string): Promise<{ ok: boolean; error?: string }> =>
     ipcRenderer.invoke(CH.resetControls, { engineId }),
+
+  gbaCheats: (rom: string): Promise<GbaCheatFile> => ipcRenderer.invoke(CH.gbaCheats, { rom }),
+
+  gbaCheatsSave: (rom: string, text: string): Promise<GbaCheatFile> =>
+    ipcRenderer.invoke(CH.gbaCheatsSave, { rom, text }),
 
   firmwareStatus: (): Promise<FirmwareState[]> => ipcRenderer.invoke(CH.firmwareStatus),
 

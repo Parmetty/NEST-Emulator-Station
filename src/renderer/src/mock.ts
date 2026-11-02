@@ -125,6 +125,8 @@ export function installMockApi(): void {
       { kind: 'wii-menu', label: 'Wii 系统菜单 WAD', status: 'missing', path: null },
     ],
     pickFirmware: async () => ({ ok: true, canceled: true }),
+    gbaCheats: async () => ({ ok: true, path: '', text: '', managed: false, exists: false }),
+    gbaCheatsSave: async () => ({ ok: true, path: '', text: '', managed: false, exists: true }),
     home: async () => payload(),
     games: async (systemId) => games[systemId] ?? [],
     scan: async (systemId, path) => {

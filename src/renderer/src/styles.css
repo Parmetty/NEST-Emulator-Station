@@ -1772,3 +1772,32 @@ kbd {
 .key-row.key-unsupported .key-badge {
   color: rgba(244, 244, 246, 0.35);
 }
+
+.cheat-card {
+  width: min(760px, 92vw);
+}
+
+.cheat-editor {
+  width: 100%;
+  min-height: 240px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.35);
+  color: rgba(255, 255, 255, 0.86);
+  font: 12px/1.6 'Cascadia Mono', Consolas, monospace;
+  resize: vertical;
+}
+
+.cheat-editor:focus {
+  outline: none;
+  border-color: rgba(120, 200, 255, 0.5);
+}
+
+.cheat-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+}

@@ -15,7 +15,7 @@ import type {
   SystemView,
 } from '@shared/contract';
 import { PAD_ACTIONS } from '@shared/contract';
-import { engineLabel, ndsModelById, NDS_MODEL_GROUPS, systemById } from '@shared/systems';
+import { engineLabel, ndsModelById, NDS_MODEL_GROUPS, systemById, type SystemId } from '@shared/systems';
 
 type Row =
   | { kind: 'family'; family: FamilyView }
@@ -133,6 +133,14 @@ export default function App() {
   const [runningSystems, setRunningSystems] = useState<Record<string, number>>({});
   const [runningGames, setRunningGames] = useState<Record<string, number>>({});
   const [menu, setMenu] = useState<{ x: number; y: number; game: GameRecord } | null>(null);
+  const [cheat, setCheat] = useState<{
+    game: GameRecord;
+    text: string;
+    path: string;
+    managed: boolean;
+    busy: boolean;
+    error?: string;
+  } | null>(null);
 
   useEffect(() => {
     window.nest
@@ -629,6 +637,37 @@ export default function App() {
   );
 
   /* --------------------------------------------------------- launching */
+  const openCheats = useCallback(async (game: GameRecord) => {
+    setMenu(null);
+    setCheat({ game, text: '', path: '', managed: false, busy: true });
+    try {
+      const res = await window.nest.gbaCheats(game.path);
+      setCheat({ game, text: res.text, path: res.path, managed: res.managed, busy: false });
+    } catch (err) {
+      setCheat({
+        game,
+        text: '',
+        path: '',
+        managed: false,
+        busy: false,
+        error: (err as Error).message,
+      });
+    }
+  }, []);
+
+  const saveCheats = useCallback(async () => {
+    if (!cheat || cheat.busy) return;
+    setCheat({ ...cheat, busy: true, error: undefined });
+    try {
+      const res = await window.nest.gbaCheatsSave(cheat.game.path, cheat.text);
+      if (!res.ok) throw new Error(res.error ?? '保存失败');
+      setCheat({ ...cheat, path: res.path, managed: res.managed, busy: false });
+      say(`金手指已保存：${cheat.game.title}（mGBA 启动时自动加载）`);
+    } catch (err) {
+      setCheat({ ...cheat, busy: false, error: (err as Error).message });
+    }
+  }, [cheat, say]);
+
   const confirmDialog = useCallback(async () => {
     if (!dialog) return;
     const { system, mode, game } = dialog;
@@ -694,6 +733,10 @@ export default function App() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const k = e.key;
+
+      // The cheat editor is a plain textarea: never treat its keystrokes as
+      // navigation shortcuts (Escape is handled by the dialog itself).
+      if ((e.target as HTMLElement | null)?.tagName === 'TEXTAREA') return;
 
       if (menu) {
         if (k === 'Escape') {
@@ -844,6 +887,12 @@ export default function App() {
   };
 
   (window as unknown as Record<string, unknown>).__NEST_SAY__ = (text: string) => say(text);
+
+  // Used by `--cheat` screenshots: open the cheat editor for the first GBA game.
+  (window as unknown as Record<string, unknown>).__NEST_OPEN_CHEAT__ = () => {
+    const game = shelf?.games.find((g) => systemById.get(g.systemId as SystemId)?.engine === 'mgba');
+    if (game) void openCheats(game);
+  };
 
   return (
     <div
@@ -1117,7 +1166,8 @@ export default function App() {
                 onContextMenu={(e) => {
                   e.preventDefault();
                   const menuWidth = 208;
-                  const menuHeight = 92;
+                  const menuHeight =
+                    systemById.get(game.systemId as SystemId)?.engine === 'mgba' ? 148 : 92;
                   setMenu({
                     x: Math.min(e.clientX, window.innerWidth - menuWidth - 12),
                     y: Math.min(e.clientY, window.innerHeight - menuHeight - 12),
@@ -1175,6 +1225,12 @@ export default function App() {
           }}
         >
           <div className="ctx-menu" style={{ left: menu.x, top: menu.y }} onClick={(e) => e.stopPropagation()}>
+            {systemById.get(menu.game.systemId as SystemId)?.engine === 'mgba' ? (
+              <button className="ctx-item" onClick={() => void openCheats(menu.game)}>
+                <span className="ctx-label">金手指…</span>
+                <span className="ctx-hint">mGBA .cheats 文件</span>
+              </button>
+            ) : null}
             <button className="ctx-item" onClick={() => void removeGame(menu.game)}>
               <span className="ctx-label">从库中移除</span>
               <span className="ctx-hint">不删除磁盘上的文件</span>
@@ -1191,6 +1247,62 @@ export default function App() {
           <div className="launch-meta">{overlay?.meta ?? ''}</div>
           <div className="bar">
             <i />
+          </div>
+        </div>
+      </div>
+
+      <div
+        className={`dialog${cheat ? ' open' : ''}`}
+        role="dialog"
+        aria-modal="true"
+        onClick={() => setCheat(null)}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') {
+            e.preventDefault();
+            setCheat(null);
+          }
+        }}
+      >
+        <div className="dialog-card cheat-card" onClick={(e) => e.stopPropagation()}>
+          <div className="dlg-tag">
+            <i />
+            金手指
+          </div>
+          <h2>{cheat?.game.title ?? ''}</h2>
+          <p className="dlg-note">
+            mGBA 启动时会自动加载 ROM 旁边的 <code>.cheats</code> 文件，这里的内容会保存到
+            {cheat?.managed ? ' Nest 数据目录（ROM 文件夹不可写）' : ' ROM 所在目录'}。
+            支持 GameShark / Action Replay / CodeBreaker / PARv3，一行一条。
+          </p>
+          <textarea
+            className="cheat-editor"
+            spellCheck={false}
+            value={cheat?.text ?? ''}
+            placeholder={'# 一行一条\n# GameShark:  02025BC4:000F423F\n# CodeBreaker: 82000000 0000\n'}
+            onChange={(e) => cheat && setCheat({ ...cheat, text: e.target.value })}
+          />
+          {cheat?.error ? <p className="key-hint err">保存失败：{cheat.error}</p> : null}
+          {cheat && !cheat.managed && cheat.path ? (
+            <p className="dlg-note">{cheat.path}</p>
+          ) : null}
+          <div className="cheat-actions">
+            <button className="ghost-btn" onClick={() => setCheat(null)}>
+              关闭
+            </button>
+            <button
+              className="ghost-btn"
+              disabled={cheat?.busy}
+              onClick={() => cheat && setCheat({ ...cheat, text: '' })}
+            >
+              清空
+            </button>
+            <button
+              className="dlg-btn primary"
+              disabled={cheat?.busy}
+              onClick={() => void saveCheats()}
+            >
+              {cheat?.busy ? '保存中…' : '保存'}
+            </button>
           </div>
         </div>
       </div>

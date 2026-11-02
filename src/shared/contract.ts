@@ -24,6 +24,8 @@ export const CH = {
   resetControls: 'nest:controls-reset',
   firmwareStatus: 'nest:firmware-status',
   pickFirmware: 'nest:pick-firmware',
+  gbaCheats: 'nest:gba-cheats',
+  gbaCheatsSave: 'nest:gba-cheats-save',
 } as const;
 
 /* ------------------------------------------------------------- firmware */
@@ -64,6 +66,15 @@ export const scanRequestSchema = z.object({
 
 export const gamesRequestSchema = z.object({
   systemId: z.string().min(1).max(32),
+});
+
+/** GBA cheat editor: one ROM at a time. */
+export const cheatRequestSchema = z.object({
+  rom: z.string().min(1).max(4096),
+});
+
+export const cheatSaveRequestSchema = cheatRequestSchema.extend({
+  text: z.string().max(64 * 1024),
 });
 
 const keyCodeSchema = z.string().min(1).max(24);
@@ -267,6 +278,19 @@ export interface ScanResult {
   added?: number;
   skipped?: number;
   total?: number;
+  error?: string;
+}
+
+/* ------------------------------------------------------------- GBA cheats */
+
+export interface GbaCheatFile {
+  ok: boolean;
+  /** Absolute path of the file Nest read or wrote. */
+  path: string;
+  text: string;
+  /** True when stored under <userData>/cheats because the ROM folder is read-only. */
+  managed: boolean;
+  exists: boolean;
   error?: string;
 }
 

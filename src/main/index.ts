@@ -491,6 +491,11 @@ async function boot(): Promise<void> {
                })(); true`,
             );
           }
+          if (process.argv.includes('--cheat')) {
+            await mainWindow!.webContents.executeJavaScript(
+              'window.__NEST_OPEN_CHEAT__ && window.__NEST_OPEN_CHEAT__(); true',
+            );
+          }
           await new Promise((resolve) => setTimeout(resolve, 350));
           const image = await mainWindow!.webContents.capturePage();
           await writeFile(shotFlag.slice('--shot='.length), image.toPNG());

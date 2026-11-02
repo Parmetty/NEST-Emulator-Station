@@ -7,6 +7,8 @@ import { app, BrowserWindow, dialog, ipcMain, nativeImage, shell } from 'electro
 import {
   CH,
   favoriteRequestSchema,
+  cheatRequestSchema,
+  cheatSaveRequestSchema,
   gamesRequestSchema,
   launchRequestSchema,
   PAD_ACTIONS,
@@ -34,6 +36,7 @@ import {
   readEngineMode,
   type ControlPaths,
 } from './controls';
+import { cheatExtraArgs, readCheatFile, saveCheatText } from './cheats';
 import { EngineRegistry, buildArgs } from './engines';
 import {
   applyCemuLaunchOptions,
@@ -904,6 +907,31 @@ export function registerIpc(services: Services): void {
     });
     return { ok: true, supported: result.supported, applied: result.files };
   });
+
+  ipcMain.handle(CH.gbaCheats, async (_event, raw) => {
+    const parsed = cheatRequestSchema.safeParse(raw);
+    if (!parsed.success) {
+      return { ok: false, path: '', text: '', managed: false, exists: false, error: 'bad-request' };
+    }
+    const file = readCheatFile(parsed.data.rom, app.getPath('userData'));
+    return { ok: true, ...file };
+  });
+
+  ipcMain.handle(CH.gbaCheatsSave, async (_event, raw) => {
+    const parsed = cheatSaveRequestSchema.safeParse(raw);
+    if (!parsed.success) {
+      return { ok: false, path: '', text: '', managed: false, exists: false, error: 'bad-request' };
+    }
+    const saved = saveCheatText(parsed.data.rom, app.getPath('userData'), parsed.data.text);
+    return {
+      ok: saved.ok,
+      path: saved.path,
+      text: '',
+      managed: saved.managed,
+      exists: saved.ok,
+      error: saved.error,
+    };
+  });
 }
 
 /** Shared by the IPC handler and the --selftest path. */
@@ -1070,6 +1098,13 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     extras.push(engine.launch.configFlag, `${engine.launch.screenshotPathOption}=${dir}`);
   }
   args = [...extras, ...args];
+
+  // GBA cheats: mGBA auto-loads the sidecar next to the ROM; only a managed
+  // copy (read-only library folder) needs an explicit `-c` before the ROM.
+  if (engine.id === 'mgba' && mode === 'game') {
+    const cheatArgs = cheatExtraArgs(engine.id, mode, rom, app.getPath('userData'));
+    if (cheatArgs.length > 0) args = [...cheatArgs, ...args];
+  }
 
   console.log(
     `[nest] launch system=${systemId} mode=${mode} engine=${engine.id} ` +
