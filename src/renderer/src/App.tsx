@@ -31,6 +31,14 @@ const KEY_SYSTEMS = (['gba', 'fc', 'sfc', 'n64', 'nds', 'ngc', 'wii', '3ds', 'wi
   return system ? [system] : [];
 });
 
+const SETTINGS_TABS = [
+  { id: 'nest', name: 'Nest', hint: '通用偏好 · 游戏文件夹' },
+  { id: 'nintendo', name: 'Nintendo', hint: '系统文件 · 键位' },
+  { id: 'xbox', name: 'Xbox', hint: '尚未接入' },
+  { id: 'playstation', name: 'PlayStation', hint: '尚未接入' },
+] as const;
+type SettingsTab = (typeof SETTINGS_TABS)[number]['id'];
+
 const ACTION_LABEL: Record<PadAction, string> = {
   up: '上',
   down: '下',
@@ -121,6 +129,7 @@ export default function App() {
   const [scanning, setScanning] = useState(false);
   const [settings, setSettings] = useState<Settings>({ minimizeOnLaunch: true, fullscreen: false });
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<SettingsTab>('nest');
   const [firmware, setFirmware] = useState<FirmwareState[]>([]);
   const [mlcTipOpen, setMlcTipOpen] = useState(false);
   const [controls, setControls] = useState<ControlsPayload | null>(null);
@@ -888,6 +897,11 @@ export default function App() {
 
   (window as unknown as Record<string, unknown>).__NEST_SAY__ = (text: string) => say(text);
 
+  // Used by `--stab=<id>` screenshots: switch the settings tab without clicking.
+  (window as unknown as Record<string, unknown>).__NEST_SETTINGS_TAB__ = (id: string) => {
+    if (SETTINGS_TABS.some((tab) => tab.id === id)) setSettingsTab(id as SettingsTab);
+  };
+
   // Used by `--cheat` screenshots: open the cheat editor for the first GBA game.
   (window as unknown as Record<string, unknown>).__NEST_OPEN_CHEAT__ = () => {
     const game = shelf?.games.find((g) => systemById.get(g.systemId as SystemId)?.engine === 'mgba');
@@ -1314,243 +1328,284 @@ export default function App() {
             设置
           </div>
 
-          <div className="settings-cols">
-            <div className="settings-col">
-              <h2>启动与画面</h2>
-              <p className="dlg-note">这些偏好保存在本机的库文件里，换主机不影响。</p>
-
-              <label className="toggle-row">
-                <span>
-                  启动引擎时最小化主窗口
-                  <small>引擎退出后自动还原并聚焦</small>
-                </span>
-                <input
-                  type="checkbox"
-                  checked={settings.minimizeOnLaunch}
-                  onChange={(e) => void updateSetting({ minimizeOnLaunch: e.target.checked })}
-                />
-                <i className="switch" />
-              </label>
-
-              <label className="toggle-row">
-                <span>
-                  全屏启动引擎
-                  <small>把引擎自己支持的全屏参数传给它</small>
-                </span>
-                <input
-                  type="checkbox"
-                  checked={settings.fullscreen}
-                  onChange={(e) => void updateSetting({ fullscreen: e.target.checked })}
-                />
-                <i className="switch" />
-              </label>
-
-              <h2>系统文件（自备）</h2>
-              <p className="dlg-note">
-                IPL / WAD 需要你自己从主机 dump，Nest 不打包也不下载；导入后会复制到本机数据目录。
-              </p>
-
-              {firmware.map((item) => (
-                <div className="fw-row" key={item.kind}>
-                  <span>
-                    {item.label}
-                    {item.kind === 'wiiu-mlc' ? (
-                      <button
-                        type="button"
-                        className="tip-btn"
-                        title="关于 Wii U NAND（MLC）"
-                        onClick={() => setMlcTipOpen((v) => !v)}
-                      >
-                        ?
-                      </button>
-                    ) : null}
-                    <small>
-                      {item.status === 'ok'
-                        ? item.kind === 'wiiu-mlc'
-                          ? '已设置'
-                          : item.kind === 'cemu-keys'
-                            ? '已导入'
-                            : '已就绪'
-                        : item.status === 'invalid'
-                          ? item.kind === 'wiiu-mlc'
-                            ? '目录无效'
-                            : item.kind === 'cemu-keys'
-                              ? '没有有效密钥'
-                              : '校验未通过'
-                          : item.kind === 'wiiu-mlc'
-                            ? '未设置'
-                            : '未导入'}
-                      {item.detail ? ` · ${item.detail}` : ''}
-                    </small>
-                  </span>
-                  <button className="ghost-btn" onClick={() => void importFirmware(item.kind)}>
-                    {item.kind === 'wiiu-mlc' || item.kind === 'dsi-firmware' ? '选择目录…' : '选择文件…'}
-                  </button>
-                </div>
+          <div className="settings-shell">
+            <nav className="settings-nav" aria-label="设置分类">
+              {SETTINGS_TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  className={`settings-tab${settingsTab === tab.id ? ' on' : ''}`}
+                  onClick={() => setSettingsTab(tab.id)}
+                >
+                  <span>{tab.name}</span>
+                  <small>{tab.hint}</small>
+                </button>
               ))}
+            </nav>
 
-              {mlcTipOpen ? (
-                <p className="dlg-note tip-note">
-                  Wii U NAND（MLC）可以来自：① 你自己的 Wii U 真机 dump（推荐）；②
-                  和本项目一样，用任天堂 CDN 的系统 title 手工拼装（流程见仓库
-                  docs/WIIU-CDN-MLC.md，需自备 keys.txt）。
-                  <br />
-                  注意：Cemu 2.6 尚未实现 nn_act.LoadConsoleAccount，即使 MLC
-                  正确，Wii U Menu 目前也只会停在背景画面，所以该功能标记为「实验性」。
-                  游戏直读不受影响。
-                </p>
-              ) : null}
+            <div className="settings-body">
+              {settingsTab === 'nest' ? (
+                <div className="settings-panel">
+                        <h2>启动与画面</h2>
+                        <p className="dlg-note">这些偏好保存在本机的库文件里，换主机不影响。</p>
+
+                        <label className="toggle-row">
+                          <span>
+                            启动引擎时最小化主窗口
+                            <small>引擎退出后自动还原并聚焦</small>
+                          </span>
+                          <input
+                            type="checkbox"
+                            checked={settings.minimizeOnLaunch}
+                            onChange={(e) => void updateSetting({ minimizeOnLaunch: e.target.checked })}
+                          />
+                          <i className="switch" />
+                        </label>
+
+                        <label className="toggle-row">
+                          <span>
+                            全屏启动引擎
+                            <small>把引擎自己支持的全屏参数传给它</small>
+                          </span>
+                          <input
+                            type="checkbox"
+                            checked={settings.fullscreen}
+                            onChange={(e) => void updateSetting({ fullscreen: e.target.checked })}
+                          />
+                          <i className="switch" />
+                        </label>
+
 
               <h2>游戏文件夹（自动扫描）</h2>
-              <p className="dlg-note">
-                添加过的文件夹会记住；启动 Nest 时自动重扫，新放进来的 ROM 就会出现在游戏库里。
-              </p>
+                        <p className="dlg-note">
+                          添加过的文件夹会记住；启动 Nest 时自动重扫，新放进来的 ROM 就会出现在游戏库里。
+                        </p>
 
-              <label className="toggle-row">
-                <span>
-                  启动时自动重新扫描
-                  <small>关掉后只在点「立即扫描」或打开游戏库时扫描</small>
-                </span>
-                <input
-                  type="checkbox"
-                  checked={settings.autoScan !== false}
-                  onChange={(e) => void updateSetting({ autoScan: e.target.checked })}
-                />
-                <i className="switch" />
-              </label>
-
-              {(settings.scanRoots ?? []).length === 0 ? (
-                <p className="dlg-note">还没有添加文件夹，点「添加文件夹…」选一个放 ROM 的目录。</p>
-              ) : (
-                (settings.scanRoots ?? []).map((root) => (
-                  <div className="scan-root" key={root}>
-                    <span title={root}>{root}</span>
-                    <button className="ghost-btn" onClick={() => void removeRoot(root)}>
-                      移除
-                    </button>
-                  </div>
-                ))
-              )}
-
-              <div className="scan-actions">
-                <button className="ghost-btn" onClick={() => void addFolder()}>
-                  添加文件夹…
-                </button>
-                <button className="ghost-btn" disabled={rescanning} onClick={() => void rescanAll()}>
-                  {rescanning ? '扫描中…' : '立即扫描'}
-                </button>
-              </div>
-            </div>
-
-            <div className="settings-col keys-col">
-              <h2>键位</h2>
-              <p className="dlg-note">
-                改的是引擎的键盘绑定，保存后立即生效；同一引擎的多台主机共用一套键位。
-              </p>
-
-              <div className="key-engines" role="group" aria-label="选择主机">
-                {KEY_SYSTEMS.map((system) => (
-                  <button
-                    key={system.id}
-                    className={`key-engine${system.id === keySystem.id ? ' on' : ''}`}
-                    title={`${system.name} · ${engineLabel(system.engine)}`}
-                    onClick={() => pickKeySystem(system.id)}
-                  >
-                    {system.short}
-                  </button>
-                ))}
-              </div>
-
-              {keyView ? (
-                <>
-                  <div className="key-meta">
-                    <span>
-                      {engineLabel(keyEngine)} · {keyView.mode === 'gamepad' ? '手柄模式' : '键盘模式'}
-                      {keyShared.length > 1 ? ` · ${keyShared.join(' / ')} 共用` : ''}
-                    </span>
-                    <small className={keyDirty ? 'dirty' : ''}>
-                      {!keyView.supported
-                        ? '暂不支持'
-                        : keyDirty
-                          ? '有未保存改动'
-                          : keyView.isCustom
-                            ? '已自定义'
-                            : '默认键位'}
-                    </small>
-                  </div>
-
-                  {!keyView.supported ? (
-                    <div className="key-unsupported">
-                      <p>该引擎键位格式尚未支持</p>
-                      <span>先用手柄，或进 {engineLabel(keyEngine)} 自己的设置里改键。</span>
-                    </div>
-                  ) : null}
-
-                  <div className={`key-group${keySupported ? '' : ' disabled'}`}>
-                    {PAD_ACTIONS.map((action) => {
-                      const code = keyBindings[action];
-                      const capturing = keyCapture === action;
-                      return (
-                        <div className={`key-row${capturing ? ' capturing' : ''}`} key={action}>
-                          <span className="key-name">{ACTION_LABEL[action]}</span>
-                          <span className={`key-badge${code ? '' : ' empty'}`}>
-                            {capturing ? '请按键…' : prettyKey(code)}
+                        <label className="toggle-row">
+                          <span>
+                            启动时自动重新扫描
+                            <small>关掉后只在点「立即扫描」或打开游戏库时扫描</small>
                           </span>
-                          <button
-                            className="key-edit"
-                            disabled={!keySupported || keyBusy !== null}
-                            onClick={(event) => {
-                              // Blur so the Space/Enter used to pick a key does not
-                              // also re-activate this button on keyup.
-                              event.currentTarget.blur();
-                              if (capturing) {
-                                setKeyCapture(null);
-                                setKeyCaptureError(null);
-                                return;
-                              }
-                              setKeyCapture(action);
-                              setKeyCaptureError(null);
-                            }}
-                          >
-                            {capturing ? '取消' : '改'}
+                          <input
+                            type="checkbox"
+                            checked={settings.autoScan !== false}
+                            onChange={(e) => void updateSetting({ autoScan: e.target.checked })}
+                          />
+                          <i className="switch" />
+                        </label>
+
+                        {(settings.scanRoots ?? []).length === 0 ? (
+                          <p className="dlg-note">还没有添加文件夹，点「添加文件夹…」选一个放 ROM 的目录。</p>
+                        ) : (
+                          (settings.scanRoots ?? []).map((root) => (
+                            <div className="scan-root" key={root}>
+                              <span title={root}>{root}</span>
+                              <button className="ghost-btn" onClick={() => void removeRoot(root)}>
+                                移除
+                              </button>
+                            </div>
+                          ))
+                        )}
+
+                        <div className="scan-actions">
+                          <button className="ghost-btn" onClick={() => void addFolder()}>
+                            添加文件夹…
+                          </button>
+                          <button className="ghost-btn" disabled={rescanning} onClick={() => void rescanAll()}>
+                            {rescanning ? '扫描中…' : '立即扫描'}
                           </button>
                         </div>
-                      );
-                    })}
+                </div>
+              ) : settingsTab === 'nintendo' ? (
+                <div className="settings-cols">
+                  <div className="settings-col">
+                        <h2>系统文件（自备）</h2>
+                        <p className="dlg-note">
+                          IPL / WAD 需要你自己从主机 dump，Nest 不打包也不下载；导入后会复制到本机数据目录。
+                        </p>
+
+                        {firmware.map((item) => (
+                          <div className="fw-row" key={item.kind}>
+                            <span>
+                              {item.label}
+                              {item.kind === 'wiiu-mlc' ? (
+                                <button
+                                  type="button"
+                                  className="tip-btn"
+                                  title="关于 Wii U NAND（MLC）"
+                                  onClick={() => setMlcTipOpen((v) => !v)}
+                                >
+                                  ?
+                                </button>
+                              ) : null}
+                              <small>
+                                {item.status === 'ok'
+                                  ? item.kind === 'wiiu-mlc'
+                                    ? '已设置'
+                                    : item.kind === 'cemu-keys'
+                                      ? '已导入'
+                                      : '已就绪'
+                                  : item.status === 'invalid'
+                                    ? item.kind === 'wiiu-mlc'
+                                      ? '目录无效'
+                                      : item.kind === 'cemu-keys'
+                                        ? '没有有效密钥'
+                                        : '校验未通过'
+                                    : item.kind === 'wiiu-mlc'
+                                      ? '未设置'
+                                      : '未导入'}
+                                {item.detail ? ` · ${item.detail}` : ''}
+                              </small>
+                            </span>
+                            <button className="ghost-btn" onClick={() => void importFirmware(item.kind)}>
+                              {item.kind === 'wiiu-mlc' || item.kind === 'dsi-firmware' ? '选择目录…' : '选择文件…'}
+                            </button>
+                          </div>
+                        ))}
+
+                        {mlcTipOpen ? (
+                          <p className="dlg-note tip-note">
+                            Wii U NAND（MLC）可以来自：① 你自己的 Wii U 真机 dump（推荐）；②
+                            和本项目一样，用任天堂 CDN 的系统 title 手工拼装（流程见仓库
+                            docs/WIIU-CDN-MLC.md，需自备 keys.txt）。
+                            <br />
+                            注意：Cemu 2.6 尚未实现 nn_act.LoadConsoleAccount，即使 MLC
+                            正确，Wii U Menu 目前也只会停在背景画面，所以该功能标记为「实验性」。
+                            游戏直读不受影响。
+                          </p>
+                        ) : null}
+
+                        <p className="dlg-note">
+                          3DS 系统模式（HOME Menu）暂未接入：需要 Azahar 的 nand / sysdata
+                          系统文件（真机 + Artic Setup Tool 导出），有数据后再开放入口。
+                        </p>
+                  </div>
+                <div className="settings-col keys-col">
+                  <h2>键位</h2>
+                  <p className="dlg-note">
+                    改的是引擎的键盘绑定，保存后立即生效；同一引擎的多台主机共用一套键位。
+                  </p>
+
+                  <div className="key-engines" role="group" aria-label="选择主机">
+                    {KEY_SYSTEMS.map((system) => (
+                      <button
+                        key={system.id}
+                        className={`key-engine${system.id === keySystem.id ? ' on' : ''}`}
+                        title={`${system.name} · ${engineLabel(system.engine)}`}
+                        onClick={() => pickKeySystem(system.id)}
+                      >
+                        {system.short}
+                      </button>
+                    ))}
                   </div>
 
-                  {keyCapture ? (
-                    <p className="key-hint">
-                      按下要绑定的键 · Esc 取消
-                      {keyCaptureError ? ` · ${keyCaptureError}` : ''}
+                  {keyView ? (
+                    <>
+                      <div className="key-meta">
+                        <span>
+                          {engineLabel(keyEngine)} · {keyView.mode === 'gamepad' ? '手柄模式' : '键盘模式'}
+                          {keyShared.length > 1 ? ` · ${keyShared.join(' / ')} 共用` : ''}
+                        </span>
+                        <small className={keyDirty ? 'dirty' : ''}>
+                          {!keyView.supported
+                            ? '暂不支持'
+                            : keyDirty
+                              ? '有未保存改动'
+                              : keyView.isCustom
+                                ? '已自定义'
+                                : '默认键位'}
+                        </small>
+                      </div>
+
+                      {!keyView.supported ? (
+                        <div className="key-unsupported">
+                          <p>该引擎键位格式尚未支持</p>
+                          <span>先用手柄，或进 {engineLabel(keyEngine)} 自己的设置里改键。</span>
+                        </div>
+                      ) : null}
+
+                      <div className={`key-group${keySupported ? '' : ' disabled'}`}>
+                        {PAD_ACTIONS.map((action) => {
+                          const code = keyBindings[action];
+                          const capturing = keyCapture === action;
+                          return (
+                            <div className={`key-row${capturing ? ' capturing' : ''}`} key={action}>
+                              <span className="key-name">{ACTION_LABEL[action]}</span>
+                              <span className={`key-badge${code ? '' : ' empty'}`}>
+                                {capturing ? '请按键…' : prettyKey(code)}
+                              </span>
+                              <button
+                                className="key-edit"
+                                disabled={!keySupported || keyBusy !== null}
+                                onClick={(event) => {
+                                  // Blur so the Space/Enter used to pick a key does not
+                                  // also re-activate this button on keyup.
+                                  event.currentTarget.blur();
+                                  if (capturing) {
+                                    setKeyCapture(null);
+                                    setKeyCaptureError(null);
+                                    return;
+                                  }
+                                  setKeyCapture(action);
+                                  setKeyCaptureError(null);
+                                }}
+                              >
+                                {capturing ? '取消' : '改'}
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {keyCapture ? (
+                        <p className="key-hint">
+                          按下要绑定的键 · Esc 取消
+                          {keyCaptureError ? ` · ${keyCaptureError}` : ''}
+                        </p>
+                      ) : keyCaptureError ? (
+                        <p className="key-hint err">{keyCaptureError}</p>
+                      ) : null}
+
+                      <div className="key-actions">
+                        <button
+                          className="ghost-btn"
+                          disabled={!keySupported || keyBusy !== null}
+                          onClick={() => void resetKeys()}
+                        >
+                          {keyBusy === 'reset' ? '恢复中…' : '恢复默认'}
+                        </button>
+                        <button
+                          className="dlg-btn primary"
+                          disabled={!keySupported || !keyDirty || keyBusy !== null}
+                          onClick={() => void saveKeys()}
+                        >
+                          {keyBusy === 'save' ? '保存中…' : '保存'}
+                        </button>
+                      </div>
+                    </>
+                  ) : controlsFailed ? (
+                    <p className="key-hint err">
+                      键位数据读取失败；等主进程的 controls IPC 就绪后重新打开设置。
                     </p>
-                  ) : keyCaptureError ? (
-                    <p className="key-hint err">{keyCaptureError}</p>
-                  ) : null}
-
-                  <div className="key-actions">
-                    <button
-                      className="ghost-btn"
-                      disabled={!keySupported || keyBusy !== null}
-                      onClick={() => void resetKeys()}
-                    >
-                      {keyBusy === 'reset' ? '恢复中…' : '恢复默认'}
-                    </button>
-                    <button
-                      className="dlg-btn primary"
-                      disabled={!keySupported || !keyDirty || keyBusy !== null}
-                      onClick={() => void saveKeys()}
-                    >
-                      {keyBusy === 'save' ? '保存中…' : '保存'}
-                    </button>
-                  </div>
-                </>
-              ) : controlsFailed ? (
-                <p className="key-hint err">
-                  键位数据读取失败；等主进程的 controls IPC 就绪后重新打开设置。
-                </p>
+                  ) : (
+                    <p className="key-hint">读取中…</p>
+                  )}
+                </div>
+                </div>
               ) : (
-                <p className="key-hint">读取中…</p>
+                <div className="settings-panel">
+                  <h2>{settingsTab === 'xbox' ? 'Xbox' : 'PlayStation'}</h2>
+                  <p className="dlg-note">
+                    该家族尚未接入。Nest 已经预留主机位置，引擎接好后会自动出现在游戏库里。
+                  </p>
+                  <div className="locked-systems">
+                    {(families.find((family) => family.id === settingsTab)?.systems ?? []).map((system) => (
+                      <span key={system.id}>
+                        {system.name}
+                        <small>{system.year}</small>
+                      </span>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
           </div>

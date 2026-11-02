@@ -477,6 +477,12 @@ async function boot(): Promise<void> {
             await mainWindow!.webContents.executeJavaScript(
               "document.querySelector('.ghost-btn')?.click(); true",
             );
+            const stab = process.argv.find((arg) => arg.startsWith('--stab='));
+            if (stab) {
+              await mainWindow!.webContents.executeJavaScript(
+                `window.__NEST_SETTINGS_TAB__ && window.__NEST_SETTINGS_TAB__(${JSON.stringify(stab.slice('--stab='.length))}); true`,
+              );
+            }
           }
           if (process.argv.includes('--menu')) {
             await mainWindow!.webContents.executeJavaScript(

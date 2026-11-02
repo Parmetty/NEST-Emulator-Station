@@ -1801,3 +1801,69 @@ kbd {
   gap: 10px;
   margin-top: 12px;
 }
+
+.settings-shell {
+  display: flex;
+  gap: 18px;
+  margin-top: 10px;
+  align-items: flex-start;
+}
+
+.settings-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 148px;
+}
+
+.settings-tab {
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.settings-tab small {
+  display: block;
+  margin-top: 2px;
+  font-size: 10px;
+  opacity: 0.55;
+}
+
+.settings-tab.on {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.settings-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.locked-systems {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.locked-systems span {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.locked-systems small {
+  margin-left: 6px;
+  opacity: 0.6;
+}
+
+.settings-panel h2:not(:first-child) {
+  margin-top: 22px;
+}
