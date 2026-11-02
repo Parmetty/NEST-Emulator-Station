@@ -1,6 +1,6 @@
 param(
   [Parameter(Mandatory = $true)][string]$Version,
-  [Parameter(Mandatory = $true)][string]$Title,
+  [string]$Title = '',
   [Parameter(Mandatory = $true)][string]$BodyFile,
   [Parameter(Mandatory = $true)][string]$Zip,
   [switch]$PreRelease
@@ -8,6 +8,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Set-Location 'E:\workstop\nest'
+if (-not $Title) { $Title = "Nest $Version" }
 
 $repo = 'Parmetty/NEST-Emulator-Station'
 if (-not (Test-Path $Zip)) { throw "missing zip: $Zip" }

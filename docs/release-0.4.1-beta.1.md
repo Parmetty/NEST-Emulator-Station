@@ -1,6 +1,6 @@
-# Nest 0.4.1 Beta · NDS/DSi 整条线 + 设置拆分 + GBA 金手指
+# Nest 0.4.1-beta.1
 
-> Windows 免安装携带版。下载 `Nest-0.4.1-beta.1-portable.zip`，解压双击 **`启动 Nest.bat`** 即可。
+> **NDS/DSi 整条线 + 设置拆分 + GBA 金手指**。Windows 免安装携带版。下载 `Nest-0.4.1-beta.1-portable.zip`，解压双击 **`启动 Nest.bat`** 即可。
 
 ## 这个版本有什么
 
