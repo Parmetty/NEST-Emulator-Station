@@ -2,11 +2,13 @@
 
 本文件记录每次发布的可见变化。技术细节在 `docs/nintendo/STATE.md`，决策理由在 `docs/nintendo/DECISIONS.md`，待办在 `docs/nintendo/PROGRESS.md`。
 
-## 未发布 — 文档按家族归档
+## 未发布 — PS 调研 + 文档按家族归档
 
 - 文档重构：任天堂系全部文档移入 `docs/nintendo/`（含 evidence / mock-v1 / patches），
   新增 `docs/playstation/PLAN-PLAYSTATION.md` 与总路线 `docs/ROADMAP.md`
 - 原 `PLAN.md` 标注为历史计划并回填实际完成情况；路线图改为「任天堂收尾 + PlayStation 主线 + Xbox 预留」
+- P6.0 调研完成：DuckStation / PPSSPP / PCSX2 / RPCS3 的许可、便携模式、CLI、镜像格式与系统模式入口
+  （PS1 BIOS shell、PS2 BIOS 浏览器、PSP XMB 需 1.21+、PS3 无 XMB）写入 `docs/playstation/RESEARCH-P6.0.md` 与 4 份 ENGINE 文档
 
 ## 0.4.1-beta.1 — 2026-11-03 · NDS/DSi 整条线 + 设置拆分 + GBA 金手指
 

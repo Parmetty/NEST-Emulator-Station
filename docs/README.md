@@ -18,3 +18,4 @@ Nest 的文档按「家族」归档：任天堂系（已接入）与 PlayStation
 - 发布流程：[nintendo/RELEASE-RUNBOOK.md](nintendo/RELEASE-RUNBOOK.md)
 - 初始计划（历史对照）：[nintendo/PLAN.md](nintendo/PLAN.md)
 - PlayStation 新计划：[playstation/PLAN-PLAYSTATION.md](playstation/PLAN-PLAYSTATION.md)
+- P6.0 调研报告：[playstation/RESEARCH-P6.0.md](playstation/RESEARCH-P6.0.md)

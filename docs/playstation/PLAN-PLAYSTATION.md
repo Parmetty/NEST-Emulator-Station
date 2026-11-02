@@ -1,6 +1,7 @@
 # PlayStation 家族接入计划
 
-> 状态：**P6.0 调研**（2026-11-03 起）
+> 状态：**P6.0 调研完成**（2026-11-03）→ 下一步 P6.1
+> 调研报告：[RESEARCH-P6.0.md](RESEARCH-P6.0.md)；逐引擎规格：[duckstation](ENGINE-duckstation.md) · [ppsspp](ENGINE-ppsspp.md) · [pcsx2](ENGINE-pcsx2.md) · [rpcs3](ENGINE-rpcs3.md)
 > 目标：把 PS1 / PSP / PS2 / PS3 按「Nest 主机墙 + 扫描 → 卡片 → 启动 → 返回 → 封面」的既有模式接进来，
 > 配置、存档、键位都收在 Nest 数据目录里，不落到用户文档目录。
 
@@ -21,6 +22,15 @@
 
 > 体积、便携模式、CLI 参数都要在 P6.0 实测后回填；不凭印象写死。
 
+## 二点五、调研结论（P6.0，2026-11-03）
+
+- **PS1**：DuckStation，BIOS **必需**；系统模式 = `-bios` 的 BIOS shell（只能管记忆卡，不能起游戏）；许可证 CC BY-NC-ND 4.0 → **不随包，探测本机安装**
+- **PSP**：PPSSPP，无 BIOS；系统模式 = **XMB（VSH）**，但需要 PPSSPP **1.21+** 与 PSP 固件；1.20.4 稳定版只能直读
+- **PS2**：PCSX2，BIOS **必需**；系统模式 = `-bios` 的无盘 BIOS 浏览器
+- **PS3**：RPCS3，固件必需；**没有 XMB**，只做直读
+- 便携：DuckStation `portable.txt`、PCSX2 `portable.ini`、PPSSPP `--memstick`、RPCS3 用 `APPDATA` 重定向
+- 体积：PPSSPP 19.4 MB / PCSX2 24.5 MB / DuckStation 70.6 MB / RPCS3 以官网 nightly 为准
+
 ## 三、接入顺序与理由
 
 1. **P6.1 PS1 · DuckStation** —— 最轻：单文件镜像、无强制 BIOS、引擎配置简单，先把 PS 家族骨架跑通
@@ -34,14 +44,16 @@
 
 ### P6.0 调研（先做，1 个阶段）
 
-- [ ] DuckStation / PPSSPP / PCSX2 / RPCS3 的 **便携模式**：能否把配置/存档/记忆卡放到指定目录
-- [ ] **CLI**：直读参数、全屏参数、BIOS/固件路径参数、是否支持 `--portable`
-- [ ] **配置格式**：键位文件、画面设置、最近文件、存档/记忆卡目录
-- [ ] **许可与再分发**：GPLv3 / GPLv2 / LGPLv3，确认随包或只探测
-- [ ] **真实内容需求**：PS1/PS2 BIOS 校验（CRC/SHA）、PS3 固件版本、测试镜像
-- [ ] 产出：每个引擎一页 `ENGINE-<id>.md`（CLI/路径/配置/键位字段），回填到本文件表格
+- [x] DuckStation / PPSSPP / PCSX2 / RPCS3 的 **便携模式**（见 RESEARCH-P6.0.md）
+- [x] **CLI**：直读/全屏/BIOS/固件参数已从 Wiki 或源码核实
+- [ ] **配置格式**：键位字段尚未实测（需要各引擎跑一次生成配置文件）
+- [x] **许可与再分发**：DuckStation CC BY-NC-ND（不随包）、PPSSPP GPLv2+、PCSX2 GPLv3、RPCS3 GPLv2
+- [ ] **真实内容需求**：BIOS/固件校验值与镜像验证（等待用户提供）
+- [x] 产出：`ENGINE-duckstation.md` / `ENGINE-ppsspp.md` / `ENGINE-pcsx2.md` / `ENGINE-rpcs3.md`
 
 ### P6.1 PS1（DuckStation）
+
+> 引擎不随包（CC BY-NC-ND）；系统模式 = `-bios` BIOS shell；BIOS 必需。
 
 - 扫描扩展名：`.cue` / `.chd` / `.pbp` / `.bin`（`.bin` 需配 `.cue`，否则提示）
 - 启动：`duckstation.exe <镜像>`，确认全屏参数与“启动后自动退出”行为
@@ -53,6 +65,8 @@
 
 ### P6.2 PSP（PPSSPP）
 
+> 直读可先做；XMB 系统模式需要 1.21+ 与 PSP 固件，标记实验性。
+
 - 扫描：`.iso` / `.cso` / `.pbp` / `.chd`
 - 便携：确认 `memstick/PSP/SYSTEM/ppsspp.ini` 可重定向；存档随 memstick 隔离
 - 画面：16:9，抓帧裁剪按 PPSSPP 窗口比例
@@ -60,6 +74,8 @@
 - 验收：同 P6.1；`.cso` 能识别
 
 ### P6.3 PS2（PCSX2）
+
+> 系统模式 = `-bios` 无盘启动 BIOS 浏览器；BIOS 必需。
 
 - 扫描：`.iso` / `.chd` / `.bin+.cue`；`.iso` 与 GC/Wii/PSP 冲突需按系统扫描根或文件头判定
 - BIOS 导入：`scph*.bin`（大小/版本校验），配置写入 PCSX2 的 `BIOS` 路径
@@ -69,6 +85,8 @@
 - 验收：BIOS 缺失有错误码；有 BIOS 时能直读 + 进浏览器
 
 ### P6.4 PS3（RPCS3）
+
+> 无 XMB，只做直读；固件 PUP 必需。
 
 - 前置：固件 PUP 安装（用户自备）；游戏目录/ISO 识别
 - 无 XMB：不做系统模式，文档写明

@@ -28,7 +28,7 @@ GBA 金手指、Cemu 键位。
 | 阶段 | 主线 | 目标 | 状态 |
 |---|---|---|---|
 | P5.1 | 任天堂收尾（小修小补） | 随 PS 主线并行：3DS 系统模式（等系统文件）、NGC/Wii 菜单插盘、Wii U Menu 等上游、NDS 存档备份 | 持续 |
-| **P6.0** | **PS 调研** | 四引擎的便携模式/CLI/配置格式/许可/体积核实；宿主适配器骨架 | **进行中** |
+| **P6.0** | **PS 调研** | 四引擎的便携模式/CLI/许可/体积/系统模式均已核实，产出 RESEARCH-P6.0 + 4 份 ENGINE 规格 | ✅ 完成（2026-11-03） |
 | **P6.1** | **PS1（DuckStation）** | 扫描 `.cue/.bin/.chd/.pbp` → 启动 → 封面 → 键位 | 下一里程碑 |
 | **P6.2** | **PSP（PPSSPP）** | 扫描 `.iso/.cso/.pbp` → 启动 → 存档目录隔离 → 键位 | 待 P6.1 完成 |
 | **P6.3** | **PS2（PCSX2）** | BIOS/记忆卡、`.iso/.chd/.bin+cue`、BIOS 浏览器入口 | 待 P6.2 |
@@ -38,7 +38,7 @@ GBA 金手指、Cemu 键位。
 
 ## 三、PlayStation 阶段细化
 
-详细方案见 [playstation/PLAN-PLAYSTATION.md](playstation/PLAN-PLAYSTATION.md)。简要：
+详细方案见 [playstation/PLAN-PLAYSTATION.md](playstation/PLAN-PLAYSTATION.md)，调研报告见 [playstation/RESEARCH-P6.0.md](playstation/RESEARCH-P6.0.md)。简要：
 
 1. **P6.0 调研周**：核实 DuckStation / PPSSPP / PCSX2 / RPCS3 的
    - 便携模式与用户目录隔离（Nest 必须把配置/存档收进自己的 `data/`）
