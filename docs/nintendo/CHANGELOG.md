@@ -7,8 +7,10 @@
 - 文档重构：任天堂系全部文档移入 `docs/nintendo/`（含 evidence / mock-v1 / patches），
   新增 `docs/playstation/PLAN-PLAYSTATION.md` 与总路线 `docs/ROADMAP.md`
 - 原 `PLAN.md` 标注为历史计划并回填实际完成情况；路线图改为「任天堂收尾 + PlayStation 主线 + Xbox 预留」
-- P6.0 调研完成：DuckStation / PPSSPP / PCSX2 / RPCS3 的许可、便携模式、CLI、镜像格式与系统模式入口
-  （PS1 BIOS shell、PS2 BIOS 浏览器、PSP XMB 需 1.21+、PS3 无 XMB）写入 `docs/playstation/RESEARCH-P6.0.md` 与 4 份 ENGINE 文档
+- P6.0 调研完成：PPSSPP / PCSX2 / RPCS3 / SwanStation 的许可、便携模式、CLI、镜像格式与系统模式入口
+  （PS1 用 SwanStation 替代 DuckStation、PS2 BIOS 浏览器、PSP XMB 需 1.21+、PS3 无 XMB）写入 `docs/playstation/RESEARCH-P6.0.md` 与 ENGINE 文档
+- PS1 主选改为 **SwanStation**（GPLv3、DuckStation hard fork、libretro core、OpenBIOS 兜底、可随包）；DuckStation 因 CC BY-NC-ND 降级为用户自装可选
+- PS3 系统模式结论：无 XMB 也无替代，只做直读；如需展示用 Nest 原生游戏库视图（不冒充系统界面）
 
 ## 0.4.1-beta.1 — 2026-11-03 · NDS/DSi 整条线 + 设置拆分 + GBA 金手指
 

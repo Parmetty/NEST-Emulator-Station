@@ -2,14 +2,15 @@
 
 > 调研日期：2026-11-03 · 状态：**已完成（代码级/文档级核实，未跑真实镜像）**
 > 依据：各引擎官方 README / Wiki / 源码（CLI 参数与路径均引用源码或官方文档），下载资产大小来自 GitHub Releases API。
-> 结论先行：PS1 / PS2 / PSP **都有可用的“系统模式”入口**，但机制不同；PS3 没有 XMB，只能直读。
-> 另外 DuckStation 的许可证（CC BY-NC-ND 4.0）意味着**不适合随包内置**，建议改为探测本机安装。
+> 结论先行：PS1 主选改为 **SwanStation**（GPLv3、DuckStation hard fork、libretro core，可随包）；PS2 / PSP 有系统模式入口（BIOS 浏览器 / XMB）；**PS3 没有 XMB，也没有替代方案**，只能直读。
+> DuckStation（CC BY-NC-ND 4.0）降级为“用户自装可选”，只用来提供 PS1 BIOS shell。
 
 ## 一、四个引擎的来头
 
 | 引擎 | 主机 | 作者/项目 | 许可证 | 最新版本（2026-11-03） | Windows 包大小 |
 |---|---|---|---|---|---|
-| **DuckStation** | PS1 | stenzek（PS1 高精度/高性能路线） | **CC BY-NC-ND 4.0** | rolling（2026-10-25） | 70.6 MB（zip） |
+| **SwanStation**（PS1 主选） | PS1 | libretro 社区，DuckStation hard fork | **GPLv3** | 持续更新（2026-10-30） | libretro core（buildbot 提供） |
+| DuckStation（备选） | PS1 | stenzek（PS1 高精度/高性能路线） | **CC BY-NC-ND 4.0** | rolling（2026-10-25） | 70.6 MB（zip） |
 | **PPSSPP** | PSP | Henrik Rydgård（hrydgard），2012 起 | GPLv2+ | v1.20.4 稳定（XMB 要 1.21） | 19.4 MB（zip） |
 | **PCSX2** | PS2 | PCSX2 团队（2001 年起的老牌项目） | GPLv3 | v2.8.2 | 24.5 MB（7z） |
 | **RPCS3** | PS3 | RPCS3 团队，2011 起 | GPLv2 | v0.0.43 Alpha | 以官网 nightly 为准（Releases API 无 Windows 资产） |
@@ -28,7 +29,7 @@
 
 | 主机 | 有没有系统菜单 | 入口/机制 | 核实依据 | 能不能从菜单启动库里的游戏 |
 |---|---|---|---|---|
-| PS1 | ✅ BIOS shell（记忆卡管理 / CD 播放器） | `duckstation-qt.exe -bios`（官方 CLI：*Boot into the BIOS shell*） | DuckStation Wiki Command-Line-Arguments | ❌ BIOS shell 不提供游戏启动；直读仍走 Nest |
+| PS1 | 🟡 可选：BIOS shell（仅检测到 DuckStation 时）；SwanStation 无 shell 入口 | `duckstation-qt.exe -bios`（DuckStation 可选） | DuckStation Wiki Command-Line-Arguments | ❌ BIOS shell 不提供游戏启动；SwanStation 直接走直读 |
 | PS2 | ✅ PS2 浏览器（版本/记忆卡/浏览器） | `pcsx2-qt.exe -bios`（源码：`-bios` → `CDVD_SourceType::NoDisc`，无盘启动 BIOS） | PCSX2 `pcsx2-qt/QtHost.cpp` 2279 行 | 🟡 浏览器可管理记忆卡；能否插盘启动待实测 |
 | PSP | ✅ XMB（VSH，1.21 起） | PPSSPP 菜单 **File → Load XMB (VSH)**；开发版支持 `--vsh`；需先安装 PSP 固件（游戏光盘自带更新，或官方 6.61 更新） | PPSSPP 官方文档 *How to run the XMB (VSH)*、`docs/VSHBootInvestigation.md` | ✅ XMB 里可用 **Insert UMD** 或 Game 菜单启动游戏/自制程序；存档状态在 XMB 下不可用 |
 | PS3 | ❌ 没有 | RPCS3 不模拟 XMB；固件只用于运行游戏 | RPCS3 源码无 XMB 启动入口（CLI 只有 no-gui/config/installfw 等）；社区共识 | — |
@@ -69,12 +70,45 @@
 | PS2 | `.iso` `.chd` `.bin`+`.cue` | 与 GC/Wii/PSP 的 `.iso` 冲突，需要按系统扫描根或文件头判定 |
 | PS3 | 游戏目录 / `.iso` | 需要固件；目录型内容不能靠扩展名 |
 
+## 五之二、PS1 替代方案：SwanStation（GPLv3）
+
+DuckStation 的 CC BY-NC-ND 许可证不适合随包，主选改为 **SwanStation**：
+
+| 项 | SwanStation |
+|---|---|
+| 项目 | https://github.com/libretro/swanstation |
+| 许可 | **GPLv3**（可随包） |
+| 形态 | libretro core（`swanstation_libretro.dll`），可直接复用 Nest 自写宿主 |
+| BIOS | **可选**，缺省回落 OpenBIOS |
+| 格式 | bin/cue、raw bin/img、CHD、ECM、MDS/MDF、PBP（DuckStation 同源） |
+| 功能 | JIT、PGXP、存档、快进、金手指、RetroAchievements |
+| 获取 | libretro buildbot nightly（已验证 HTTP 206 可访问） |
+
+**代价**：SwanStation 没有独立 Qt UI，也就没有 DuckStation 的 BIOS shell；PS1 系统模式默认不做
+（BIOS shell 只能管记忆卡，价值低）。用户本机若装了 DuckStation，可选开启其 `-bios`。
+
+其他备选：Beetle PSX（GPLv2 libretro）、PCSX-Redux（GPLv2 独立）、Mednafen（GPLv2 独立）。
+
+## 五之三、PS3 系统模式的替代方案
+
+结论：**没有合法/现实的 XMB 替代**。
+
+| 方案 | 可行性 | 说明 |
+|---|---|---|
+| RPCS3 启动 XMB | ❌ | RPCS3 不模拟 XMB，固件只用于运行游戏；上游无时间表 |
+| 用截图/视频“假装”XMB | ❌ | 违反项目原则 D12（不伪造系统界面） |
+| Nest 原生 PS3 游戏库视图 | ✅ | 做成 Nest 自己的界面（封面墙/列表），**不冒充 XMB** |
+| QEMU/其它模拟器跑 XMB | ❌ | 工程量与性能都不现实 |
+| 等 RPCS3 上游支持 | ⏳ | 唯一长期路径，无 ETA |
+
+因此 PS3 的 `capabilities.systemMode = null`，UI 明确写“PS3 无系统菜单”；替代品是 Nest 原生游戏库视图。
+
 ## 六、对原计划的修正
 
 | 原计划假设 | 调研结果 |
 |---|---|
-| PS1 BIOS 可选 | ❌ DuckStation README：**BIOS 必需**（不提供 BIOS 无法启动） |
-| PS1/PS3 可能有系统菜单 | PS1 有 BIOS shell（`-bios`）；PS3 **没有 XMB** |
+| PS1 用 DuckStation、BIOS 可选 | ⚠️ DuckStation BIOS 必需且许可不宜随包 → **改用 SwanStation（OpenBIOS 兜底）** |
+| PS1/PS3 可能有系统菜单 | PS1 BIOS shell 仅 DuckStation 可选；PS3 **没有 XMB 也没有替代** |
 | PSP 无系统菜单 | ❌ 有 XMB，但 **PPSSPP 1.21+** 才支持，当前稳定版还没有 |
 | DuckStation 可随包 | ⚠️ CC BY-NC-ND 4.0：不建议随包，改为探测/引导用户安装 |
 | PS 引擎都很大 | 实际：PPSSPP 19.4 MB、PCSX2 24.5 MB，比预想小；DuckStation 70.6 MB 偏大 |

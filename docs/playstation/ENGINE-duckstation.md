@@ -1,7 +1,8 @@
-# ENGINE · DuckStation（PS1）
+# ENGINE · DuckStation（PS1 备选）
 
+> **PS1 主选已改为 [SwanStation](ENGINE-swanstation.md)**（GPLv3、libretro core、可随包）。
+> DuckStation 因 CC BY-NC-ND 4.0 不随包，仅作为“用户自装可选”：检测到时可提供 `-bios` BIOS shell。
 > 调研状态：文档级核实（官方 README + Wiki CLI + LICENSE），未跑真实镜像
-> 适用阶段：P6.1
 
 ## 基本信息
 

@@ -15,7 +15,7 @@
 
 | 主机 | 引擎 | 许可 | 体积（估） | 镜像格式 | BIOS/固件 | 系统菜单 |
 |---|---|---|---|---|---|---|
-| PS1 | DuckStation | GPLv3 | 数十 MB | `.cue+.bin` / `.chd` / `.pbp` / `.iso` | BIOS 可选（部分游戏需要） | 无 |
+| PS1 | **SwanStation**（主选，GPLv3 libretro） | GPLv3 | libretro core | `.cue+.bin` / `.chd` / `.pbp` / `.iso` | **可选**（缺省 OpenBIOS） | 无（DuckStation 可选提供 BIOS shell） |
 | PSP | PPSSPP | GPLv2+ | 数十 MB | `.iso` / `.cso` / `.pbp` / `.chd` | 无 | 无（XMB 不可用） |
 | PS2 | PCSX2 | LGPLv3 | 数十 MB | `.iso` / `.chd` / `.bin+.cue` | **必须**（BIOS） | BIOS 浏览器（待验证入口） |
 | PS3 | RPCS3 | GPLv2 | 大（含运行时） | 游戏目录 / `.iso` | **必须**（固件 PUP） | 无（XMB 不可用） |
@@ -33,7 +33,7 @@
 
 ## 三、接入顺序与理由
 
-1. **P6.1 PS1 · DuckStation** —— 最轻：单文件镜像、无强制 BIOS、引擎配置简单，先把 PS 家族骨架跑通
+1. **P6.1 PS1 · SwanStation** —— 复用 Nest 自写 libretro 宿主，GPLv3 可随包，OpenBIOS 兜底；先把 PS 家族骨架跑通
 2. **P6.2 PSP · PPSSPP** —— 无 BIOS、`.cso` 常见、memstick 目录天然可隔离，复制 PS1 经验
 3. **P6.3 PS2 · PCSX2** —— 引入 BIOS 与记忆卡管理，设置页需要新导入类型
 4. **P6.4 PS3 · RPCS3** —— 固件安装、游戏目录型内容、体积最大，后置
@@ -51,14 +51,17 @@
 - [ ] **真实内容需求**：BIOS/固件校验值与镜像验证（等待用户提供）
 - [x] 产出：`ENGINE-duckstation.md` / `ENGINE-ppsspp.md` / `ENGINE-pcsx2.md` / `ENGINE-rpcs3.md`
 
-### P6.1 PS1（DuckStation）
+### P6.1 PS1（SwanStation 主选，DuckStation 可选）
+
+> 引擎规格：[ENGINE-swanstation.md](ENGINE-swanstation.md)；DuckStation 仅作为用户自装的 BIOS shell 可选项（[ENGINE-duckstation.md](ENGINE-duckstation.md)）。
+> 原计划用 DuckStation，因 **CC BY-NC-ND 4.0** 不适合随包，主选改为 SwanStation（GPLv3 libretro core，BIOS 可选）。
 
 > 引擎不随包（CC BY-NC-ND）；系统模式 = `-bios` BIOS shell；BIOS 必需。
 
-- 扫描扩展名：`.cue` / `.chd` / `.pbp` / `.bin`（`.bin` 需配 `.cue`，否则提示）
-- 启动：`duckstation.exe <镜像>`，确认全屏参数与“启动后自动退出”行为
+- 扫描扩展名：`.cue` / `.chd` / `.pbp` / `.iso` / `.mds` / `.ccd`（`.bin` 需配 `.cue`，否则提示）
+- 启动：宿主 `nest-libretro.exe --core swanstation_libretro.dll --rom <镜像>`；确认核心选项/BIOS 路径
 - 数据隔离：BIOS、记忆卡、存档、截图目录指向 `data/playstation/duckstation/`
-- 设置 → PlayStation：PS1 BIOS 导入（文件 + 校验）
+- 设置 → PlayStation：PS1 BIOS 导入（可选，放 `libretro/sys`，缺省 OpenBIOS）
 - 键位：DuckStation 配置格式的键盘适配器（先默认布局，再进面板）
 - 封面：抓帧工具复用（PS1 4:3）
 - 验收：扫描 → 卡片 → 启动 → 退出返回 → 封面；无 BIOS 时明确提示
@@ -86,6 +89,9 @@
 
 ### P6.4 PS3（RPCS3）
 
+> **没有 XMB，也没有替代方案**：RPCS3 不模拟 PS3 系统菜单，固件只用于运行游戏。
+> 不做系统模式；如需在 Nest 里展示 PS3 游戏，用 Nest 原生游戏库视图（不冒充 XMB）。
+
 > 无 XMB，只做直读；固件 PUP 必需。
 
 - 前置：固件 PUP 安装（用户自备）；游戏目录/ISO 识别
@@ -112,7 +118,7 @@
 
 | 资源 | 用途 |
 |---|---|
-| PS1 BIOS（如 scph5501） | DuckStation 启动兜底 |
+| PS1 BIOS（如 scph5501） | 可选；没有则 SwanStation 用 OpenBIOS 兜底 |
 | PS2 BIOS（如 scph39001） | PCSX2 必需 |
 | PS3 固件 PUP | RPCS3 必需 |
 | 各平台真实游戏镜像 | 扫描/启动/封面验证 |
