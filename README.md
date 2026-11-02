@@ -65,7 +65,7 @@ SHA256  235753F404CCFF3494D6A4C25861265C23B624F99BE5DAC4CA0DAD504D99CA22
 细节见 [docs/KEYS-GBA.md](docs/KEYS-GBA.md)、[KEYS-DOLPHIN.md](docs/KEYS-DOLPHIN.md)、
 [KEYS-3DS.md](docs/KEYS-3DS.md)、[KEYS-ARES.md](docs/KEYS-ARES.md)、[KEYS-CEMU.md](docs/KEYS-CEMU.md)。
 
-![键位面板](shots/keys-gba.png)
+![键位面板（设置 → Nintendo）](shots/settings-nintendo.png)
 
 ## 截图
 
@@ -106,7 +106,7 @@ npm run pack           # 免安装目录 + NSIS 安装包（默认不用，见 D
 
 ```bash
 npm run typecheck
-npm test               # 80 个用例：扫描/去重/清单/keymap/引擎配置写入/DSi 配置/Wii U 导入/进程生命周期
+npm test               # 100 个用例：扫描/去重/清单/keymap/引擎配置写入/DSi 配置/Wii U 导入/GBA 金手指/NDS 插卡/进程生命周期
 npm run build
 npm run smoke          # 窗口 + IPC + 渲染自检
 ```

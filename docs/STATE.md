@@ -18,6 +18,18 @@
 | P4 Wii U（Cemu） | 🟡 直读链路就绪；系统菜单实验性 |
 | P4.5 设置拆分 / 金手指 / 键位 | ✅ 完成（Nest/Nintendo/Xbox/PS 四页；GBA 金手指；Cemu 键位） |
 
+## 0.4.1-beta.1 快照（2026-11-03）
+
+- 发布：`v0.4.1-beta.1`（便携包 `Nest-0.4.1-beta.1-portable.zip`，264 MB / 解压 633 MB / 3171 文件）
+- 主机：九台任天堂全部接入。GBA/FC/SFC/N64 直读；NGC 直读 + GameCube Menu（IPL + Qt/UIA）；
+  Wii Menu 走自写 libretro 宿主；NDS 四机型（DS/DSL/DSi/DSiLL）直读，DS 菜单与 DSi Menu 均可用且进菜单自动插卡；
+  3DS 直读（无 HOME Menu）；Wii U 直读，系统菜单实验性
+- 设置：拆成 Nest / Nintendo / Xbox / PlayStation 四页；Nintendo 集中系统文件与键位
+- 键位：6 引擎（mGBA/ares/Dolphin/Azahar/melonDS/Cemu）
+- 工具：GBA 金手指面板（mGBA `.cheats`）、封面抓取、libretro 宿主、nest-pads 手柄探测
+- 测试：typecheck 通过，单测 **100** 条
+- 下一步主线：PS 家族接入（PS1/PS2/PSP/PS3），任天堂系转为小修小补
+
 ## P2 已完成的部分
 
 - **引擎合并**：FC / SFC / N64 统一走 **ares v148**（ISC 许可，`resources/engines/ares/`）
