@@ -1478,6 +1478,19 @@ export default function App() {
                           3DS 系统模式（HOME Menu）暂未接入：需要 Azahar 的 nand / sysdata
                           系统文件（真机 + Artic Setup Tool 导出），有数据后再开放入口。
                         </p>
+
+                        <label className="toggle-row">
+                          <span>
+                            NDS / DSi 系统菜单插入最近游戏
+                            <small>进入系统模式时把最近玩的 NDS 游戏当作卡带插入；关掉则菜单里没有卡带</small>
+                          </span>
+                          <input
+                            type="checkbox"
+                            checked={settings.ndsSystemInsert !== false}
+                            onChange={(e) => void updateSetting({ ndsSystemInsert: e.target.checked })}
+                          />
+                          <i className="switch" />
+                        </label>
                   </div>
                 <div className="settings-col keys-col">
                   <h2>键位</h2>

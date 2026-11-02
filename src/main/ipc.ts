@@ -37,6 +37,7 @@ import {
   type ControlPaths,
 } from './controls';
 import { cheatExtraArgs, readCheatFile, saveCheatText } from './cheats';
+import { selectNdsSystemCart } from './nds-cart';
 import { EngineRegistry, buildArgs } from './engines';
 import {
   applyCemuLaunchOptions,
@@ -1000,6 +1001,19 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     }
   }
 
+  // melonDS boots the DS/DSi firmware with an inserted cart when a ROM path is
+  // appended; without it Slot-1 is empty. Reuse the most recently played NDS
+  // title so the menu shows the player's last game.
+  let melondsSystemCart: string | null = null;
+  if (engine.id === 'melonds' && mode === 'system') {
+    const candidate = selectNdsSystemCart(
+      services.store.games('nds'),
+      services.store.getSettings().ndsSystemInsert !== false,
+      rom,
+    );
+    if (candidate && existsSync(candidate)) melondsSystemCart = candidate;
+  }
+
   let command: string;
   let args: string[];
   let env: NodeJS.ProcessEnv | undefined;
@@ -1043,6 +1057,11 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     userData: app.getPath('userData'),
     engines: enginesDir(),
   });
+
+  if (melondsSystemCart) {
+    args = [...args, melondsSystemCart];
+    console.log(`[nest] melonDS system mode: inserted cart ${melondsSystemCart}`);
+  }
 
   // Cemu: keys.txt lives in the portable folder (decryption is mandatory), the
   // user's NAND/MLC is passed with `-m` and only stored as a path in settings.

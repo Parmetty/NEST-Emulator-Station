@@ -89,6 +89,8 @@ export const settingsSchema = z.object({
   cemuMlc: z.string().min(1).max(4096).optional(),
   /** NDS hardware revision: decides the illustration and melonDS console type. */
   ndsModel: z.enum(['ds', 'dsl', 'dsi', 'dsill']).optional(),
+  /** Insert the most recently played NDS title into Slot-1 when booting the DS/DSi menu. */
+  ndsSystemInsert: z.boolean().optional(),
   controls: z
     .record(
       z.string().max(32),
@@ -333,6 +335,8 @@ export interface Settings {
   cemuMlc?: string;
   /** NDS hardware revision: decides the illustration and melonDS console type. */
   ndsModel?: 'ds' | 'dsl' | 'dsi' | 'dsill';
+  /** Insert the most recently played NDS title when booting the DS/DSi menu. */
+  ndsSystemInsert?: boolean;
 }
 
 export interface LaunchEvent {

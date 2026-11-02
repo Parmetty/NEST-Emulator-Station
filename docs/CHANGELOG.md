@@ -4,6 +4,12 @@
 
 ## 未发布 — GBA 金手指 + NDS 机型 + Cemu 键位
 
+### NDS / DSi 系统模式插卡
+
+- 进入 NDS/DSi 系统菜单时自动把**最近玩过的 NDS 游戏**插入 Slot-1（`melonDS -b always <rom>`），菜单能识别游戏卡并直接启动
+- 设置 → Nintendo 新增开关「NDS / DSi 系统菜单插入最近游戏」，关掉则保持空卡槽
+- 选择逻辑抽成 `src/main/nds-cart.ts`，单测覆盖显式 ROM / 开关 / 最近游戏 / 空库
+
 ### GBA 金手指
 
 - GBA 游戏卡右键菜单新增「金手指…」：直接编辑 mGBA 的 `.cheats` 内容
