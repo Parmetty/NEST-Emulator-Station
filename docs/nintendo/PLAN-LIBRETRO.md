@@ -51,8 +51,8 @@ nest-libretro.exe --core <dolphin_libretro.dll>
 
 | 场景 | 结果 |
 |---|---|
-| GC《红侠乔伊》直读 `--rom *.gcm --frames 600` | exit 0，59.6 fps，画面正常（`docs/evidence/libretro/ok-gc-viewtiful-joe.png`） |
-| Wii Menu `--rom 4.3u.wad --frames 900` | exit 0，59.7 fps，健康提示页（`docs/evidence/libretro/ok-wii-menu.png`） |
+| GC《红侠乔伊》直读 `--rom *.gcm --frames 600` | exit 0，59.6 fps，画面正常（`docs/nintendo/evidence/libretro/ok-gc-viewtiful-joe.png`） |
+| Wii Menu `--rom 4.3u.wad --frames 900` | exit 0，59.7 fps，健康提示页（`docs/nintendo/evidence/libretro/ok-wii-menu.png`） |
 | 无内容启动 | 核心不支持（崩溃）→ 不做 |
 
 ## 剩余工作

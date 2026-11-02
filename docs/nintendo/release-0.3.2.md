@@ -5,7 +5,7 @@
 ## 这个版本有什么
 
 - **ares（FC / SFC / N64）键盘绑定正式启用**——首次启动自动写入默认键位（WASD + J/K + U/I + Q/E + Enter/右 Shift，N64 的 Z=Space），不再需要手柄或进 ares 手动绑
-- 编码依据 ares 148 源码确认：`0x1/0/<十进制下标>;;`（详见仓库 `docs/KEYS-ARES-FORMAT.md`）
+- 编码依据 ares 148 源码确认：`0x1/0/<十进制下标>;;`（详见仓库 `docs/nintendo/KEYS-ARES-FORMAT.md`）
 - 键位面板：GBA / FC / SFC / N64 / NDS / NGC / Wii / 3DS 全部可改键，保存后立即生效；不覆盖用户已有的自定义布局
 - 扫描修复（0.3.1 起）：`.cia`、ISO 头判定 GC/Wii、**启动时自动重扫已添加的文件夹**
 - 固件中心：GameCube IPL（CRC32 校验）/ Wii 系统菜单 WAD / NDS BIOS+固件，设置里一键导入
@@ -34,4 +34,4 @@
 - 封面偶尔会截到过场黑帧
 - 必须用启动脚本（个别环境 Electron 沙箱不可用）
 
-完整改动见仓库 `docs/CHANGELOG.md` 的 0.3.2 节。
+完整改动见仓库 `docs/nintendo/CHANGELOG.md` 的 0.3.2 节。

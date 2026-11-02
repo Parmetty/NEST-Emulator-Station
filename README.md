@@ -48,7 +48,7 @@ SHA256  235753F404CCFF3494D6A4C25861265C23B624F99BE5DAC4CA0DAD504D99CA22
 - **键位面板**：mGBA / ares / Dolphin / Azahar / melonDS / Cemu 六引擎键盘绑定可在 Nest 里改，保存立即生效；首次启动自动写默认布局，不覆盖你已有的自定义
 - **设置分类**：设置窗口拆成 **Nest / Nintendo / Xbox / PlayStation** 四页，任天堂系统文件与键位集中在 Nintendo 页，PS/Xbox 预留
 - **NDS 系统菜单插卡**：进 DS/DSi 菜单时自动插入最近玩的 NDS 游戏（设置 → Nintendo 可关）
-- **GBA 金手指**：游戏右键「金手指…」编辑 mGBA `.cheats`，保存后启动自动生效（见 [docs/CHEATS-GBA.md](docs/CHEATS-GBA.md)）
+- **GBA 金手指**：游戏右键「金手指…」编辑 mGBA `.cheats`，保存后启动自动生效（见 [CHEATS-GBA.md](docs/nintendo/CHEATS-GBA.md)）
 - **固件中心**：GameCube IPL（CRC32 白名单）、Wii 系统菜单 WAD、NDS BIOS+固件、**DSi BIOS+固件+NAND**、**Cemu keys.txt / Wii U NAND（MLC）**，一键导入（MLC 只记路径，不复制）
 - **便携模式**：库、封面、日志、引擎配置都留在程序目录，删 `data\` 即恢复出厂
 - **运行中高亮 / 进入前确认 / 右键移除**（只删库记录，绝不动磁盘上的 ROM）
@@ -62,8 +62,8 @@ SHA256  235753F404CCFF3494D6A4C25861265C23B624F99BE5DAC4CA0DAD504D99CA22
 | NGC / Wii 直读 | Dolphin GCPad 键盘布局 |
 | Wii 系统菜单 | 键盘 + 鼠标：鼠标即 Wiimote 光标（绝对定位，需 Cemu 无），左键 = A |
 
-细节见 [docs/KEYS-GBA.md](docs/KEYS-GBA.md)、[KEYS-DOLPHIN.md](docs/KEYS-DOLPHIN.md)、
-[KEYS-3DS.md](docs/KEYS-3DS.md)、[KEYS-ARES.md](docs/KEYS-ARES.md)、[KEYS-CEMU.md](docs/KEYS-CEMU.md)。
+细节见 [KEYS-GBA.md](docs/nintendo/KEYS-GBA.md)、[KEYS-DOLPHIN.md](docs/nintendo/KEYS-DOLPHIN.md)、
+[KEYS-3DS.md](docs/nintendo/KEYS-3DS.md)、[KEYS-ARES.md](docs/nintendo/KEYS-ARES.md)、[KEYS-CEMU.md](docs/nintendo/KEYS-CEMU.md)。
 
 ![键位面板（设置 → Nintendo）](shots/settings-nintendo.png)
 
@@ -127,7 +127,8 @@ main/nds-cart.ts      NDS 系统菜单插卡选择（显式 ROM / 最近游戏 /
 resources/engines/   六个便携引擎 + 清单（加主机 = 加一份 JSON）
 resources/tools/     nest-capture / nest-input / nest-window / nest-menu / nest-pads / **nest-libretro**
 tools/               C# 助手源码（capture/input/window/menu/pads）、libretro 宿主（C#）、Wii U 安装工具、打包清理脚本、运行器
-docs/                HISTORY（项目主日志）/ CHANGELOG / STATE / DECISIONS / PROGRESS / PLAN / KEYS-*
+docs/                nintendo/（任天堂系：HISTORY / CHANGELOG / STATE / DECISIONS / PROGRESS / KEYS-*）
+                     playstation/（PS 家族计划）· ROADMAP.md（总路线）
 ```
 
 设计约定：
@@ -178,7 +179,7 @@ cemu/             keys.txt、MLC 路径记录
 | P4 | Wii U（Cemu 2.6 + keys/MLC 导入） | 引擎完成，系统菜单实验性 |
 | P5 | 封面质量、Cemu 键位适配、自动构建脚本、安装包（按需） | 进行中 |
 
-项目主日志见 [docs/HISTORY.md](docs/HISTORY.md)，发布级变化见 [docs/CHANGELOG.md](docs/CHANGELOG.md)，现状见 [docs/STATE.md](docs/STATE.md)，逐日进展见 [docs/PROGRESS.md](docs/PROGRESS.md)。
+总路线见 [ROADMAP.md](docs/ROADMAP.md)；项目主日志见 [HISTORY.md](docs/nintendo/HISTORY.md)，发布级变化见 [CHANGELOG.md](docs/nintendo/CHANGELOG.md)，现状见 [STATE.md](docs/nintendo/STATE.md)，逐日进展见 [PROGRESS.md](docs/nintendo/PROGRESS.md)。
 
 ## 法律
 
@@ -188,7 +189,7 @@ cemu/             keys.txt、MLC 路径记录
   DSi 与 DSi XL 两张为 **CC BY-SA 3.0**（Evan-Amos），署名与许可证见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。
 - 各主机商标归各自权利人所有，本项目与任天堂、微软、索尼无关联。
 
-完整第三方清单见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)，引擎配置与键位细节见 `docs/`。
+完整第三方清单见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)，引擎配置与键位细节见 `docs/nintendo/`，总路线见 `docs/ROADMAP.md`。
 
 ## 许可
 

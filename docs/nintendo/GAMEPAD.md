@@ -56,7 +56,7 @@ SDL 映射库之外的杂牌 HID 不保证，可能按钮错位。
 | `tools/pads/NestPads.cs` → `resources/tools/nest-pads.exe` | SDL3 枚举手柄，输出 `count=N` |
 | `resources/tools/SDL3.dll` | 从 ares 复制（zlib 许可），给检测工具用 |
 | `src/main/ipc.ts` | `countGamepads()`、`ensureAzaharControls()` 模式切换、`ensureMgbaControls()` 补按钮 |
-| `docs/STATE.md`、`3DS键位说明.md`、`GBA键位说明.md` | 用户可见说明 |
+| `docs/nintendo/STATE.md`、`3DS键位说明.md`、`GBA键位说明.md` | 用户可见说明 |
 
 配置写入规则不变：只在“出厂值或 Nest 自己写的布局”上动，用户自定义过就跳过并留标记；
 写前备份 `*.before-nest`，标记 `.nest-controls-v1` / `.nest-controls-mode`。

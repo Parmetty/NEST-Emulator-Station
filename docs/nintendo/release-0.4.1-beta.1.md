@@ -61,4 +61,4 @@
 - Xbox / PlayStation 家族尚未接入，游戏库为空
 - 无数字签名：首次运行 SmartScreen 提示，选「更多信息 → 仍要运行」
 
-完整改动见 `docs/CHANGELOG.md` 的 0.4.1-beta.1 节。
+完整改动见 `docs/nintendo/CHANGELOG.md` 的 0.4.1-beta.1 节。

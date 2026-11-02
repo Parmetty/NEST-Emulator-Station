@@ -1,6 +1,12 @@
 # 更新日志
 
-本文件记录每次发布的可见变化。技术细节在 `docs/STATE.md`，决策理由在 `docs/DECISIONS.md`，待办在 `docs/PROGRESS.md`。
+本文件记录每次发布的可见变化。技术细节在 `docs/nintendo/STATE.md`，决策理由在 `docs/nintendo/DECISIONS.md`，待办在 `docs/nintendo/PROGRESS.md`。
+
+## 未发布 — 文档按家族归档
+
+- 文档重构：任天堂系全部文档移入 `docs/nintendo/`（含 evidence / mock-v1 / patches），
+  新增 `docs/playstation/PLAN-PLAYSTATION.md` 与总路线 `docs/ROADMAP.md`
+- 原 `PLAN.md` 标注为历史计划并回填实际完成情况；路线图改为「任天堂收尾 + PlayStation 主线 + Xbox 预留」
 
 ## 0.4.1-beta.1 — 2026-11-03 · NDS/DSi 整条线 + 设置拆分 + GBA 金手指
 
@@ -24,7 +30,7 @@ SHA256 0C38660097C310BCC296A4B051D09096E1591111B88314A4A1E4C4BAEE246308
 - GBA 游戏卡右键菜单新增「金手指…」：直接编辑 mGBA 的 `.cheats` 内容
 - 默认写入 ROM 旁的 `<游戏名>.cheats`（mGBA 启动自动加载）；ROM 文件夹只读时回退到 Nest 数据目录并用 `-c` 传入
 - 支持 GameShark / Action Replay / CodeBreaker / PARv3 纯文本格式
-- 文档 `docs/CHEATS-GBA.md`；单测覆盖路径、规范化、只读回退与启动参数
+- 文档 `docs/nintendo/CHEATS-GBA.md`；单测覆盖路径、规范化、只读回退与启动参数
 - 键位面板新增 Cemu（Wii U GamePad）键盘绑定
 
 ### Cemu（Wii U）键位接入面板
@@ -33,7 +39,7 @@ SHA256 0C38660097C310BCC296A4B051D09096E1591111B88314A4A1E4C4BAEE246308
 - 写入 `portable/controllerProfiles/controller0.xml`（Cemu 的键盘 API + Windows VK 码），
   并确保 `settings.xml` 的 `ControllerProfiles` 为 true
 - 已有手配 profile 不会被启动覆盖；键位面板保存时才重写并保留 `.before-nest` 备份
-- 映射表见 `docs/KEYS-CEMU.md`（按钮 ID 来自 Cemu 源码 `VPADController.h`）
+- 映射表见 `docs/nintendo/KEYS-CEMU.md`（按钮 ID 来自 Cemu 源码 `VPADController.h`）
 - 单测新增 6 条（渲染/解析/自定义保留/强制覆盖/settings 开关），总计 **89**
 
 ### NDS / DSi 机型（DS / DSL / DSi / DSiLL）
@@ -93,7 +99,7 @@ SHA256 235753F404CCFF3494D6A4C25861265C23B624F99BE5DAC4CA0DAD504D99CA22
 ### 工程
 
 - VC++ 14.51 运行时（`msvcp140/vcruntime140/vcruntime140_1/concrt140`）随包放在 `resources/tools/`
-- `docs/PLAN-LIBRETRO.md` 记录 CLI 契约与踩坑（VC++ 运行时、`retro_hw_render_callback` 偏移、异步 retro_run、Null 后端不可用）
+- `docs/nintendo/PLAN-LIBRETRO.md` 记录 CLI 契约与踩坑（VC++ 运行时、`retro_hw_render_callback` 偏移、异步 retro_run、Null 后端不可用）
 - 测试：56 条（新增 libretro 10 + 接线 6）
 
 ### Wii U（Cemu 2.6）
@@ -133,7 +139,7 @@ SHA256 235753F404CCFF3494D6A4C25861265C23B624F99BE5DAC4CA0DAD504D99CA22
 - ares 的 `settings.bml` 绑定格式最终确认：`0x1/0/<十进制下标>;;`。`0x1` = 键盘设备 id（`(pathID<<32)|(vendorID<<16)|productID`，跨机器稳定）、`0` = group、第三段是 ruby Windows 键盘表的下标（**十进制，不是 VK 也不是 scancode**）、`;;` 是 3 个 mapping 槽拼接后 trim 的产物
 - 新增 `src/main/controls/ares.ts`：启动前写入 Famicom / FamicomDiskSystem / SuperFamicom / Nintendo64 的 `Port 1 → Gamepad`（WASD、J/K、U/I、Q/E、Enter、RShift；SFC 加 Y/X/L/R；N64 加 L/R/Z）
 - 校验方式：源码逐字确认（`desktop-ui/input/input.cpp` + `ruby/input/keyboard/rawinput.cpp` + `nall/atoi.hpp` 的十进制 `natural()`），并与 ares 亲手写出的 `settings.bml` 逐字节比对（A=35、D=38、J=44、K=45、Return=91、RightShift=94）
-- 已启用（`WRITABLE_ENGINE_IDS` 包含 ares）；`docs/KEYS-ARES-FORMAT.md` 记录完整源码依据与 102 项 Windows 键盘表，另附 Linux/macOS 差异警告
+- 已启用（`WRITABLE_ENGINE_IDS` 包含 ares）；`docs/nintendo/KEYS-ARES-FORMAT.md` 记录完整源码依据与 102 项 Windows 键盘表，另附 Linux/macOS 差异警告
 
 ### 打包
 
@@ -198,7 +204,7 @@ SHA256 235753F404CCFF3494D6A4C25861265C23B624F99BE5DAC4CA0DAD504D99CA22
 
 ### 已知限制
 
-1. ~~ares 键盘绑定~~：已按源码确认的十进制下标表实现（2026-10-30），见 `docs/KEYS-ARES.md`
+1. ~~ares 键盘绑定~~：已按源码确认的十进制下标表实现（2026-10-30），见 `docs/nintendo/KEYS-ARES.md`
 2. **3DS 无系统菜单**：Azahar 不支持 HOME Menu，短期无解
 3. **Wii 直读**：代码就绪但没有真实镜像验证
 4. **封面黑帧**：过场全黑时可能截到黑图，需要「挑非黑帧」或手动重拍

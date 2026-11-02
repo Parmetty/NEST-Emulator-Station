@@ -2,8 +2,8 @@
 
 > 目的：编译一个打了 GC 主菜单补丁的 `dolphin_libretro.dll`，替换仓库里官方 buildbot 的版本。
 > 为什么要自己编：官方 core 不支持「无内容启动」，`BootParameters::IPL` 在 libretro 代码里从没被构造过（见
-> `docs/LIBRETRO-CORE-FINDINGS.md`）。补丁只改 `Source/Core/DolphinLibretro/Boot.cpp`，已生成可直接 apply 的
-> `docs/patches/gc-menu.patch`（基于 commit `c386bd3b95b610ee4e7538891fc57112090498f7`）。
+> `docs/nintendo/LIBRETRO-CORE-FINDINGS.md`）。补丁只改 `Source/Core/DolphinLibretro/Boot.cpp`，已生成可直接 apply 的
+> `docs/nintendo/patches/gc-menu.patch`（基于 commit `c386bd3b95b610ee4e7538891fc57112090498f7`）。
 
 ## 0. 需要下载/安装的东西（按顺序）
 

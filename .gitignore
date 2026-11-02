@@ -28,7 +28,7 @@ dist/
 -portable-profile/
 .profile-*/
 data/
-docs/evidence/libretro/runtime/
-docs/evidence/libretro/ref/
+docs/nintendo/evidence/libretro/runtime/
+docs/nintendo/evidence/libretro/ref/
 *.log.crash.txt
 resources/engines/cemu/portable/

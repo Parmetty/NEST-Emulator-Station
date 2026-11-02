@@ -13,7 +13,7 @@
  * ares itself writes device `0x1`, group `0`, and Windows virtual-key codes as
  * the inputID (W = 0x57, Enter = 0x0D, ShiftRight = 0xA1). The trailing `;;` is
  * part of the value — it is what ares writes, and omitting it is unverified.
- * See docs/KEYS-ARES.md for the full table and the device-id caveat.
+ * See docs/nintendo/KEYS-ARES.md for the full table and the device-id caveat.
  */
 import path from 'node:path';
 import type { KeyboardBindings, PadAction } from '../../shared/contract';

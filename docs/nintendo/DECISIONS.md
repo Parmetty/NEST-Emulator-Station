@@ -227,7 +227,7 @@ GameCube 确实有 IPL（Boot ROM）菜单，虽然少见但真实存在。3DS /
 ### D21 最终修正（2026-10-30，源码确认）
 
 **结论**：`0x1/0/<id>;;` 的 `<id>` 是**十进制**的 ruby Windows 键盘表下标（`ruby/input/keyboard/rawinput.cpp` 的 `keys[]` 顺序），
-不是 VK、不是 scancode、也不是十六进制。完整依据与 102 项对照表见 `docs/KEYS-ARES-FORMAT.md`。
+不是 VK、不是 scancode、也不是十六进制。完整依据与 102 项对照表见 `docs/nintendo/KEYS-ARES-FORMAT.md`。
 
 关键点：
 - 设备 `0x1` = `(pathID<<32)|(vendorID<<16)|productID`，键盘用写死的 GenericVendor/ProductID(0x0000/0x0001) → **跨机器稳定**
@@ -235,7 +235,7 @@ GameCube 确实有 IPL（Boot ROM）菜单，虽然少见但真实存在。3DS /
 - ares 的 `natural()` 是十进制解析，`4a` 会被读成 `4`、`d` 读成 `0` —— 这正是旧 VK 方案只对 W/S 有效的原因
 - `;;` 是「3 个 mapping 槽用 `;` 拼接后去掉一个尾分隔符」的产物；裸写 `0x1/0/57` 也能解析
 
-据此已恢复 ares 自动写入，`docs/KEYS-ARES.md` 与测试同步更新。
+据此已恢复 ares 自动写入，`docs/nintendo/KEYS-ARES.md` 与测试同步更新。
 
 ### D22 libretro 宿主（2026-10-31）
 

@@ -76,7 +76,7 @@ describe('dolphin-lr manifest', () => {
     expect(wii).toContain('--timeout 0');
 
     // Dolphin's libretro core crashes on content-free boot, so the GC menu must
-    // keep using Dolphin Qt + UIA (docs/PLAN-LIBRETRO.md).
+    // keep using Dolphin Qt + UIA (docs/nintendo/PLAN-LIBRETRO.md).
     expect(manifest.systemArgsBySystem?.ngc).toBeUndefined();
   });
 

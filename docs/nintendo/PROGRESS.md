@@ -3,7 +3,7 @@
 > 项目里程碑与各版本主线见 [HISTORY.md](HISTORY.md)；本文件只记逐日进度与待办。
 
 > 更新于 2026-11-03（Asia/Shanghai）｜版本 `0.4.1-beta.1`，最新 tag `v0.4.1-beta.1`
-> 依据：`git log/tag`、`docs/HISTORY.md`、`docs/STATE.md`、`docs/DECISIONS.md`、`README.md`、`resources/engines/*.json`、`src/shared/systems.ts`、`src/main/*`
+> 依据：`git log/tag`、`docs/nintendo/HISTORY.md`、`docs/nintendo/STATE.md`、`docs/nintendo/DECISIONS.md`、`README.md`、`resources/engines/*.json`、`src/shared/systems.ts`、`src/main/*`
 >
 > 说明：顶部 §1–§2 是**当前快照**；§3 起是逐日进度与历史记录（2026-10-28 的旧分析保留备查）。
 
@@ -272,9 +272,9 @@ est-pads.exe（SDL3）检测后切 SDL 绑定。
 ### 3. ares 键盘绑定（本日最难）
 
 - 先是按 ares 源码规则推测出 `0x<dev>/<group>/<id>;;` 三段结构，按 Windows VK 码试写 → 实测只有 W/S 对得上
-- 通过用户手动绑键采样 + 用户提供的 `docs/KEYS-ARES-FORMAT.md`（ares 148 Debian 源码）最终确认：**第三段是十进制下标**（ruby Windows 键盘表 `keys[]` 顺序），不是 VK/scancode/hex；`0x1` 是键盘设备 id（跨机器稳定）；`;;` 是 3 个 mapping 槽拼接的产物
+- 通过用户手动绑键采样 + 用户提供的 `docs/nintendo/KEYS-ARES-FORMAT.md`（ares 148 Debian 源码）最终确认：**第三段是十进制下标**（ruby Windows 键盘表 `keys[]` 顺序），不是 VK/scancode/hex；`0x1` 是键盘设备 id（跨机器稳定）；`;;` 是 3 个 mapping 槽拼接的产物
 - 据此重写 `keymap.ts`（102 项下标表）、恢复 ares 自动写入，测试期望值同步更新
-- 文档：`docs/KEYS-ARES.md`（已启用）、`docs/KEYS-ARES-FORMAT.md`（源码依据 + 三平台差异）、`docs/DECISIONS.md` D21 修正
+- 文档：`docs/nintendo/KEYS-ARES.md`（已启用）、`docs/nintendo/KEYS-ARES-FORMAT.md`（源码依据 + 三平台差异）、`docs/nintendo/DECISIONS.md` D21 修正
 
 ### 4. 打包与发布
 

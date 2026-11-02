@@ -1,6 +1,6 @@
 # ares（FC / SFC / N64）键盘绑定
 
-> **状态：已启用（2026-10-30）。** 编码由 ares 148 源码逐字确认（见 `docs/KEYS-ARES-FORMAT.md`），
+> **状态：已启用（2026-10-30）。** 编码由 ares 148 源码逐字确认（见 `docs/nintendo/KEYS-ARES-FORMAT.md`），
 > 并与 ares 亲手写出的 `settings.bml` 逐字节比对通过。
 
 ## 1. 文件与格式
@@ -58,4 +58,4 @@ Port 2–4、Mouse、其它系统不动。
 
 - Windows 专用：各平台键盘表不同（Linux 的 Return=89、macOS 字母从 40 起）。Nest 只发 Windows。
 - `Escape` 被 ares 保留（index 0 不可绑定）；`Pause`、`NumLock` 不在表内。
-- ares 版本升级若改表，映射会失效——届时以 `docs/KEYS-ARES-FORMAT.md` 的源码为准重新生成。
+- ares 版本升级若改表，映射会失效——届时以 `docs/nintendo/KEYS-ARES-FORMAT.md` 的源码为准重新生成。

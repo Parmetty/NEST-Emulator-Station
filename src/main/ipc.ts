@@ -957,7 +957,7 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   //
   // GameCube Menu is deliberately NOT switched: the Dolphin libretro core has
   // no content-free boot path (it crashes), so the GC menu still needs
-  // Dolphin Qt + UIA. See docs/PLAN-LIBRETRO.md ("无内容启动 核心不支持").
+  // Dolphin Qt + UIA. See docs/nintendo/PLAN-LIBRETRO.md ("无内容启动 核心不支持").
   let engine = preferred;
   if (mode === 'system' && systemId === 'wii' && preferred.id !== 'fake') {
     const libretro = services.engines.get('dolphin-lr');

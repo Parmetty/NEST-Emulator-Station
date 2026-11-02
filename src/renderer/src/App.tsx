@@ -1466,7 +1466,7 @@ export default function App() {
                           <p className="dlg-note tip-note">
                             Wii U NAND（MLC）可以来自：① 你自己的 Wii U 真机 dump（推荐）；②
                             和本项目一样，用任天堂 CDN 的系统 title 手工拼装（流程见仓库
-                            docs/WIIU-CDN-MLC.md，需自备 keys.txt）。
+                            docs/nintendo/WIIU-CDN-MLC.md，需自备 keys.txt）。
                             <br />
                             注意：Cemu 2.6 尚未实现 nn_act.LoadConsoleAccount，即使 MLC
                             正确，Wii U Menu 目前也只会停在背景画面，所以该功能标记为「实验性」。

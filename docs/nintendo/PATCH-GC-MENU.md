@@ -1,6 +1,6 @@
 # 补丁规格：给 dolphin_libretro 加 GC 主菜单（无内容 IPL 启动）
 
-> 依据：`docs/LIBRETRO-CORE-FINDINGS.md`（源码核查，commit `c386bd3b95b610ee4e7538891fc57112090498f7`）。
+> 依据：`docs/nintendo/LIBRETRO-CORE-FINDINGS.md`（源码核查，commit `c386bd3b95b610ee4e7538891fc57112090498f7`）。
 > 目标：让 `retro_load_game(NULL)` / `path==""` 时启动 GameCube IPL 主菜单，而不是崩溃或直接返回 false。
 > 不改 Nest 宿主（宿主已支持传空内容；正式菜单参数由 Nest 决定）。
 

@@ -30,7 +30,7 @@ Nest 在启动前检查这份配置，必要时写入一套默认键位。
 ## 3. 注意
 
 - mGBA 的配置在**引擎目录**里。把 Nest 装到 `C:\Program Files` 这类只读目录时写不进去，
-  键位改动会在退出时丢失——这是已知问题（见 `docs/RELEASE.md` 的引擎目录可写性）。
+  键位改动会在退出时丢失——这是已知问题（见 `docs/nintendo/RELEASE.md` 的引擎目录可写性）。
 - 存档（`.sav`）默认写在 ROM 旁边，不在 Nest 数据目录。
 - 抓屏走 `-C screenshotPath=<userData>/shots`，封面由 `nest-capture.exe` 生成。
 

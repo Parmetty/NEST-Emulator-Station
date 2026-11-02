@@ -1,11 +1,11 @@
 # 打包与发布须知
 
-> **状态：当前只发免安装携带版**（最新 `Nest-0.4.1-beta.1-portable.zip`）—— 参见 `docs/DECISIONS.md` D20；新流程见 `docs/RELEASE-RUNBOOK.md`。
+> **状态：当前只发免安装携带版**（最新 `Nest-0.4.1-beta.1-portable.zip`）—— 参见 `docs/nintendo/DECISIONS.md` D20；新流程见 `docs/nintendo/RELEASE-RUNBOOK.md`。
 >
 > **旧状态（2026-10-29）**：当前只发**免安装携带版**
 > `Nest-0.3.0-portable.zip`（解压后双击 `启动 Nest.bat`），不做 NSIS 安装包。
 > 下面关于安装器、注册表、卸载的章节保留作为**将来需要安装版时的参考**，不是当前发布流程。
-> 当前发布流程见 `docs/CHANGELOG.md` 的「打包与发布」一节。
+> 当前发布流程见 `docs/nintendo/CHANGELOG.md` 的「打包与发布」一节。
 
 > 给未来的自己/接手者看。**现在还没有打包**——这份文档是动手那天的清单，不是现状说明。
 > 目标：像正常 Windows 程序一样安装、能在控制面板卸载、安装目录布局固定、引擎收纳合理。
@@ -196,7 +196,7 @@ npm run dist               # 产出 release\Nest-<version>-Setup.exe
 ## 8. 版本与 Release 流程
 
 1. 改 `package.json` 的 `version`（semver：0.3.0、0.3.1…）
-2. 更新 `docs/STATE.md` 的发布状态
+2. 更新 `docs/nintendo/STATE.md` 的发布状态
 3. `git tag -a v0.3.0 -m "..."`，推 tag
 4. 构建安装包，算 SHA-256：`Get-FileHash release\Nest-0.3.0-Setup.exe -Algorithm SHA256`
 5. GitHub Release：

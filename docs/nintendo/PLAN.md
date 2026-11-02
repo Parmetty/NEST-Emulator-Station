@@ -1,4 +1,7 @@
-# Nest · 路线图
+# Nest · 路线图（2026-10-25 初始计划，历史对照）
+
+> **状态：历史计划。** 这份计划只覆盖任天堂家族，制定于 0.2 时期；实际完成情况见文末对照表，
+> 现行总路线见 [../ROADMAP.md](../ROADMAP.md)，PlayStation 计划见 [../playstation/PLAN-PLAYSTATION.md](../playstation/PLAN-PLAYSTATION.md)。
 
 > 产品定义：一台“组装起来的虚拟主机”。把各世代主机的照片、游戏库、引擎、存档、手柄收进一个 Electron 外壳，
 > 交互按“开一台主机”的逻辑走，而不是按“打开一个文件”的逻辑走。
@@ -84,3 +87,17 @@ xemu / Xenia / DuckStation / PCSX2 / RPSS3 / PPSSPP 的清单与空状态（默�
 - NAND / MLC 的 dump 成功率低 → 前置体检 + 分步指引，而不是“启动失败”。
 - 引擎许可（Dolphin GPL、Cemu 闭源）→ 只探测、不随包分发；随包的 mGBA / ares 分别是 MPL 2.0 / ISC，许可证原样保留。
 - Electron 体积与内存 → 游戏运行时降 UI 频率、释放窗口。
+
+## 实际完成情况（2026-11-03 回填）
+
+| 阶段 | 原计划 | 实际 |
+|---|---|---|
+| P0 骨架 | 完成 | ✅ 2026-10-25 完成 |
+| P1 GBA 垂直切片 | 完成 | ✅ 完成（mGBA 内置） |
+| P2 FC/SFC/N64 | 完成 + 固件校验/每游戏设置/存档备份 | 🟡 核心完成；固件中心已有，每游戏设置/存档备份未做 |
+| P3 NGC/Wii | 直读 + 系统菜单 | ✅ 完成（NGC Qt+UIA；Wii libretro 宿主） |
+| P4 Wii U | 直读 + MLC/keys + Menu | ✅ 直读完成；Wii U Menu 实验性（Cemu 限制） |
+| P5 打磨交付 | 手柄导航/封面/CRT/首启向导/便携版/自动更新 | 🟡 封面/自动扫描/便携包已上线；CRT/首启向导/自动更新/安装版未做 |
+| P6 预留 | Xbox/PS 空状态 | ✅ 占位完成；PS 家族已从 P6.0 开始正式接入 |
+
+计划外的额外成果（0.4.1-beta.1）：NDS 四机型与 DSi Menu、NDS 系统菜单插卡、设置按家族拆分、Cemu 键位、GBA 金手指。

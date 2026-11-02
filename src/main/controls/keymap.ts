@@ -200,7 +200,7 @@ export function dolphinNameToCode(name: string): string | null {
  * ares stores an input binding as `0x<deviceID>/<groupID>/<inputID>;;`.
  *
  * Everything here was confirmed against the ares 148 sources (see
- * docs/KEYS-ARES-FORMAT.md):
+ * docs/nintendo/KEYS-ARES-FORMAT.md):
  * - deviceID: keyboard is `0x1`; the value is (pathID<<32)|(vendorID<<16)|productID
  *   with the keyboard's hard-coded GenericVendorID/GenericProductID (0x0000/0x0001),
  *   so it does not change between machines.

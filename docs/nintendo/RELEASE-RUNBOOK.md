@@ -28,7 +28,7 @@ node tools/clean-engines.mjs --check   # exit 0 = 引擎配置里没有本地路
 版本号：`package.json` 的 `version` 是唯一来源。目录名、zip 名、checksums 都从它取。
 Release 标题只写「软件名 + 版本」（如 `Nest 0.4.1-beta.1`），主题/亮点放正文，不要塞进标题。
 注意：GitHub 的侧栏「最新版本」只认非 prerelease 的 release；如果希望 beta 显示为最新，创建时不要勾 `prerelease`（版本号本身仍可带 beta）。
-同时在 `docs/CHANGELOG.md` 顶部加一个 `## <version> — <日期> · <主题>` 段落。
+同时在 `docs/nintendo/CHANGELOG.md` 顶部加一个 `## <version> — <日期> · <主题>` 段落。
 
 ---
 
@@ -153,8 +153,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\release-gh.ps1
 
 ## 8. 收尾
 
-- `docs/CHANGELOG.md`：版本段 + zip 大小 + SHA256 + Release 链接
-- `docs/PROGRESS.md`：当天进度里补「发布」小节
+- `docs/nintendo/CHANGELOG.md`：版本段 + zip 大小 + SHA256 + Release 链接
+- `docs/nintendo/PROGRESS.md`：当天进度里补「发布」小节
 - `docs/release-<ver>.md`：Release 正文（给用户看的下载说明、限制）
 - 提交并推送 `main`；标签保持在发布提交上
 - 报告 Lead：版本、zip 大小/哈希、验证结果、Release URL

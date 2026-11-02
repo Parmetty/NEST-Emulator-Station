@@ -60,7 +60,7 @@ Nest's license.
 
 ## Artwork
 
-The console photos in `docs/mock-v1/` and `src/renderer/public/consoles/` are
+The console photos in `docs/nintendo/mock-v1/` and `src/renderer/public/consoles/` are
 derived from photographs on Wikimedia Commons by **Evan-Amos**, released into the
 **public domain**:
 

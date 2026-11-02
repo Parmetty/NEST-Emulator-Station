@@ -97,7 +97,7 @@ CH.resetControls   { engineId } → { ok }
 
 | 任务 | 写入范围 | 依赖 |
 |---|---|---|
-| LEAD | `src/shared/contract.ts`、`docs/PLAN-CONTROLS.md` | — |
+| LEAD | `src/shared/contract.ts`、`docs/nintendo/PLAN-CONTROLS.md` | — |
 | nest-keys-core | `src/main/controls/**`、`src/main/ipc.ts` | contract 已就绪 |
 | nest-keys-ui | `src/renderer/src/App.tsx`、`styles.css`、`env.d.ts`、`mock.ts`、`preload/index.ts` | contract 已就绪 |
 | LEAD | ares 格式实验 → 给 core 补 `ares.ts` | GUI 独占 |

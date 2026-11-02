@@ -53,4 +53,4 @@
 - 无数字签名：首次运行 SmartScreen 提示，选「更多信息 → 仍要运行」
 - Cemu 键位尚未接入 Nest 键位面板（可在 Cemu 自身 GUI 配置）
 
-完整改动见 `docs/CHANGELOG.md` 的 0.4.0-beta.1 节。
+完整改动见 `docs/nintendo/CHANGELOG.md` 的 0.4.0-beta.1 节。
