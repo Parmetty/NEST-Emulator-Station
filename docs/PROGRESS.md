@@ -2,7 +2,7 @@
 
 > 项目里程碑与各版本主线见 [HISTORY.md](HISTORY.md)；本文件只记逐日进度与待办。
 
-> 更新于 2026-11-01（Asia/Shanghai）｜基线 `main @ 6c05163`｜版本 `0.4.0-beta.1`，最新 tag `v0.4.0-beta.1`（`4a7b667`）
+> 更新于 2026-11-03（Asia/Shanghai）｜版本 `0.4.1-beta.1`，最新 tag `v0.4.1-beta.1`
 > 依据：`git log/tag`、`docs/HISTORY.md`、`docs/STATE.md`、`docs/DECISIONS.md`、`README.md`、`resources/engines/*.json`、`src/shared/systems.ts`、`src/main/*`
 >
 > 说明：顶部 §1–§2 是**当前快照**；§3 起是逐日进度与历史记录（2026-10-28 的旧分析保留备查）。
@@ -10,7 +10,9 @@
 ## 1. 一句话现状
 
 一个 Electron「主机启动站」：扫描 ROM → 卡片墙 → 内置引擎子进程启动 → 退出回 Nest 并自动生成封面。
-**九台任天堂主机全部接入：GBA/FC/SFC/N64/NDS/3DS/NGC 直读已验证；Wii 系统菜单经自写 libretro 宿主启动（无 UIA）；Wii U 引擎（Cemu 2.6）已内置，直读链路验证通过、系统菜单为实验性（Cemu 缺 `nn_act.LoadConsoleAccount`）。**
+**九台任天堂主机全部接入：GBA/FC/SFC/N64/NDS/3DS/NGC 直读已验证；Wii 系统菜单经自写 libretro 宿主启动（无 UIA）；**
+**NDS/DSi 整条线打通（机型选择、DS 菜单、DSi Menu、系统菜单插卡）；Wii U 引擎（Cemu 2.6）已内置，直读链路验证通过、系统菜单为实验性。**
+**设置已按 Nest / Nintendo / Xbox / PlayStation 四页拆分；GBA 金手指、Cemu 键位已接入面板。**
 
 ## 2. 能力矩阵（当前）
 
@@ -24,16 +26,16 @@
 | GBA 2001 | ✅ 已验证 | —（BIOS 动画随游戏走） | mGBA 0.10.5 | 可玩 |
 | NGC 2001 | ✅ 已验证 | ✅ GameCube Menu（Qt+UIA，需 IPL） | Dolphin 2609a | 可玩 |
 | Wii 2006 | 🟡 代码就绪、无真实镜像 | ✅ Wii Menu（WAD，经 libretro 宿主） | Dolphin 2609a + nest-libretro | 菜单可用 |
-| NDS / DSi 2004/2008 | ✅ 已验证（DS / DSi） | ✅ DS 菜单 + DSi Menu（CLI `-b always`，无 UIA） | melonDS master CI 构建 | 可玩 |
-| DSi | 🟡 代码就绪（素材已备） | ✅ DSi Menu（需 DSi 固件） 🟡 待验证 | melonDS 1.1（ConsoleType=1） | 待真实转储验证 |
+| NDS / DSi 2004/2008 | ✅ 已验证（DS / DSi） | ✅ DS 菜单 + DSi Menu（CLI `-b always`，无 UIA；进入时自动插入最近游戏） | melonDS master CI 构建 | 可玩 |
 | 3DS 2011 | ✅ 已验证（自制程序） | ❌ Azahar 不支持 HOME Menu | Azahar 2126.2 | 可玩 |
 | Wii U 2012 | 🟡 链路验证（假 .wua），无真实游戏 | ⚠️ 实验性：Wii U Menu 只到背景 | Cemu 2.6 | 直读待验 |
 | Xbox/PS 预留 | ✖ 锁定 | — | — | — |
 
 - 内置引擎 **353 MB**（mGBA 41.5 + ares 42.6 + Dolphin 75.1 + Azahar 101.8 + melonDS 41.5 + Cemu 50.4，不含运行时 MLC/keys）+ `nest-libretro.exe`（90 KB，自写宿主）。
 - 9 台任天堂主机全部在 `SYSTEMS` 中，6 台 Xbox/PS 预留平台标记 `locked`。
-- 键位适配器覆盖 6 个引擎（mGBA/ares/Dolphin/Azahar/melonDS/Cemu）。
-- 测试：typecheck 通过，单测 **80** 条。
+- 键位适配器覆盖 6 个引擎（mGBA/ares/Dolphin/Azahar/melonDS/Cemu）；GBA 金手指面板写入 mGBA `.cheats`。
+- 设置拆分为 Nest / Nintendo / Xbox / PlayStation 四页；任天堂系统文件与键位集中在 Nintendo。
+- 测试：typecheck 通过，单测 **100** 条。
 
 > 以下 §3 起为历史记录。当前里程碑见 [HISTORY.md](HISTORY.md)，发布级变化见 [CHANGELOG.md](CHANGELOG.md)。
 

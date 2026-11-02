@@ -20,8 +20,9 @@
 cd E:\workstop\nest
 git status --short          # 必须干净（或只剩本次要提交的发布文档）
 npm run typecheck
-npm test                    # 当前基线：40 passed
+npm test                    # 当前基线：100 passed
 node tools/clean-engines.mjs --check   # exit 0 = 引擎配置里没有本地路径
+# 打包后还要删掉 cemu/portable（keys/MLC/controllerProfiles 都是用户数据）
 ```
 
 版本号：`package.json` 的 `version` 是唯一来源。目录名、zip 名、checksums 都从它取。

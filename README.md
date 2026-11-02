@@ -5,13 +5,13 @@
 
 ![Nest 首页](shots/app.png)
 
-> 当前：**0.4.0-beta.1** —— Windows 桌面版 · 九台任天堂主机 · 六个内置引擎 + 自写 libretro 宿主 · 免安装携带版
+> 当前：**0.4.1-beta.1** —— Windows 桌面版 · 九台任天堂主机（含 NDS 四机型）· 六个内置引擎 + 自写 libretro 宿主 · 免安装携带版
 
 ## 下载
 
 直接下免安装版，解压双击即可用，不需要安装 Node 或任何依赖：
 
-**[Nest-0.4.0-beta.1-portable.zip](https://github.com/Parmetty/NEST-Emulator-Station/releases/download/v0.4.0-beta.1/Nest-0.4.0-beta.1-portable.zip)** · 268 MB · [Release 页面](https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.4.0-beta.1)
+**[Nest-0.4.1-beta.1-portable.zip](https://github.com/Parmetty/NEST-Emulator-Station/releases/download/v0.4.1-beta.1/Nest-0.4.1-beta.1-portable.zip)** · 264 MB · [Release 页面](https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.4.1-beta.1)
 
 ```
 SHA256  235753F404CCFF3494D6A4C25861265C23B624F99BE5DAC4CA0DAD504D99CA22
@@ -21,7 +21,7 @@ SHA256  235753F404CCFF3494D6A4C25861265C23B624F99BE5DAC4CA0DAD504D99CA22
 1. 解压到任意目录（可放 U 盘）
 2. 双击 **`Nest.exe`** 即可（数据在 `%APPDATA%\Nest`）；想让库/封面/日志/引擎配置留在解压目录，就双击 **`启动 Nest.bat`**（便携数据模式，备用入口）
 3. 点「扫描文件夹」指向你的 ROM 目录（之后每次启动会自动重扫）
-4. 固件在 设置 →「系统文件（自备）」导入
+4. 固件在 **设置 → Nintendo →「系统文件（自备）」** 导入
 
 > 无数字签名，首次运行 Windows 可能提示 SmartScreen：选「更多信息 → 仍要运行」。
 
@@ -46,6 +46,8 @@ SHA256  235753F404CCFF3494D6A4C25861265C23B624F99BE5DAC4CA0DAD504D99CA22
 - **自动封面**：游戏运行期间由独立抓屏工具持续取帧，退出时存为封面（NDS/3DS 只截上屏）
 - **自写 libretro 宿主**：`resources/tools/nest-libretro.exe`（约 90 KB，C# + SDL3）托管官方 `dolphin_libretro.dll`，**Wii 系统菜单不再依赖 Dolphin Qt GUI 自动化**，直接加载 `wii-menu.wad` 进菜单；键盘 + 鼠标绝对指针（鼠标即 Wiimote 光标，左键 = A）
 - **键位面板**：mGBA / ares / Dolphin / Azahar / melonDS / Cemu 六引擎键盘绑定可在 Nest 里改，保存立即生效；首次启动自动写默认布局，不覆盖你已有的自定义
+- **设置分类**：设置窗口拆成 **Nest / Nintendo / Xbox / PlayStation** 四页，任天堂系统文件与键位集中在 Nintendo 页，PS/Xbox 预留
+- **NDS 系统菜单插卡**：进 DS/DSi 菜单时自动插入最近玩的 NDS 游戏（设置 → Nintendo 可关）
 - **GBA 金手指**：游戏右键「金手指…」编辑 mGBA `.cheats`，保存后启动自动生效（见 [docs/CHEATS-GBA.md](docs/CHEATS-GBA.md)）
 - **固件中心**：GameCube IPL（CRC32 白名单）、Wii 系统菜单 WAD、NDS BIOS+固件、**DSi BIOS+固件+NAND**、**Cemu keys.txt / Wii U NAND（MLC）**，一键导入（MLC 只记路径，不复制）
 - **便携模式**：库、封面、日志、引擎配置都留在程序目录，删 `data\` 即恢复出厂
@@ -71,9 +73,13 @@ SHA256  235753F404CCFF3494D6A4C25861265C23B624F99BE5DAC4CA0DAD504D99CA22
 |---|---|
 | ![游戏库](shots/shelf.png) | ![3DS](shots/shelf-3ds.png) |
 
-| 固件中心 | NDS 固件菜单 |
+| Nintendo 设置 | NDS / DSi 菜单 |
 |---|---|
-| ![固件](shots/settings-firmware.png) | ![DS 菜单](shots/nds-menu.png) |
+| ![Nintendo 设置](shots/settings-firmware.png) | ![DS 菜单](shots/nds-menu.png) |
+
+| 金手指入口 | 金手指编辑 |
+|---|---|
+| ![金手指菜单](shots/cheat-menu.png) | ![金手指面板](shots/cheat-dialog.png) |
 
 ## 从源码运行
 
@@ -111,9 +117,11 @@ npm run smoke          # 窗口 + IPC + 渲染自检
 src/
   shared/            纯数据与契约（主机表、zod schema、IPC 通道名）
   main/              主进程：窗口、IPC、库、引擎清单、进程监管、扫描器
-  main/controls/     各引擎的键盘绑定适配器（keymap + mgba/ares/dolphin/azahar/melonds）
+  main/controls/     各引擎的键盘绑定适配器（keymap + mgba/ares/dolphin/azahar/melonds/cemu）
   main/cemu.ts       Cemu keys.txt 导入、MLC 校验、启动参数组装
   main/melonds-config.ts  melonDS TOML 管理（NDS / DSi 切换，纯函数）
+main/cheats.ts        GBA 金手指文件（mGBA .cheats 读写、回退、启动参数）
+main/nds-cart.ts      NDS 系统菜单插卡选择（显式 ROM / 最近游戏 / 开关）
   preload/           contextBridge 暴露的 window.nest
   renderer/          React：首页 + 游戏库覆盖层 + 设置面板
 resources/engines/   六个便携引擎 + 清单（加主机 = 加一份 JSON）

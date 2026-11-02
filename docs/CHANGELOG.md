@@ -2,13 +2,22 @@
 
 本文件记录每次发布的可见变化。技术细节在 `docs/STATE.md`，决策理由在 `docs/DECISIONS.md`，待办在 `docs/PROGRESS.md`。
 
-## 未发布 — GBA 金手指 + NDS 机型 + Cemu 键位
+## 0.4.1-beta.1 — 2026-11-03 · NDS/DSi 整条线 + 设置拆分 + GBA 金手指
+
+便携包：Nest-0.4.1-beta.1-portable.zip 264 MB（解压 633 MB / 3171 文件）
+SHA256 0C38660097C310BCC296A4B051D09096E1591111B88314A4A1E4C4BAEE246308
 
 ### NDS / DSi 系统模式插卡
 
 - 进入 NDS/DSi 系统菜单时自动把**最近玩过的 NDS 游戏**插入 Slot-1（`melonDS -b always <rom>`），菜单能识别游戏卡并直接启动
 - 设置 → Nintendo 新增开关「NDS / DSi 系统菜单插入最近游戏」，关掉则保持空卡槽
 - 选择逻辑抽成 `src/main/nds-cart.ts`，单测覆盖显式 ROM / 开关 / 最近游戏 / 空库
+
+### 设置拆分（Nest / Nintendo / Xbox / PlayStation）
+
+- 设置窗口左侧新增分类导航：**Nest**（启动与画面、游戏文件夹）、**Nintendo**（系统文件、键位）、
+  **Xbox** / **PlayStation**（预留页，列出待接入机型）
+- 任天堂相关的系统文件与键位集中到 Nintendo 子页，后续 PS/Xbox 引擎接入时各自独立
 
 ### GBA 金手指
 
@@ -44,8 +53,8 @@
 - 机型选择存进设置（`settings.ndsModel`）；启动 NDS 游戏 / 系统菜单时按机型写
   melonDS `ConsoleType`（DS/DSL=0，DSi/DSiLL=1）
 - 设置 →「系统文件（自备）」新增 **DSi BIOS + 固件 + NAND** 导入：选目录，校验
-  bios7/bios9 64 KB、firmware 128 KB、nand 0xF000000；导入时自动裁掉真实 dump 尾部
-  64 字节 eMMC CID 元数据
+  bios7/bios9 64 KB、firmware 128 KB、nand 0xF000000；导入时保留真实 dump 尾部
+  64 字节 eMMC CID 元数据（nocash footer），不再裁剪
 - melonDS TOML 管理抽成纯函数 `src/main/melonds-config.ts`，新增 12 条单测（总计 80）
 - 新插图：DS Lite（公有领域）、DSi / DSi XL（CC BY-SA 3.0，Evan-Amos，见 THIRD-PARTY-NOTICES）
 

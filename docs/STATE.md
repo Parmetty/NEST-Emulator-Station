@@ -2,7 +2,7 @@
 
 > 新会话开场只需读这一份，再读 `PLAN.md` 与 `DECISIONS.md`。
 >
-> **发布状态：beta 0.2**（tag `v0.2.0-beta.1`）—— Windows 桌面版，GBA / FC / SFC / N64 全链路可玩。
+> **发布状态：0.4.1-beta.1**（tag `v0.4.1-beta.1`）—— Windows 桌面版，九台任天堂主机全部接入；NDS/DSi 整条线打通，设置按御三家拆分。
 
 ## 进度
 
@@ -13,7 +13,10 @@
 | P1.1 内置 mGBA + 启动设置 | ✅ 完成 |
 | P1.2 封面 / 右键移除 / 运行中高亮 | ✅ 完成 |
 | P2 FC + SFC + N64 闭环 | ✅ 完成（闭环）；固件校验 / 每游戏设置 / 存档备份待做 |
-| P3 NGC + Wii | 未开始 |
+| P3 NGC + Wii | ✅ 完成（直读 + 系统菜单；Wii Menu 走自写 libretro 宿主） |
+| P3.5 NDS / DSi | ✅ 完成（机型选择、DS 菜单、DSi Menu、菜单插卡） |
+| P4 Wii U（Cemu） | 🟡 直读链路就绪；系统菜单实验性 |
+| P4.5 设置拆分 / 金手指 / 键位 | ✅ 完成（Nest/Nintendo/Xbox/PS 四页；GBA 金手指；Cemu 键位） |
 
 ## P2 已完成的部分
 

@@ -12,11 +12,30 @@
 | 2026-10-25 | `v0.2.0-beta.1`（`2d075a5`） | P0–P2 | 首个公开 beta：Electron 外壳、扫描器、GBA/FC/SFC、封面、便携包 |
 | 2026-10-30 | `v0.3.2`（`a16a2cb`） | P3 | 引擎矩阵补全：N64/Dolphin/NDS/3DS、系统菜单、键位面板、自动扫描、便携 zip |
 | 2026-11-01 | `v0.4.0-beta.1`（`4a7b667`） | P3.5–P4 | 自写 libretro 宿主（Wii 菜单去 UIA）+ Cemu/Wii U 接入（菜单实验性） |
+| 2026-11-03 | `v0.4.1-beta.1` | P4.5 | NDS/DSi 整条线可用（机型、DSi Menu、菜单插卡）+ Cemu 键位 + GBA 金手指 + 设置拆分 |
 
 阶段说明：P0 骨架 → P1 库/扫描 → P2 GBA/FC/SFC 闭环 → P3 Dolphin/NDS/3DS +
 系统菜单 → P4 Wii U/Cemu → P5 打磨（封面、构建、安装包）。
 
 ---
+
+## v0.4.1-beta.1 · 2026-11-03
+
+**主题：NDS/DSi 整条线打通 + 设置重构成御三家结构。** 发布类型：prerelease
+发布页：https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.4.1-beta.1
+便携包：`Nest-0.4.1-beta.1-portable.zip`
+
+| 提交 | 内容 |
+|---|---|
+| `da0c334` | NDS/DSi 系统模式自动插入最近玩的 NDS 游戏（`-b always <rom>`），设置可关 |
+| `9d6f2a7` | 设置拆分为 Nest / Nintendo / Xbox / PlayStation 四页 |
+| `d745dd8` | GBA 金手指面板：编辑 mGBA `.cheats`，支持 GameShark/AR/CB/PARv3 |
+| `cf1dd02` | Cemu（Wii U GamePad）键位接入 Nest 键位面板 |
+| `ee6a4d4` | DSi Menu 修通：保留 NAND nocash footer、`[DSi] ExternalBIOSEnable` 写布尔 true |
+| `0936124` | NGC 系统模式 UIA 提速：去掉 3 秒固定等待，spawn→菜单约 2.8 秒 |
+| `1244c8b` | 内置 melonDS master 构建，CLI `-b always` 直开 DS 菜单，2 倍窗口 |
+| `bab6f1d` | 单个 NDS 入口 + DS/DSL/DSi/DSiLL 机型选择与四张插图 |
+| `dc19b79` | DSi host 条目、DSi 固件导入（BIOS/固件/NAND）、TOML 纯函数模块 |
 
 ## v0.4.0-beta.1 · 2026-11-01
 
