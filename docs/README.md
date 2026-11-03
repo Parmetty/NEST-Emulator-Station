@@ -20,3 +20,4 @@ Nest 的文档按「家族」归档：任天堂系（已接入）与 PlayStation
 - PlayStation 新计划：[playstation/PLAN-PLAYSTATION.md](playstation/PLAN-PLAYSTATION.md)
 - P6.0 调研报告：[playstation/RESEARCH-P6.0.md](playstation/RESEARCH-P6.0.md)
 - 引擎规格：[SwanStation](playstation/ENGINE-swanstation.md)（PS1 主选）· [PPSSPP](playstation/ENGINE-ppsspp.md) · [PCSX2](playstation/ENGINE-pcsx2.md) · [RPCS3](playstation/ENGINE-rpcs3.md)
+- 素材清单：[PS1 / PS2 需要准备什么](playstation/DOWNLOADS-PS1-PS2.md)

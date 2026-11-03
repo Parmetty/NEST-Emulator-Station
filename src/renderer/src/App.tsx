@@ -705,6 +705,8 @@ export default function App() {
         'missing-wiiu-mlc': '缺少 Wii U NAND（MLC）：请到「设置 → 系统文件（自备）」选择 MLC 目录',
         'invalid-wiiu-mlc': 'Wii U NAND 目录无效：缺少 sys/title/00050010/10040000 或 usr/',
         'missing-cemu-keys': '缺少 Cemu keys.txt：请到「设置 → 系统文件（自备）」导入自备密钥',
+        'missing-3ds-system-files':
+          '3DS HOME Menu 需要 Azahar 系统文件：请先用真机 + Artic Setup Tool 在 Azahar 里执行 Set Up System Files',
       };
       say(map[result.error ?? ''] ?? `启动失败（${result.error}）`);
       return;
@@ -1480,8 +1482,8 @@ export default function App() {
                         ) : null}
 
                         <p className="dlg-note">
-                          3DS 系统模式（HOME Menu）暂未接入：需要 Azahar 的 nand / sysdata
-                          系统文件（真机 + Artic Setup Tool 导出），有数据后再开放入口。
+                          3DS 系统模式入口已恢复：Azahar 能直接启动 HOME Menu，但需要先通过
+                          真机 + Artic Setup Tool 安装 nand / sysdata 系统文件；未安装时启动会给出提示。
                         </p>
 
                         <label className="toggle-row">

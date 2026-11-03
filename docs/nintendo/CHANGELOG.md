@@ -13,6 +13,9 @@
 - PS3 系统模式结论：无 XMB 也无替代，只做直读；如需展示用 Nest 原生游戏库视图（不冒充系统界面）
 - **PlayStation 主机墙界面就绪**：解锁 PlayStation 家族，PS1/PS2/PSP/PS3 四台主机配图（PS1/PS2/PS3 为 Evan-Amos 公有领域照片，PSP 为 CC BY-SA 3.0）、年份与年代标尺；引擎未接入显示「需要配置」并给出计划说明
 - README 修正 0.4.1 便携包的 SHA256/解压体积（旧值停留在 0.4.0）
+- **3DS HOME Menu 入口恢复**：之前从 Citra 换 Azahar 时因“Azahar 不支持 HOME Menu”被删；现在按源码核实（`Boot Home Menu` → `BootGame(ncch)`）恢复为实验性入口
+- 3DS 系统模式启动前扫描 Azahar `nand/<SYSTEM_ID>/title/00040030/<region>/content/*.app`，缺失时明确提示用 Artic Setup Tool 安装系统文件
+- 新增 `docs/playstation/DOWNLOADS-PS1-PS2.md`：PS1/PS2 需要的 BIOS、镜像格式与坑
 
 ## 0.4.1-beta.1 — 2026-11-03 · NDS/DSi 整条线 + 设置拆分 + GBA 金手指
 

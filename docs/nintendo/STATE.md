@@ -23,7 +23,7 @@
 - 发布：`v0.4.1-beta.1`（便携包 `Nest-0.4.1-beta.1-portable.zip`，264 MB / 解压 633 MB / 3171 文件）
 - 主机：九台任天堂全部接入。GBA/FC/SFC/N64 直读；NGC 直读 + GameCube Menu（IPL + Qt/UIA）；
   Wii Menu 走自写 libretro 宿主；NDS 四机型（DS/DSL/DSi/DSiLL）直读，DS 菜单与 DSi Menu 均可用且进菜单自动插卡；
-  3DS 直读（无 HOME Menu）；Wii U 直读，系统菜单实验性
+  3DS 直读；HOME Menu 入口已恢复（需 Azahar 系统文件，未验证）；Wii U 直读，系统菜单实验性
 - 设置：拆成 Nest / Nintendo / Xbox / PlayStation 四页；Nintendo 集中系统文件与键位
 - 键位：6 引擎（mGBA/ares/Dolphin/Azahar/melonDS/Cemu）
 - 工具：GBA 金手指面板（mGBA `.cheats`）、封面抓取、libretro 宿主、nest-pads 手柄探测

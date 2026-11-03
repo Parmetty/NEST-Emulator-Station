@@ -36,6 +36,7 @@ import {
   readEngineMode,
   type ControlPaths,
 } from './controls';
+import { findAzaharHomeMenu } from './azahar-home';
 import { cheatExtraArgs, readCheatFile, saveCheatText } from './cheats';
 import { selectNdsSystemCart } from './nds-cart';
 import { EngineRegistry, buildArgs } from './engines';
@@ -1004,6 +1005,15 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   // melonDS boots the DS/DSi firmware with an inserted cart when a ROM path is
   // appended; without it Slot-1 is empty. Reuse the most recently played NDS
   // title so the menu shows the player's last game.
+  // 3DS system mode: Azahar boots HOME Menu by passing its NCCH path (the
+  // same call its "Boot Home Menu" menu item makes). Refuse with a clear error
+  // when the console's system files have not been installed.
+  let azaharHomeMenu: string | null = null;
+  if (engine.id === 'azahar' && mode === 'system') {
+    azaharHomeMenu = findAzaharHomeMenu(path.join(app.getPath('userData'), 'azahar'));
+    if (!azaharHomeMenu) return { ok: false, error: 'missing-3ds-system-files' };
+  }
+
   let melondsSystemCart: string | null = null;
   if (engine.id === 'melonds' && mode === 'system') {
     const candidate = selectNdsSystemCart(
@@ -1029,6 +1039,8 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     command = detected;
     args = mode === 'system' ? (engine.systemArgsBySystem?.[systemId] ?? engine.launch.systemArgs) : engine.launch.args;
   }
+
+  if (azaharHomeMenu) args = [azaharHomeMenu];
 
   if (engine.id === 'mgba') applyControls(services, 'mgba', false);
   if (engine.id === 'ares') applyControls(services, 'ares', false);

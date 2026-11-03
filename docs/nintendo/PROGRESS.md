@@ -27,7 +27,7 @@
 | NGC 2001 | ✅ 已验证 | ✅ GameCube Menu（Qt+UIA，需 IPL） | Dolphin 2609a | 可玩 |
 | Wii 2006 | 🟡 代码就绪、无真实镜像 | ✅ Wii Menu（WAD，经 libretro 宿主） | Dolphin 2609a + nest-libretro | 菜单可用 |
 | NDS / DSi 2004/2008 | ✅ 已验证（DS / DSi） | ✅ DS 菜单 + DSi Menu（CLI `-b always`，无 UIA；进入时自动插入最近游戏） | melonDS master CI 构建 | 可玩 |
-| 3DS 2011 | ✅ 已验证（自制程序） | ❌ Azahar 不支持 HOME Menu | Azahar 2126.2 | 可玩 |
+| 3DS 2011 | ✅ 已验证（自制程序） | 🟡 HOME Menu 入口已恢复，需 Azahar 系统文件（未验证） | Azahar 2126.2 | 可玩 |
 | Wii U 2012 | 🟡 链路验证（假 .wua），无真实游戏 | ⚠️ 实验性：Wii U Menu 只到背景 | Cemu 2.6 | 直读待验 |
 | Xbox/PS 预留 | ✖ 锁定 | — | — | — |
 

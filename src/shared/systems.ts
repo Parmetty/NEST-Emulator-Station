@@ -62,7 +62,7 @@ export const SYSTEMS: SystemDef[] = [
       { id: 'dsill', label: 'DSiLL', year: 2009, image: 'consoles/dsill.webp', consoleType: 'dsi' },
     ] },
   { id: 'wii',   name: 'Nintendo Wii',      short: 'Wii',   year: 2006, kind: '家用机', family: 'nintendo', engine: 'dolphin',  image: 'consoles/wii.webp',  state: 'ready', systemMode: 'Wii Menu', note: '需自备 wii-menu.wad（设置 → 系统文件（自备）导入）' },
-  { id: '3ds',   name: 'Nintendo 3DS',      short: '3DS',   year: 2011, kind: '掌机',   family: 'nintendo', engine: 'azahar',   image: 'consoles/3ds.webp',  state: 'ready', note: '直读可用；无系统菜单（Azahar 不支持 HOME Menu）' },
+  { id: '3ds',   name: 'Nintendo 3DS',      short: '3DS',   year: 2011, kind: '掌机',   family: 'nintendo', engine: 'azahar',   image: 'consoles/3ds.webp',  state: 'ready', systemMode: '3DS HOME Menu（实验性）', note: '直读可用；HOME Menu 需先安装 Azahar 系统文件（Artic Setup Tool），未安装时启动会明确提示' },
     { id: 'wiiu',  name: 'Wii U',             short: 'Wii U', year: 2012, kind: '家用机', family: 'nintendo', engine: 'cemu',     image: 'consoles/wiiu.webp', state: 'warn', systemMode: 'Wii U Menu（实验性）', note: '直读需自备 keys.txt 与游戏；Wii U Menu 目前受 Cemu 2.6 限制（只能到背景），标记为实验性' },
 
   { id: 'xbox',    name: 'Xbox',     short: 'XBX',  year: 2001, kind: '家用机', family: 'xbox', engine: 'xemu',    image: '', state: 'locked' },
