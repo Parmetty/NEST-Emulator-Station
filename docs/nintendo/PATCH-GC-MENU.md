@@ -108,5 +108,5 @@ cmake --build build --target dolphin_libretro
 ## 四、交付
 
 - 产物：`dolphin_libretro.dll`（x64，含补丁）
-- 补丁文件：`E:\workstop\engines-src\patch\gc-menu.patch`（`git diff` 生成，能直接 `git apply`）
+- 补丁文件：`docs/nintendo/patches/gc-menu.patch`（`git diff` 生成，能直接 `git apply`）
 - 构建日志摘要：编译器版本、CMake 选项、耗时

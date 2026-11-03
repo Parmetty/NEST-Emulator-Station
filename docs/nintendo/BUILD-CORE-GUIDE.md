@@ -110,7 +110,7 @@ cmake --build build --target dolphin_libretro -j 8
 把 DLL 复制到：
 
 ```
-E:\workstop\engines-src\build\dolphin_libretro-patched.dll
+（原 engines-src 构建产物，已随临时目录清理；需要时按本文重新构建）
 ```
 
 然后告诉我。我会：
