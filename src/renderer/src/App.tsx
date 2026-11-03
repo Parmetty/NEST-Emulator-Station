@@ -912,11 +912,139 @@ export default function App() {
     if (SETTINGS_TABS.some((tab) => tab.id === id)) setSettingsTab(id as SettingsTab);
   };
 
+  // Used by `--keysystem=<id>` screenshots: focus one console's key panel.
+  (window as unknown as Record<string, unknown>).__NEST_KEY_SYSTEM__ = (id: string) => {
+    if (KEY_SYSTEMS.some((system) => system.id === id)) {
+      setSettingsTab('playstation');
+      setKeySystemId(id as SystemId);
+    }
+  };
+
   // Used by `--cheat` screenshots: open the cheat editor for the first GBA game.
   (window as unknown as Record<string, unknown>).__NEST_OPEN_CHEAT__ = () => {
     const game = shelf?.games.find((g) => systemById.get(g.systemId as SystemId)?.engine === 'mgba');
     if (game) void openCheats(game);
   };
+
+  const keySystemsVisible = KEY_SYSTEMS.filter((system) => {
+    const playstation = system.engine === 'swanstation' || system.engine === 'pcsx2';
+    return settingsTab === 'playstation' ? playstation : !playstation;
+  });
+
+  const renderKeys = () => (
+<div className="settings-col keys-col">
+                  <h2>键位</h2>
+                  <p className="dlg-note">
+                    改的是引擎的键盘绑定，保存后立即生效；同一引擎的多台主机共用一套键位。
+                  </p>
+
+                  <div className="key-engines" role="group" aria-label="选择主机">
+                    {keySystemsVisible.map((system) => (
+                      <button
+                        key={system.id}
+                        className={`key-engine${system.id === keySystem.id ? ' on' : ''}`}
+                        title={`${system.name} · ${engineLabel(system.engine)}`}
+                        onClick={() => pickKeySystem(system.id)}
+                      >
+                        {system.short}
+                      </button>
+                    ))}
+                  </div>
+
+                  {keyView ? (
+                    <>
+                      <div className="key-meta">
+                        <span>
+                          {engineLabel(keyEngine)} · {keyView.mode === 'gamepad' ? '手柄模式' : '键盘模式'}
+                          {keyShared.length > 1 ? ` · ${keyShared.join(' / ')} 共用` : ''}
+                        </span>
+                        <small className={keyDirty ? 'dirty' : ''}>
+                          {!keyView.supported
+                            ? '暂不支持'
+                            : keyDirty
+                              ? '有未保存改动'
+                              : keyView.isCustom
+                                ? '已自定义'
+                                : '默认键位'}
+                        </small>
+                      </div>
+
+                      {!keyView.supported ? (
+                        <div className="key-unsupported">
+                          <p>该引擎键位格式尚未支持</p>
+                          <span>先用手柄，或进 {engineLabel(keyEngine)} 自己的设置里改键。</span>
+                        </div>
+                      ) : null}
+
+                      <div className={`key-group${keySupported ? '' : ' disabled'}`}>
+                        {PAD_ACTIONS.map((action) => {
+                          const code = keyBindings[action];
+                          const capturing = keyCapture === action;
+                          return (
+                            <div className={`key-row${capturing ? ' capturing' : ''}`} key={action}>
+                              <span className="key-name">{ACTION_LABEL[action]}</span>
+                              <span className={`key-badge${code ? '' : ' empty'}`}>
+                                {capturing ? '请按键…' : prettyKey(code)}
+                              </span>
+                              <button
+                                className="key-edit"
+                                disabled={!keySupported || keyBusy !== null}
+                                onClick={(event) => {
+                                  // Blur so the Space/Enter used to pick a key does not
+                                  // also re-activate this button on keyup.
+                                  event.currentTarget.blur();
+                                  if (capturing) {
+                                    setKeyCapture(null);
+                                    setKeyCaptureError(null);
+                                    return;
+                                  }
+                                  setKeyCapture(action);
+                                  setKeyCaptureError(null);
+                                }}
+                              >
+                                {capturing ? '取消' : '改'}
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {keyCapture ? (
+                        <p className="key-hint">
+                          按下要绑定的键 · Esc 取消
+                          {keyCaptureError ? ` · ${keyCaptureError}` : ''}
+                        </p>
+                      ) : keyCaptureError ? (
+                        <p className="key-hint err">{keyCaptureError}</p>
+                      ) : null}
+
+                      <div className="key-actions">
+                        <button
+                          className="ghost-btn"
+                          disabled={!keySupported || keyBusy !== null}
+                          onClick={() => void resetKeys()}
+                        >
+                          {keyBusy === 'reset' ? '恢复中…' : '恢复默认'}
+                        </button>
+                        <button
+                          className="dlg-btn primary"
+                          disabled={!keySupported || !keyDirty || keyBusy !== null}
+                          onClick={() => void saveKeys()}
+                        >
+                          {keyBusy === 'save' ? '保存中…' : '保存'}
+                        </button>
+                      </div>
+                    </>
+                  ) : controlsFailed ? (
+                    <p className="key-hint err">
+                      键位数据读取失败；等主进程的 controls IPC 就绪后重新打开设置。
+                    </p>
+                  ) : (
+                    <p className="key-hint">读取中…</p>
+                  )}
+                </div>
+  );
+
 
   return (
     <div
@@ -1502,118 +1630,9 @@ export default function App() {
                           <i className="switch" />
                         </label>
                   </div>
-                <div className="settings-col keys-col">
-                  <h2>键位</h2>
-                  <p className="dlg-note">
-                    改的是引擎的键盘绑定，保存后立即生效；同一引擎的多台主机共用一套键位。
-                  </p>
-
-                  <div className="key-engines" role="group" aria-label="选择主机">
-                    {KEY_SYSTEMS.map((system) => (
-                      <button
-                        key={system.id}
-                        className={`key-engine${system.id === keySystem.id ? ' on' : ''}`}
-                        title={`${system.name} · ${engineLabel(system.engine)}`}
-                        onClick={() => pickKeySystem(system.id)}
-                      >
-                        {system.short}
-                      </button>
-                    ))}
-                  </div>
-
-                  {keyView ? (
-                    <>
-                      <div className="key-meta">
-                        <span>
-                          {engineLabel(keyEngine)} · {keyView.mode === 'gamepad' ? '手柄模式' : '键盘模式'}
-                          {keyShared.length > 1 ? ` · ${keyShared.join(' / ')} 共用` : ''}
-                        </span>
-                        <small className={keyDirty ? 'dirty' : ''}>
-                          {!keyView.supported
-                            ? '暂不支持'
-                            : keyDirty
-                              ? '有未保存改动'
-                              : keyView.isCustom
-                                ? '已自定义'
-                                : '默认键位'}
-                        </small>
-                      </div>
-
-                      {!keyView.supported ? (
-                        <div className="key-unsupported">
-                          <p>该引擎键位格式尚未支持</p>
-                          <span>先用手柄，或进 {engineLabel(keyEngine)} 自己的设置里改键。</span>
-                        </div>
-                      ) : null}
-
-                      <div className={`key-group${keySupported ? '' : ' disabled'}`}>
-                        {PAD_ACTIONS.map((action) => {
-                          const code = keyBindings[action];
-                          const capturing = keyCapture === action;
-                          return (
-                            <div className={`key-row${capturing ? ' capturing' : ''}`} key={action}>
-                              <span className="key-name">{ACTION_LABEL[action]}</span>
-                              <span className={`key-badge${code ? '' : ' empty'}`}>
-                                {capturing ? '请按键…' : prettyKey(code)}
-                              </span>
-                              <button
-                                className="key-edit"
-                                disabled={!keySupported || keyBusy !== null}
-                                onClick={(event) => {
-                                  // Blur so the Space/Enter used to pick a key does not
-                                  // also re-activate this button on keyup.
-                                  event.currentTarget.blur();
-                                  if (capturing) {
-                                    setKeyCapture(null);
-                                    setKeyCaptureError(null);
-                                    return;
-                                  }
-                                  setKeyCapture(action);
-                                  setKeyCaptureError(null);
-                                }}
-                              >
-                                {capturing ? '取消' : '改'}
-                              </button>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {keyCapture ? (
-                        <p className="key-hint">
-                          按下要绑定的键 · Esc 取消
-                          {keyCaptureError ? ` · ${keyCaptureError}` : ''}
-                        </p>
-                      ) : keyCaptureError ? (
-                        <p className="key-hint err">{keyCaptureError}</p>
-                      ) : null}
-
-                      <div className="key-actions">
-                        <button
-                          className="ghost-btn"
-                          disabled={!keySupported || keyBusy !== null}
-                          onClick={() => void resetKeys()}
-                        >
-                          {keyBusy === 'reset' ? '恢复中…' : '恢复默认'}
-                        </button>
-                        <button
-                          className="dlg-btn primary"
-                          disabled={!keySupported || !keyDirty || keyBusy !== null}
-                          onClick={() => void saveKeys()}
-                        >
-                          {keyBusy === 'save' ? '保存中…' : '保存'}
-                        </button>
-                      </div>
-                    </>
-                  ) : controlsFailed ? (
-                    <p className="key-hint err">
-                      键位数据读取失败；等主进程的 controls IPC 就绪后重新打开设置。
-                    </p>
-                  ) : (
-                    <p className="key-hint">读取中…</p>
-                  )}
+                {renderKeys()}
                 </div>
-                </div>
+
               ) : settingsTab === 'playstation' ? (
                 <div className="settings-panel">
                   <h2>PlayStation</h2>
@@ -1641,6 +1660,8 @@ export default function App() {
                         </button>
                       </div>
                     ))}
+                  <div className="settings-cols keys-single">{renderKeys()}</div>
+
                   <div className="locked-systems">
                     {(families.find((family) => family.id === 'playstation')?.systems ?? []).map((system) => (
                       <span key={system.id}>

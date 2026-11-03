@@ -974,6 +974,9 @@ export function registerIpc(services: Services): void {
 
     // Apply immediately so the next launch (and the next in-game session) uses
     // the new keys without restarting Nest.
+    if (engineId === 'pcsx2') {
+      ensurePcsx2Data(app.getPath('userData'), path.join(enginesDir(), 'pcsx2', 'seed'));
+    }
     const result = applyControls(services, engineId, true, {
       gamepads: engineId === 'azahar' ? countGamepads() : undefined,
       mode: controls.mode,
@@ -991,6 +994,9 @@ export function registerIpc(services: Services): void {
     delete controlsMap[engineId];
     await store.setSettings({ controls: controlsMap });
 
+    if (engineId === 'pcsx2') {
+      ensurePcsx2Data(app.getPath('userData'), path.join(enginesDir(), 'pcsx2', 'seed'));
+    }
     const result = applyControls(services, engineId, true, {
       gamepads: engineId === 'azahar' ? countGamepads() : undefined,
     });

@@ -25,6 +25,7 @@
 - 主机墙：PlayStation 排到 Xbox 前面；所有家族默认折叠
 - **PS2 接入（PCSX2 2.8.2）**：内置 PCSX2（含 VC++ 运行库，避免旧运行库弹窗）；`-datapath` 隔离数据；PS2 BIOS 导入（4 MB 校验）；`-bios` 系统模式 = PS2 浏览器；扫描 `.iso`（PLAYSTATION 标记）
 - PS2 键位接入 Nest 面板（`PCSX2.ini` 的 `[Pad1]`，`Keyboard/` 绑定写入）
+- 键位面板补全：PlayStation 设置页现在有独立的键位面板（PS1 / PS2 芯片，按家族过滤），保存后启动即生效
 - 无游戏时用带 PLAYSTATION 标记的假 ISO 验证了「扫描 → 启动 → 进程」链路
 
 ## 0.4.1-beta.1 — 2026-11-03 · NDS/DSi 整条线 + 设置拆分 + GBA 金手指

@@ -483,6 +483,12 @@ async function boot(): Promise<void> {
                 `window.__NEST_SETTINGS_TAB__ && window.__NEST_SETTINGS_TAB__(${JSON.stringify(stab.slice('--stab='.length))}); true`,
               );
             }
+            const keysystem = process.argv.find((arg) => arg.startsWith('--keysystem='));
+            if (keysystem) {
+              await mainWindow!.webContents.executeJavaScript(
+                `window.__NEST_KEY_SYSTEM__ && window.__NEST_KEY_SYSTEM__(${JSON.stringify(keysystem.slice('--keysystem='.length))}); true`,
+              );
+            }
           }
           if (process.argv.includes('--menu')) {
             await mainWindow!.webContents.executeJavaScript(
