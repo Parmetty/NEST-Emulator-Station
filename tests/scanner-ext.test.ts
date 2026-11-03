@@ -64,6 +64,19 @@ describe('scanner extensions', () => {
     expect(await systemForFile(unknown)).toBe('ngc');
   });
 
+  it('recognises a PS2 ISO by its PLAYSTATION marker', async () => {
+    const dir = await tempDir();
+    const buffer = Buffer.alloc(0x2000);
+    buffer.write('PLAYSTATION', 0x100, 'latin1');
+    const fake = path.join(dir, 'fake-ps2.iso');
+    await writeFile(fake, buffer);
+    expect(await systemForFile(fake)).toBe('ps2');
+
+    // A random ISO without the marker still falls back to the old GC default.
+    const blank = await writeIso(dir, 'blank.iso', 0);
+    expect(await systemForFile(blank)).toBe('ngc');
+  });
+
   it('scans subfolders and files mixed together', async () => {
     const root = await tempDir();
     const nested = path.join(root, 'roms', 'gba');

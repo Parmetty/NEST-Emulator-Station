@@ -37,6 +37,7 @@ import {
   type ControlPaths,
 } from './controls';
 import { findAzaharHomeMenu } from './azahar-home';
+import { ensurePcsx2Data, pcsx2BiosDir, pcsx2BiosFiles } from './pcsx2';
 import { cheatExtraArgs, readCheatFile, saveCheatText } from './cheats';
 import { selectNdsSystemCart } from './nds-cart';
 import { EngineRegistry, buildArgs } from './engines';
@@ -339,6 +340,25 @@ function firmwareStates(services: Services): FirmwareState[] {
     });
   }
 
+  const ps2Bios = pcsx2BiosFiles(app.getPath('userData'));
+  if (ps2Bios.length > 0) {
+    states.push({
+      kind: 'ps2-bios',
+      label: 'PS2 BIOS（必需，PS2 浏览器与直读都要）',
+      status: 'ok',
+      path: pcsx2BiosDir(app.getPath('userData')),
+      detail: ps2Bios.map((file) => path.basename(file)).join(' / '),
+    });
+  } else {
+    states.push({
+      kind: 'ps2-bios',
+      label: 'PS2 BIOS（必需，PS2 浏览器与直读都要）',
+      status: 'missing',
+      path: null,
+      detail: '未导入',
+    });
+  }
+
   const wad = wiiMenuWadPath();
   if (existsSync(wad)) {
     const size = statSync(wad).size;
@@ -461,7 +481,8 @@ async function pickFirmware(services: Services, raw: unknown): Promise<{
     kind !== 'dsi-firmware' &&
     kind !== 'cemu-keys' &&
     kind !== 'wiiu-mlc' &&
-    kind !== 'ps1-bios'
+    kind !== 'ps1-bios' &&
+    kind !== 'ps2-bios'
   ) {
     return { ok: false, error: 'bad-request' };
   }
@@ -506,6 +527,22 @@ async function pickFirmware(services: Services, raw: unknown): Promise<{
     mkdirSync(ps1BiosDir(), { recursive: true });
     copyFileSync(source, path.join(ps1BiosDir(), path.basename(source).toLowerCase()));
     console.log(`[nest] ps1 bios imported: ${source} -> ${ps1BiosDir()}`);
+    return { ok: true, state: firmwareStates(services).find((state) => state.kind === kind) };
+  }
+
+  if (kind === 'ps2-bios') {
+    const picked = await dialog.showOpenDialog({
+      title: '选择 PS2 BIOS（scph39001.bin 等，4 MB）',
+      properties: ['openFile'],
+      filters: [{ name: 'PS2 BIOS', extensions: ['bin'] }],
+    });
+    if (picked.canceled || picked.filePaths.length === 0) return { ok: true, canceled: true };
+    const source = picked.filePaths[0];
+    if (statSync(source).size !== 4 * 1024 * 1024) return { ok: false, error: 'bad-size-ps2-bios' };
+    const dir = pcsx2BiosDir(app.getPath('userData'));
+    mkdirSync(dir, { recursive: true });
+    copyFileSync(source, path.join(dir, path.basename(source).toLowerCase()));
+    console.log(`[nest] ps2 bios imported: ${source} -> ${dir}`);
     return { ok: true, state: firmwareStates(services).find((state) => state.kind === kind) };
   }
 
@@ -1091,6 +1128,17 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   }
 
   if (azaharHomeMenu) args = [azaharHomeMenu];
+
+  if (engine.id === 'pcsx2') {
+    // PCSX2 needs a complete ini; seed it once, then refuse a BIOS-less boot
+    // (both direct play and the -bios system browser require it).
+    ensurePcsx2Data(app.getPath('userData'), path.join(enginesDir(), 'pcsx2', 'seed'));
+    if (pcsx2BiosFiles(app.getPath('userData')).length === 0) {
+      console.error('[nest] PCSX2 需要 PS2 BIOS：请在「设置 → PlayStation」导入自备 BIOS。');
+      return { ok: false, error: 'missing-ps2-bios' };
+    }
+    applyControls(services, 'pcsx2', false);
+  }
 
   if (engine.id === 'mgba') applyControls(services, 'mgba', false);
   if (engine.id === 'ares') applyControls(services, 'ares', false);

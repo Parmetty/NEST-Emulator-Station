@@ -114,6 +114,15 @@ async function sniffDiscSystem(file: string, ext: string): Promise<string | null
     const magic = buffer.readUInt32BE(0);
     if (magic === GC_MAGIC) return 'ngc';
     if (magic === WII_MAGIC) return 'wii';
+
+    // PS2 ISO: the ISO9660 system area carries "PLAYSTATION" in SYSTEM.CNF /
+    // the volume descriptor. Scan the first 1 MB for the ASCII marker.
+    const probe = Buffer.alloc(1024 * 1024);
+    const probeRead = await handle.read(probe, 0, probe.length, 0);
+    if (probeRead.bytesRead > 0) {
+      const text = probe.subarray(0, probeRead.bytesRead).toString('latin1');
+      if (text.includes('PLAYSTATION')) return 'ps2';
+    }
     return null;
   } catch {
     return null;

@@ -36,6 +36,7 @@ export type FirmwareKind =
   | 'dsi-firmware'
   | 'cemu-keys'
   | 'ps1-bios'
+  | 'ps2-bios'
   | 'wiiu-mlc';
 
 export type FirmwareState = {

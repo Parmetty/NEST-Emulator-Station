@@ -94,6 +94,8 @@ Nintendo, Microsoft, or Sony.
 
 - **SwanStation** (`resources/engines/swanstation/swanstation_libretro.dll`) — GPLv3, a DuckStation hard fork for libretro.
   Source: https://github.com/libretro/swanstation
+- **PCSX2** (`resources/engines/pcsx2/`) — GPLv3. Source: https://github.com/PCSX2/pcsx2
+  The bundled MSVC runtime DLLs are redistributable Microsoft Visual C++ runtime components.
 
 ## Fonts
 

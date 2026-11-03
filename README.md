@@ -5,7 +5,7 @@
 
 ![Nest 首页](shots/app.png)
 
-> 当前：**0.4.1-beta.1** —— Windows 桌面版 · 九台任天堂主机（含 NDS 四机型）+ 四台 PlayStation（界面就绪）· 六个内置引擎 + 自写 libretro 宿主 · 免安装携带版
+> 当前：**0.4.1-beta.1** —— Windows 桌面版 · 九台任天堂主机（含 NDS 四机型）+ PS1/PS2（PSP/PS3 界面就绪）· 六个内置引擎 + 自写 libretro 宿主 · 免安装携带版
 
 ## 下载
 
@@ -39,7 +39,7 @@ SHA256  0C38660097C310BCC296A4B051D09096E1591111B88314A4A1E4C4BAEE246308
 | 3DS | Azahar 2126.2 | ✅ | 🟡 **实验性** HOME Menu（需 Azahar 系统文件，已恢复入口） |
 | Wii U | Cemu 2.6 | ✅ `.wua/.wud/.wux` | ⚠️ **实验性** Wii U Menu（Cemu 2.6 限制，见下方已知限制） |
 | PS1 | SwanStation（libretro） | ✅ | ❌ 无系统菜单（可选 DuckStation BIOS shell） |
-| PS2 | PCSX2（待接入） | ✖ | 🟡 计划：BIOS 浏览器（`-bios`） |
+| PS2 | PCSX2 2.8.2 | ✅ | ✅ PS2 浏览器（`-bios`，需 BIOS） |
 | PSP | PPSSPP（待接入） | ✖ | 🟡 计划：XMB（需 PPSSPP 1.21+） |
 | PS3 | RPCS3（待接入） | ✖ | ❌ 无 XMB |
 

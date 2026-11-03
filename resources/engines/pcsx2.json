@@ -1,29 +1,33 @@
 {
-    "id":  "pcsx2",
-    "name":  "PCSX2",
-    "systems":  [
-                    "ps2"
-                ],
-    "kind":  "native",
-    "detect":  {
-                   "paths":  [
-                                 "%PROGRAMFILES%\\PCSX2\\pcsx2-qt.exe"
-                             ]
-               },
-    "download":  {
-                     "homepage":  "https://pcsx2.net/"
-                 },
-    "launch":  {
-                   "args":  [
-                                "{rom}"
-                            ],
-                   "systemArgs":  [
-
-                                  ],
-                   "cwd":  "engineDir"
-               },
-    "capabilities":  {
-                         "saveStates":  true,
-                         "systemMode":  null
-                     }
+  "id": "pcsx2",
+  "name": "PCSX2",
+  "systems": ["ps2"],
+  "kind": "native",
+  "detect": {
+    "paths": [
+      "{engines}/pcsx2/pcsx2-qt.exe",
+      "%PROGRAMFILES%/PCSX2/pcsx2-qt.exe"
+    ]
+  },
+  "download": {
+    "homepage": "https://pcsx2.net/"
+  },
+  "launch": {
+    "args": [
+      "-batch",
+      "-datapath", "{userData}/playstation",
+      "{rom}"
+    ],
+    "systemArgs": [
+      "-batch", "-bios",
+      "-datapath", "{userData}/playstation"
+    ],
+    "fullscreenFlag": "-fullscreen",
+    "cwd": "engineDir"
+  },
+  "captureAspect": 1.333333,
+  "capabilities": {
+    "saveStates": true,
+    "systemMode": "PS2 浏览器（BIOS）"
+  }
 }

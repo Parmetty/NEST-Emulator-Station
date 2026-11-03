@@ -26,7 +26,7 @@ type Selection = { type: 'family' | 'system'; id: string };
 const SHELF_COLUMNS = 5;
 
 /** Consoles with editable keyboard bindings, in the order the chips are shown. */
-const KEY_SYSTEMS = (['gba', 'fc', 'sfc', 'n64', 'nds', 'ngc', 'wii', '3ds', 'wiiu', 'ps1'] as const).flatMap((id) => {
+const KEY_SYSTEMS = (['gba', 'fc', 'sfc', 'n64', 'nds', 'ngc', 'wii', '3ds', 'wiiu', 'ps1', 'ps2'] as const).flatMap((id) => {
   const system = systemById.get(id);
   return system ? [system] : [];
 });
@@ -35,7 +35,7 @@ const SETTINGS_TABS = [
   { id: 'nest', name: 'Nest', hint: '通用偏好 · 游戏文件夹' },
   { id: 'nintendo', name: 'Nintendo', hint: '系统文件 · 键位' },
   { id: 'xbox', name: 'Xbox', hint: '尚未接入' },
-  { id: 'playstation', name: 'PlayStation', hint: 'PS1 已接入' },
+  { id: 'playstation', name: 'PlayStation', hint: 'PS1/PS2 已接入' },
 ] as const;
 type SettingsTab = (typeof SETTINGS_TABS)[number]['id'];
 
@@ -706,6 +706,8 @@ export default function App() {
         'invalid-wiiu-mlc': 'Wii U NAND 目录无效：缺少 sys/title/00050010/10040000 或 usr/',
         'missing-cemu-keys': '缺少 Cemu keys.txt：请到「设置 → 系统文件（自备）」导入自备密钥',
         'bad-size-ps1-bios': 'PS1 BIOS 应为 512 KB（scph5500/scph5501/scph5502）',
+        'bad-size-ps2-bios': 'PS2 BIOS 应为 4 MB（scph39001 等）',
+        'missing-ps2-bios': '缺少 PS2 BIOS：请到「设置 → PlayStation」导入自备的 PS2 BIOS',
         'missing-3ds-system-files':
           '3DS HOME Menu 需要 Azahar 系统文件：请先用真机 + Artic Setup Tool 在 Azahar 里执行 Set Up System Files',
       };
@@ -1431,7 +1433,7 @@ export default function App() {
                           IPL / WAD 需要你自己从主机 dump，Nest 不打包也不下载；导入后会复制到本机数据目录。
                         </p>
 
-                        {firmware.filter((item) => item.kind !== 'ps1-bios').map((item) => (
+                        {firmware.filter((item) => item.kind !== 'ps1-bios' && item.kind !== 'ps2-bios').map((item) => (
                           <div className="fw-row" key={item.kind}>
                             <span>
                               {item.label}
@@ -1616,11 +1618,11 @@ export default function App() {
                 <div className="settings-panel">
                   <h2>PlayStation</h2>
                   <p className="dlg-note">
-                    PS1 已由内置 SwanStation（libretro）接管；PS2 / PSP / PS3 还在接入中。
+                    PS1（SwanStation）与 PS2（PCSX2）已接入；PSP / PS3 还在接入中。
                     PS1 BIOS 可选，缺省会自动使用 OpenBIOS。
                   </p>
                   {firmware
-                    .filter((item) => item.kind === 'ps1-bios')
+                    .filter((item) => item.kind === 'ps1-bios' || item.kind === 'ps2-bios')
                     .map((item) => (
                       <div className="fw-row" key={item.kind}>
                         <span>
