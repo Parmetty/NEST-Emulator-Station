@@ -1679,29 +1679,6 @@ export default function App() {
                         </div>
                       ))}
 
-                    <h2>子主机键位</h2>
-                    <p className="dlg-note">
-                      点主机名直接打开它的键位；PSP / PS3 尚未接入，暂时不可选。
-                    </p>
-                    <div className="key-engines" role="group" aria-label="选择 PlayStation 主机键位">
-                      {(families.find((family) => family.id === 'playstation')?.systems ?? []).map((system) => {
-                        const keyable = KEY_SYSTEMS.some((keySystem) => keySystem.id === system.id);
-                        return (
-                          <button
-                            key={system.id}
-                            className={`key-engine${system.id === keySystem.id ? ' on' : ''}`}
-                            disabled={!keyable}
-                            title={keyable ? `打开 ${system.name} 的键位` : `${system.name} 尚未接入`}
-                            onClick={() => {
-                              if (keyable) pickKeySystem(system.id);
-                            }}
-                          >
-                            {system.short ?? system.name}{' '}
-                            <small>{keyable ? system.year : '未接入'}</small>
-                          </button>
-                        );
-                      })}
-                    </div>
                   </div>
 
                   {renderKeys()}

@@ -325,7 +325,7 @@ function firmwareStates(services: Services): FirmwareState[] {
   if (ps1Bios.length > 0) {
     states.push({
       kind: 'ps1-bios',
-      label: 'PS1 BIOS（可选，SwanStation 缺省用 OpenBIOS）',
+      label: 'PS1 BIOS（可选）',
       status: 'ok',
       path: ps1BiosDir(),
       detail: ps1Bios.map((file) => path.basename(file)).join(' / '),
@@ -333,7 +333,7 @@ function firmwareStates(services: Services): FirmwareState[] {
   } else {
     states.push({
       kind: 'ps1-bios',
-      label: 'PS1 BIOS（可选，SwanStation 缺省用 OpenBIOS）',
+      label: 'PS1 BIOS（可选）',
       status: 'missing',
       path: null,
       detail: '未导入；OpenBIOS 可兜底',
@@ -344,7 +344,7 @@ function firmwareStates(services: Services): FirmwareState[] {
   if (ps2Bios.length > 0) {
     states.push({
       kind: 'ps2-bios',
-      label: 'PS2 BIOS（必需，PS2 浏览器与直读都要）',
+      label: 'PS2 BIOS（必需）',
       status: 'ok',
       path: pcsx2BiosDir(app.getPath('userData')),
       detail: ps2Bios.map((file) => path.basename(file)).join(' / '),
@@ -352,7 +352,7 @@ function firmwareStates(services: Services): FirmwareState[] {
   } else {
     states.push({
       kind: 'ps2-bios',
-      label: 'PS2 BIOS（必需，PS2 浏览器与直读都要）',
+      label: 'PS2 BIOS（必需）',
       status: 'missing',
       path: null,
       detail: '未导入',
