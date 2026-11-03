@@ -38,7 +38,7 @@ SHA256  0C38660097C310BCC296A4B051D09096E1591111B88314A4A1E4C4BAEE246308
 | Wii | Dolphin 2609a / libretro 宿主 | 🟡 代码就绪，待镜像验证 | ✅ Wii Menu（WAD，经 libretro 宿主，无 UIA） |
 | 3DS | Azahar 2126.2 | ✅ | 🟡 **实验性** HOME Menu（需 Azahar 系统文件，已恢复入口） |
 | Wii U | Cemu 2.6 | ✅ `.wua/.wud/.wux` | ⚠️ **实验性** Wii U Menu（Cemu 2.6 限制，见下方已知限制） |
-| PS1 | SwanStation（待接入） | ✖ | 🟡 计划：DuckStation BIOS shell（可选） |
+| PS1 | SwanStation（libretro） | ✅ | ❌ 无系统菜单（可选 DuckStation BIOS shell） |
 | PS2 | PCSX2（待接入） | ✖ | 🟡 计划：BIOS 浏览器（`-bios`） |
 | PSP | PPSSPP（待接入） | ✖ | 🟡 计划：XMB（需 PPSSPP 1.21+） |
 | PS3 | RPCS3（待接入） | ✖ | ❌ 无 XMB |
@@ -85,9 +85,9 @@ SHA256  0C38660097C310BCC296A4B051D09096E1591111B88314A4A1E4C4BAEE246308
 |---|---|
 | ![金手指菜单](shots/cheat-menu.png) | ![金手指面板](shots/cheat-dialog.png) |
 
-| PlayStation 主机墙 | |
+| PlayStation 主机墙 | PlayStation 设置 |
 |---|---|
-| ![PlayStation](shots/ps-family.png) | |
+| ![PlayStation](shots/ps-family.png) | ![PlayStation 设置](shots/settings-playstation.png) |
 
 ## 从源码运行
 

@@ -2,7 +2,7 @@
 
 本文件记录每次发布的可见变化。技术细节在 `docs/nintendo/STATE.md`，决策理由在 `docs/nintendo/DECISIONS.md`，待办在 `docs/nintendo/PROGRESS.md`。
 
-## 未发布 — PS 主机墙 + 调研 + 文档按家族归档
+## 未发布 — PS1 接入 + PS 主机墙 + 调研 + 文档按家族归档
 
 - 文档重构：任天堂系全部文档移入 `docs/nintendo/`（含 evidence / mock-v1 / patches），
   新增 `docs/playstation/PLAN-PLAYSTATION.md` 与总路线 `docs/ROADMAP.md`
@@ -16,6 +16,10 @@
 - **3DS HOME Menu 入口恢复**：之前从 Citra 换 Azahar 时因“Azahar 不支持 HOME Menu”被删；现在按源码核实（`Boot Home Menu` → `BootGame(ncch)`）恢复为实验性入口
 - 3DS 系统模式启动前扫描 Azahar `nand/<SYSTEM_ID>/title/00040030/<region>/content/*.app`，缺失时明确提示用 Artic Setup Tool 安装系统文件
 - 新增 `docs/playstation/DOWNLOADS-PS1-PS2.md`：PS1/PS2 需要的 BIOS、镜像格式与坑
+- **PS1 直读接入（SwanStation / libretro）**：内置 `swanstation_libretro.dll`，复用自写宿主；扫描 `.cue/.chd/.pbp/.mds/.ccd`
+- 宿主适配：非 Dolphin core 自动把窗口匹配到核心输出的真实帧尺寸（PS1 640×478），不再出现“大窗口里左下角小画面”
+- 设置 → PlayStation：PS1 BIOS 导入（512 KB 校验，落到 `data/libretro/sys`，可选，缺省 OpenBIOS）
+- 实测：FIFA Soccer 2005 (USA) `.cue` 经 Nest 扫描 → 启动 → 封面抓取全链路通过（59 fps，640×478）
 
 ## 0.4.1-beta.1 — 2026-11-03 · NDS/DSi 整条线 + 设置拆分 + GBA 金手指
 

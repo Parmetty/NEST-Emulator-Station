@@ -38,6 +38,14 @@ describe('scanner extensions', () => {
     expect(EXT_TO_SYSTEM.dsi).toBe('nds');
     expect(EXT_TO_SYSTEM.ids).toBe('nds');
     expect(EXT_TO_SYSTEM.srl).toBe('nds');
+  });
+
+  it('maps PS1 disc formats', () => {
+    expect(EXT_TO_SYSTEM.cue).toBe('ps1');
+    expect(EXT_TO_SYSTEM.chd).toBe('ps1');
+    expect(EXT_TO_SYSTEM.pbp).toBe('ps1');
+    expect(EXT_TO_SYSTEM.mds).toBe('ps1');
+    expect(EXT_TO_SYSTEM.ccd).toBe('ps1');
     expect(EXT_TO_SYSTEM.wia).toBe('wii');
     expect(EXT_TO_SYSTEM.gcz).toBe('ngc');
   });

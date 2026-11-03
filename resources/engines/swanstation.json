@@ -1,10 +1,13 @@
 {
   "id": "swanstation",
-  "name": "SwanStation (libretro)",
+  "name": "SwanStation",
   "systems": ["ps1"],
   "kind": "native",
   "detect": {
-    "paths": []
+    "paths": [
+      "{engines}/../tools/nest-libretro.exe",
+      "{engines}/swanstation/swanstation_libretro.dll"
+    ]
   },
   "download": {
     "homepage": "https://github.com/libretro/swanstation"
@@ -23,6 +26,7 @@
     "systemArgs": [],
     "cwd": "engineDir"
   },
+  "captureAspect": 1.333333,
   "capabilities": {
     "saveStates": true,
     "systemMode": null

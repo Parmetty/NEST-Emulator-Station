@@ -344,7 +344,8 @@ namespace NestLibretro
                 Log.Write("default core option: dolphin_efb_scale=" + efbScale + " (window scale " + _scale + ")");
             }
 
-            HostVideo.Init(_scale, _fullscreen, _headless);
+            HostVideo.SetCoreName(Path.GetFileName(_corePath));
+      HostVideo.Init(_scale, _fullscreen, _headless);
             HostInput.Init(_headless);
             HostInput.Configure(_keySpec, !_noMouse);
 

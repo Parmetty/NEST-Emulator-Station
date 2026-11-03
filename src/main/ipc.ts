@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdirSync, existsSync, readFileSync, readdirSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, existsSync, readFileSync, readdirSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain, nativeImage, shell } from 'electron';
@@ -281,6 +281,20 @@ function ensureMelondsConfig(console: MelondsConsole, systemMode: boolean): bool
   return true;
 }
 
+const ps1BiosDir = (): string => path.join(app.getPath('userData'), 'libretro', 'sys');
+
+function ps1BiosFiles(): string[] {
+  const dir = ps1BiosDir();
+  if (!existsSync(dir)) return [];
+  try {
+    return readdirSync(dir)
+      .filter((name) => /\.bin$/i.test(name))
+      .map((name) => path.join(dir, name));
+  } catch {
+    return [];
+  }
+}
+
 function firmwareStates(services: Services): FirmwareState[] {
   const states: FirmwareState[] = [];
 
@@ -303,6 +317,25 @@ function firmwareStates(services: Services): FirmwareState[] {
       detail = '无法读取';
     }
     states.push({ kind: 'gc-ipl', label: 'GameCube IPL（系统菜单）', status, path: ipl.file, detail });
+  }
+
+  const ps1Bios = ps1BiosFiles();
+  if (ps1Bios.length > 0) {
+    states.push({
+      kind: 'ps1-bios',
+      label: 'PS1 BIOS（可选，SwanStation 缺省用 OpenBIOS）',
+      status: 'ok',
+      path: ps1BiosDir(),
+      detail: ps1Bios.map((file) => path.basename(file)).join(' / '),
+    });
+  } else {
+    states.push({
+      kind: 'ps1-bios',
+      label: 'PS1 BIOS（可选，SwanStation 缺省用 OpenBIOS）',
+      status: 'missing',
+      path: null,
+      detail: '未导入；OpenBIOS 可兜底',
+    });
   }
 
   const wad = wiiMenuWadPath();
@@ -426,7 +459,8 @@ async function pickFirmware(services: Services, raw: unknown): Promise<{
     kind !== 'nds-bios' &&
     kind !== 'dsi-firmware' &&
     kind !== 'cemu-keys' &&
-    kind !== 'wiiu-mlc'
+    kind !== 'wiiu-mlc' &&
+    kind !== 'ps1-bios'
   ) {
     return { ok: false, error: 'bad-request' };
   }
@@ -456,6 +490,21 @@ async function pickFirmware(services: Services, raw: unknown): Promise<{
     if (!isValidWiiuMlc(dir)) return { ok: false, error: 'invalid-wiiu-mlc' };
     await services.store.setSettings({ cemuMlc: dir });
     console.log(`[nest] wiiu mlc set: ${dir}`);
+    return { ok: true, state: firmwareStates(services).find((state) => state.kind === kind) };
+  }
+
+  if (kind === 'ps1-bios') {
+    const picked = await dialog.showOpenDialog({
+      title: '选择 PS1 BIOS（scph5501.bin 等，512 KB）',
+      properties: ['openFile'],
+      filters: [{ name: 'PS1 BIOS', extensions: ['bin'] }],
+    });
+    if (picked.canceled || picked.filePaths.length === 0) return { ok: true, canceled: true };
+    const source = picked.filePaths[0];
+    if (statSync(source).size !== 512 * 1024) return { ok: false, error: 'bad-size-ps1-bios' };
+    mkdirSync(ps1BiosDir(), { recursive: true });
+    copyFileSync(source, path.join(ps1BiosDir(), path.basename(source).toLowerCase()));
+    console.log(`[nest] ps1 bios imported: ${source} -> ${ps1BiosDir()}`);
     return { ok: true, state: firmwareStates(services).find((state) => state.kind === kind) };
   }
 

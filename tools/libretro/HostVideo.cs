@@ -642,8 +642,8 @@ namespace NestLibretro
         {
             try
             {
-                int width = _coreVpWidth > 0 ? _coreVpWidth : 0;
-                int height = _coreVpHeight > 0 ? _coreVpHeight : 0;
+                int width = (!IsDolphinCore() && _hwWidth > 0) ? _hwWidth : (_coreVpWidth > 0 ? _coreVpWidth : 0);
+                int height = (!IsDolphinCore() && _hwHeight > 0) ? _hwHeight : (_coreVpHeight > 0 ? _coreVpHeight : 0);
                 if (width <= 0 || height <= 0)
                 {
                     width = _hwWidth > 0 ? _hwWidth : (_videoWidth > 0 ? _videoWidth : 640);
@@ -1024,6 +1024,19 @@ namespace NestLibretro
             return true;
         }
 
+        private static string _coreName = "";
+
+        /// <summary>Name of the loaded core file (set by Program before Init).</summary>
+        public static void SetCoreName(string name)
+        {
+            _coreName = name ?? "";
+        }
+
+        private static bool IsDolphinCore()
+        {
+            return _coreName.IndexOf("dolphin", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
         private static int _coreVpWidth;
         private static int _coreVpHeight;
         private static bool _viewportChecked;
@@ -1036,7 +1049,22 @@ namespace NestLibretro
         /// </summary>
         private static void MatchWindowToCoreViewport()
         {
-            if (_viewportChecked) return;
+            if (_viewportChecked)
+            {
+                // Non-Dolphin cores only report the real frame size on their first
+                // hardware frame, which can arrive after the first Present(). Keep the
+                // window matched to that size once it is known.
+                if (!IsDolphinCore() && _hwWidth > 0 && _hwHeight > 0 && !_fullscreen && _window != IntPtr.Zero)
+                {
+                    int ww, wh;
+                    if (Sdl3.SDL_GetWindowSizeInPixels(_window, out ww, out wh) && (ww != _hwWidth || wh != _hwHeight))
+                    {
+                        Sdl3.SDL_SetWindowSize(_window, _hwWidth, _hwHeight);
+                        Log.Write("window resized to core frame " + _hwWidth + "x" + _hwHeight);
+                    }
+                }
+                return;
+            }
             IntPtr proc = GlProc("glGetIntegerv");
             if (proc == IntPtr.Zero) return;
 
@@ -1065,11 +1093,24 @@ namespace NestLibretro
             if (_fullscreen || _window == IntPtr.Zero) return;
             int winW, winH;
             if (!Sdl3.SDL_GetWindowSizeInPixels(_window, out winW, out winH)) return;
-            // The Dolphin core always blits its 640x480 output into the lower-left
-            // corner, whatever the window size is, so match the window to that
-            // surface instead of to the reported GL viewport.
-            int targetW = 640 * (_scale < 1 ? 1 : _scale);
-            int targetH = 480 * (_scale < 1 ? 1 : _scale);
+            int targetW;
+            int targetH;
+            if (IsDolphinCore())
+            {
+                // The Dolphin core always blits its 640x480 output into the lower-left
+                // corner, whatever the window size is, so match the window to that
+                // surface instead of to the reported GL viewport.
+                targetW = 640 * (_scale < 1 ? 1 : _scale);
+                targetH = 480 * (_scale < 1 ? 1 : _scale);
+            }
+            else
+            {
+                // Other cores (e.g. SwanStation) draw into their own viewport and do
+                // not scale it. Match the window to that viewport so the picture fills
+                // the window instead of sitting in a corner of a much larger surface.
+                targetW = _hwWidth > 0 ? _hwWidth : _coreVpWidth;
+                targetH = _hwHeight > 0 ? _hwHeight : _coreVpHeight;
+            }
             if (winW != targetW || winH != targetH)
             {
                 Sdl3.SDL_SetWindowSize(_window, targetW, targetH);

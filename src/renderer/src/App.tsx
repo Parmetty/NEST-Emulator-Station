@@ -35,7 +35,7 @@ const SETTINGS_TABS = [
   { id: 'nest', name: 'Nest', hint: '通用偏好 · 游戏文件夹' },
   { id: 'nintendo', name: 'Nintendo', hint: '系统文件 · 键位' },
   { id: 'xbox', name: 'Xbox', hint: '尚未接入' },
-  { id: 'playstation', name: 'PlayStation', hint: '尚未接入' },
+  { id: 'playstation', name: 'PlayStation', hint: 'PS1 已接入' },
 ] as const;
 type SettingsTab = (typeof SETTINGS_TABS)[number]['id'];
 
@@ -705,6 +705,7 @@ export default function App() {
         'missing-wiiu-mlc': '缺少 Wii U NAND（MLC）：请到「设置 → 系统文件（自备）」选择 MLC 目录',
         'invalid-wiiu-mlc': 'Wii U NAND 目录无效：缺少 sys/title/00050010/10040000 或 usr/',
         'missing-cemu-keys': '缺少 Cemu keys.txt：请到「设置 → 系统文件（自备）」导入自备密钥',
+        'bad-size-ps1-bios': 'PS1 BIOS 应为 512 KB（scph5500/scph5501/scph5502）',
         'missing-3ds-system-files':
           '3DS HOME Menu 需要 Azahar 系统文件：请先用真机 + Artic Setup Tool 在 Azahar 里执行 Set Up System Files',
       };
@@ -1430,7 +1431,7 @@ export default function App() {
                           IPL / WAD 需要你自己从主机 dump，Nest 不打包也不下载；导入后会复制到本机数据目录。
                         </p>
 
-                        {firmware.map((item) => (
+                        {firmware.filter((item) => item.kind !== 'ps1-bios').map((item) => (
                           <div className="fw-row" key={item.kind}>
                             <span>
                               {item.label}
@@ -1611,14 +1612,50 @@ export default function App() {
                   )}
                 </div>
                 </div>
+              ) : settingsTab === 'playstation' ? (
+                <div className="settings-panel">
+                  <h2>PlayStation</h2>
+                  <p className="dlg-note">
+                    PS1 已由内置 SwanStation（libretro）接管；PS2 / PSP / PS3 还在接入中。
+                    PS1 BIOS 可选，缺省会自动使用 OpenBIOS。
+                  </p>
+                  {firmware
+                    .filter((item) => item.kind === 'ps1-bios')
+                    .map((item) => (
+                      <div className="fw-row" key={item.kind}>
+                        <span>
+                          {item.label}
+                          <small>
+                            {item.status === 'ok'
+                              ? '已导入'
+                              : item.status === 'invalid'
+                                ? '校验未通过'
+                                : '未导入'}
+                            {item.detail ? ` · ${item.detail}` : ''}
+                          </small>
+                        </span>
+                        <button className="ghost-btn" onClick={() => void importFirmware(item.kind)}>
+                          选择文件…
+                        </button>
+                      </div>
+                    ))}
+                  <div className="locked-systems">
+                    {(families.find((family) => family.id === 'playstation')?.systems ?? []).map((system) => (
+                      <span key={system.id}>
+                        {system.name}
+                        <small>{system.year}</small>
+                      </span>
+                    ))}
+                  </div>
+                </div>
               ) : (
                 <div className="settings-panel">
-                  <h2>{settingsTab === 'xbox' ? 'Xbox' : 'PlayStation'}</h2>
+                  <h2>Xbox</h2>
                   <p className="dlg-note">
                     该家族尚未接入。Nest 已经预留主机位置，引擎接好后会自动出现在游戏库里。
                   </p>
                   <div className="locked-systems">
-                    {(families.find((family) => family.id === settingsTab)?.systems ?? []).map((system) => (
+                    {(families.find((family) => family.id === 'xbox')?.systems ?? []).map((system) => (
                       <span key={system.id}>
                         {system.name}
                         <small>{system.year}</small>

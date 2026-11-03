@@ -90,6 +90,11 @@ Nintendo, Game Boy, Famicom, GameCube, Wii, Wii U and the respective console des
 are trademarks of Nintendo. Nest is not affiliated with, endorsed by, or sponsored by
 Nintendo, Microsoft, or Sony.
 
+## Emulator cores
+
+- **SwanStation** (`resources/engines/swanstation/swanstation_libretro.dll`) — GPLv3, a DuckStation hard fork for libretro.
+  Source: https://github.com/libretro/swanstation
+
 ## Fonts
 
 Nunito (SIL Open Font License 1.1), embedded in the mock as a base64 data URI and
