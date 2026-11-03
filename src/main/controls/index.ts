@@ -67,6 +67,8 @@ function engineDirs(
       return { root: path.join(paths.userData, 'azahar') };
     case 'cemu':
       return { engineDir: engineDir ?? path.join(paths.enginesDir, 'cemu') };
+    case 'swanstation':
+      return { engineDir: engineDir ?? path.join(paths.enginesDir, 'swanstation') };
     default:
       return {};
   }
@@ -109,6 +111,11 @@ export function applyEngineControls(
     case 'cemu':
       result = applyCemuControls(dirs.engineDir!, bindings, force);
       break;
+    case 'swanstation':
+      // The libretro host receives the layout through `--keys` at launch; there
+      // is no engine-side file to rewrite.
+      result = { applied: true, files: [] };
+      break;
     default:
       return unsupported;
   }
@@ -135,6 +142,8 @@ export function readEngineControls(
       return readAresControls(dirs.engineDir!);
     case 'cemu':
       return readCemuControls(dirs.engineDir!);
+    case 'swanstation':
+      return null;
     default:
       return null;
   }

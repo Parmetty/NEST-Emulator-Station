@@ -49,6 +49,7 @@ import {
 } from './cemu';
 import {
   findWiiMenuWad,
+  hostKeyToken,
   hostKeysSpec,
   libretroAvailability,
   libretroShotDir,
@@ -1151,6 +1152,35 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   // Pass the player's custom keyboard layout to the host. The host already has
   // a sane default table; only overrides from the key-mapping panel are sent, so
   // an untouched install produces no --keys argument at all.
+  if (engine.id === 'swanstation') {
+    const hostActions: Record<PadAction, string> = {
+      up: 'UP',
+      down: 'DOWN',
+      left: 'LEFT',
+      right: 'RIGHT',
+      a: 'A',
+      b: 'B',
+      x: 'X',
+      y: 'Y',
+      l: 'L',
+      r: 'R',
+      start: 'START',
+      select: 'SELECT',
+    };
+    const bindings = effectiveBindings(services.store, 'swanstation');
+    const parts = (Object.entries(hostActions) as Array<[PadAction, string]>)
+      .map(([action, hostAction]) => {
+        const code = bindings[action];
+        const token = code ? hostKeyToken(code) : null;
+        return token ? `${hostAction}=${token}` : null;
+      })
+      .filter((part): part is string => Boolean(part));
+    if (parts.length > 0) {
+      args = [...args, '--keys', parts.join(',')];
+      console.log(`[nest] swanstation keys: ${parts.join(',')}`);
+    }
+  }
+
   if (engine.id === 'dolphin-lr') {
     const controls = services.store.getSettings().controls;
     const overrides = {

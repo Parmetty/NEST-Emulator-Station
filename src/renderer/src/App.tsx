@@ -26,7 +26,7 @@ type Selection = { type: 'family' | 'system'; id: string };
 const SHELF_COLUMNS = 5;
 
 /** Consoles with editable keyboard bindings, in the order the chips are shown. */
-const KEY_SYSTEMS = (['gba', 'fc', 'sfc', 'n64', 'nds', 'ngc', 'wii', '3ds', 'wiiu'] as const).flatMap((id) => {
+const KEY_SYSTEMS = (['gba', 'fc', 'sfc', 'n64', 'nds', 'ngc', 'wii', '3ds', 'wiiu', 'ps1'] as const).flatMap((id) => {
   const system = systemById.get(id);
   return system ? [system] : [];
 });
@@ -115,7 +115,7 @@ function displayLastPlayed(value: string | null): string {
 export default function App() {
   const [home, setHome] = useState<HomePayload | null>(null);
   const [sel, setSel] = useState<Selection>({ type: 'system', id: 'gba' });
-  const [expanded, setExpanded] = useState<Set<string>>(() => new Set(['nintendo']));
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const [favorites, setFavorites] = useState<Set<string>>(() => new Set());
   const [toast, setToast] = useState<string | null>(null);
   const [overlay, setOverlay] = useState<{ name: string; meta: string } | null>(null);

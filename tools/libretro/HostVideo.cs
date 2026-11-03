@@ -218,17 +218,21 @@ namespace NestLibretro
             int width = 640;
             int height = 480;
 
-            ulong flags = Sdl3.SDL_WINDOW_OPENGL;
+            ulong flags = Sdl3.SDL_WINDOW_OPENGL | Sdl3.SDL_WINDOW_RESIZABLE;
             if (_headless) flags |= Sdl3.SDL_WINDOW_HIDDEN;
             else
             {
                 if (_fullscreen) flags |= Sdl3.SDL_WINDOW_FULLSCREEN;
             }
 
-            _window = Sdl3.SDL_CreateWindow(Native.AllocUtf8("Nest"), width * _scale, height * _scale, flags);
+            // Non-Dolphin cores are scaled to the window ourselves; start at a
+            // comfortable 4:3 size instead of a tiny native-resolution window.
+            int windowW = IsDolphinCore() ? width * _scale : 1024;
+            int windowH = IsDolphinCore() ? height * _scale : 768;
+            _window = Sdl3.SDL_CreateWindow(Native.AllocUtf8("Nest"), windowW, windowH, flags);
             if (_window != IntPtr.Zero)
             {
-                Log.Write("window created: " + (width * _scale) + "x" + (height * _scale) +
+                Log.Write("window created: " + windowW + "x" + windowH +
                           " scale=" + _scale + " hidden=" + _headless + " fullscreen=" + _fullscreen);
             }
         }
@@ -277,6 +281,10 @@ namespace NestLibretro
             _videoWidth = (int)width;
             _videoHeight = (int)height;
 
+            // Non-Dolphin cores are presented through our own scaler; keep the
+            // window size the user (or CreateWindow) chose instead of forcing it
+            // to the core's native geometry.
+            if (!IsDolphinCore()) return;
             if (_window == IntPtr.Zero) return;
             if (!Sdl3.SDL_SetWindowSize(_window, _videoWidth * _scale, _videoHeight * _scale))
             {
@@ -552,6 +560,11 @@ namespace NestLibretro
             if (_hwRenderActive && _glActive)
             {
                 MatchWindowToCoreViewport();
+                if (!IsDolphinCore())
+                {
+                    PresentHardwareScaled(capture);
+                    return;
+                }
                 if (capture) CaptureGlFrame();
 
                 if (!Sdl3.SDL_GL_SwapWindow(_window))
@@ -642,8 +655,10 @@ namespace NestLibretro
         {
             try
             {
-                int width = (!IsDolphinCore() && _hwWidth > 0) ? _hwWidth : (_coreVpWidth > 0 ? _coreVpWidth : 0);
-                int height = (!IsDolphinCore() && _hwHeight > 0) ? _hwHeight : (_coreVpHeight > 0 ? _coreVpHeight : 0);
+                int width = (!IsDolphinCore() && _destW > 0) ? _destW : ((!IsDolphinCore() && _hwWidth > 0) ? _hwWidth : (_coreVpWidth > 0 ? _coreVpWidth : 0));
+                int height = (!IsDolphinCore() && _destH > 0) ? _destH : ((!IsDolphinCore() && _hwHeight > 0) ? _hwHeight : (_coreVpHeight > 0 ? _coreVpHeight : 0));
+                int readX = (!IsDolphinCore() && _destW > 0) ? _destX : 0;
+                int readY = (!IsDolphinCore() && _destH > 0) ? _destY : 0;
                 if (width <= 0 || height <= 0)
                 {
                     width = _hwWidth > 0 ? _hwWidth : (_videoWidth > 0 ? _videoWidth : 640);
@@ -691,7 +706,7 @@ namespace NestLibretro
                 {
                     GlReadPixelsFn readPixels = (GlReadPixelsFn)Marshal.GetDelegateForFunctionPointer(
                         _glReadPixels, typeof(GlReadPixelsFn));
-                    readPixels(0, 0, width, height, Sdl3.GL_RGBA, Sdl3.GL_UNSIGNED_BYTE, buffer);
+                    readPixels(readX, readY, width, height, Sdl3.GL_RGBA, Sdl3.GL_UNSIGNED_BYTE, buffer);
 
                     byte[] rgba = new byte[rowBytes * height];
                     Marshal.Copy(buffer, rgba, 0, rgba.Length);
@@ -1049,22 +1064,7 @@ namespace NestLibretro
         /// </summary>
         private static void MatchWindowToCoreViewport()
         {
-            if (_viewportChecked)
-            {
-                // Non-Dolphin cores only report the real frame size on their first
-                // hardware frame, which can arrive after the first Present(). Keep the
-                // window matched to that size once it is known.
-                if (!IsDolphinCore() && _hwWidth > 0 && _hwHeight > 0 && !_fullscreen && _window != IntPtr.Zero)
-                {
-                    int ww, wh;
-                    if (Sdl3.SDL_GetWindowSizeInPixels(_window, out ww, out wh) && (ww != _hwWidth || wh != _hwHeight))
-                    {
-                        Sdl3.SDL_SetWindowSize(_window, _hwWidth, _hwHeight);
-                        Log.Write("window resized to core frame " + _hwWidth + "x" + _hwHeight);
-                    }
-                }
-                return;
-            }
+            if (_viewportChecked) return;
             IntPtr proc = GlProc("glGetIntegerv");
             if (proc == IntPtr.Zero) return;
 
@@ -1105,11 +1105,9 @@ namespace NestLibretro
             }
             else
             {
-                // Other cores (e.g. SwanStation) draw into their own viewport and do
-                // not scale it. Match the window to that viewport so the picture fills
-                // the window instead of sitting in a corner of a much larger surface.
-                targetW = _hwWidth > 0 ? _hwWidth : _coreVpWidth;
-                targetH = _hwHeight > 0 ? _hwHeight : _coreVpHeight;
+                // Non-Dolphin cores are presented through PresentHardwareScaled();
+                // keep the user's window size and scale inside it.
+                return;
             }
             if (winW != targetW || winH != targetH)
             {
@@ -1152,6 +1150,133 @@ namespace NestLibretro
         private delegate void GlGetIntegervPtrFn(uint pname, IntPtr data);
 
         private const uint GL_VIEWPORT = 0x0BA2;
+
+        private static bool _scaleReady;
+        private static uint _scaleFbo;
+        private static uint _scaleTex;
+        private static int _scaleW;
+        private static int _scaleH;
+
+        private const uint GL_LINEAR = 0x2601;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void GlClearColorFn(float r, float g, float b, float a);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void GlClearFn(uint mask);
+
+        /// <summary>
+        /// Copies the core's hardware frame into an offscreen texture and blits it
+        /// into the window with the core's aspect ratio (letterboxed). This lets
+        /// PS1/PSP-style cores render at their native size while the window stays
+        /// resizable and comfortably large.
+        /// </summary>
+        private static void PresentHardwareScaled(bool capture)
+        {
+            int fw = _hwWidth > 0 ? _hwWidth : _coreVpWidth;
+            int fh = _hwHeight > 0 ? _hwHeight : _coreVpHeight;
+            if (fw <= 0 || fh <= 0) return;
+            if (!EnsureScaleTarget(fw, fh))
+            {
+                Sdl3.SDL_GL_SwapWindow(_window);
+                return;
+            }
+
+            IntPtr bindProc = GlProc("glBindFramebuffer");
+            IntPtr blitProc = GlProc("glBlitFramebuffer");
+            if (bindProc == IntPtr.Zero || blitProc == IntPtr.Zero) return;
+            var bindFb = (GlBindFramebufferFn)Marshal.GetDelegateForFunctionPointer(bindProc, typeof(GlBindFramebufferFn));
+            var blit = (GlBlitFramebufferFn)Marshal.GetDelegateForFunctionPointer(blitProc, typeof(GlBlitFramebufferFn));
+
+            // 1. copy the core frame out of the default framebuffer
+            bindFb(GL_READ_FRAMEBUFFER, 0);
+            bindFb(GL_DRAW_FRAMEBUFFER, _scaleFbo);
+            blit(0, 0, fw, fh, 0, 0, fw, fh, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+            // 2. aspect-fit into the window
+            int ww = 0;
+            int wh = 0;
+            if (!Sdl3.SDL_GetWindowSizeInPixels(_window, out ww, out wh) || ww <= 0 || wh <= 0) return;
+            float aspect = HostEnvironment.Geometry.aspect_ratio;
+            if (aspect <= 0f || aspect > 4f) aspect = (float)fw / fh;
+            int dw;
+            int dh;
+            if (ww / (double)wh > aspect)
+            {
+                dh = wh;
+                dw = (int)Math.Round(wh * aspect);
+            }
+            else
+            {
+                dw = ww;
+                dh = (int)Math.Round(ww / aspect);
+            }
+            if (dw <= 0 || dh <= 0) return;
+            _destX = (ww - dw) / 2;
+            _destY = (wh - dh) / 2;
+            _destW = dw;
+            _destH = dh;
+
+            bindFb(GL_READ_FRAMEBUFFER, _scaleFbo);
+            bindFb(GL_DRAW_FRAMEBUFFER, 0);
+            IntPtr clearColorProc = GlProc("glClearColor");
+            IntPtr clearProc = GlProc("glClear");
+            if (clearColorProc != IntPtr.Zero && clearProc != IntPtr.Zero)
+            {
+                var clearColor = (GlClearColorFn)Marshal.GetDelegateForFunctionPointer(clearColorProc, typeof(GlClearColorFn));
+                var clear = (GlClearFn)Marshal.GetDelegateForFunctionPointer(clearProc, typeof(GlClearFn));
+                clearColor(0f, 0f, 0f, 1f);
+                clear(GL_COLOR_BUFFER_BIT);
+            }
+            blit(0, 0, fw, fh, _destX, _destY, _destX + dw, _destY + dh, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+            bindFb(Sdl3.GL_FRAMEBUFFER, 0);
+
+            if (capture) CaptureGlFrame();
+            Sdl3.SDL_GL_SwapWindow(_window);
+        }
+
+        private static bool EnsureScaleTarget(int width, int height)
+        {
+            if (_scaleReady && _scaleW == width && _scaleH == height) return true;
+            IntPtr genFbProc = GlProc("glGenFramebuffers");
+            IntPtr bindFbProc = GlProc("glBindFramebuffer");
+            IntPtr genTexProc = GlProc("glGenTextures");
+            IntPtr bindTexProc = GlProc("glBindTexture");
+            IntPtr texImageProc = GlProc("glTexImage2D");
+            IntPtr fbTexProc = GlProc("glFramebufferTexture2D");
+            if (genFbProc == IntPtr.Zero || bindFbProc == IntPtr.Zero || genTexProc == IntPtr.Zero ||
+                bindTexProc == IntPtr.Zero || texImageProc == IntPtr.Zero || fbTexProc == IntPtr.Zero)
+            {
+                return false;
+            }
+            Sdl3.SDL_GL_MakeCurrent(_window, _glContext);
+            var genFb = (GlGenFramebuffersFn)Marshal.GetDelegateForFunctionPointer(genFbProc, typeof(GlGenFramebuffersFn));
+            var bindFb = (GlBindFramebufferFn)Marshal.GetDelegateForFunctionPointer(bindFbProc, typeof(GlBindFramebufferFn));
+            var genTex = (GlGenTexturesFn)Marshal.GetDelegateForFunctionPointer(genTexProc, typeof(GlGenTexturesFn));
+            var bindTex = (GlBindTextureFn)Marshal.GetDelegateForFunctionPointer(bindTexProc, typeof(GlBindTextureFn));
+            var texImage = (GlTexImage2DFn)Marshal.GetDelegateForFunctionPointer(texImageProc, typeof(GlTexImage2DFn));
+            var fbTex = (GlFramebufferTexture2DFn)Marshal.GetDelegateForFunctionPointer(fbTexProc, typeof(GlFramebufferTexture2DFn));
+
+            uint tex;
+            genTex(1, out tex);
+            bindTex(GL_TEXTURE_2D, tex);
+            texImage(GL_TEXTURE_2D, 0, (int)GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, IntPtr.Zero);
+            bindTex(GL_TEXTURE_2D, 0);
+
+            uint fbo;
+            genFb(1, out fbo);
+            bindFb(Sdl3.GL_FRAMEBUFFER, fbo);
+            fbTex(Sdl3.GL_FRAMEBUFFER, Sdl3.GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
+            bindFb(Sdl3.GL_FRAMEBUFFER, 0);
+
+            _scaleFbo = fbo;
+            _scaleTex = tex;
+            _scaleW = width;
+            _scaleH = height;
+            _scaleReady = true;
+            Log.Write("GL: scale target created " + width + "x" + height);
+            return true;
+        }
 
         public static bool FboActive { get { return _fboReady; } }
 

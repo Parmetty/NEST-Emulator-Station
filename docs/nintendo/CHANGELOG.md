@@ -19,7 +19,10 @@
 - **PS1 直读接入（SwanStation / libretro）**：内置 `swanstation_libretro.dll`，复用自写宿主；扫描 `.cue/.chd/.pbp/.mds/.ccd`
 - 宿主适配：非 Dolphin core 自动把窗口匹配到核心输出的真实帧尺寸（PS1 640×478），不再出现“大窗口里左下角小画面”
 - 设置 → PlayStation：PS1 BIOS 导入（512 KB 校验，落到 `data/libretro/sys`，可选，缺省 OpenBIOS）
-- 实测：FIFA Soccer 2005 (USA) `.cue` 经 Nest 扫描 → 启动 → 封面抓取全链路通过（59 fps，640×478）
+- 实测：FIFA Soccer 2005 (USA) `.cue` 经 Nest 扫描 → 启动 → 封面抓取全链路通过（59 fps）
+- 宿主渲染：非 Dolphin core 改为**可缩放窗口**（默认 1024×768，按核心宽高比 letterbox 缩放），不再出现固定小窗口/大黑边
+- PS1 键位接入 Nest 键位面板：新增 SwanStation 引擎 + PS1 芯片，默认方向键 / J/K/U/I / Q/E / Enter / Backspace，启动时用 `--keys` 传给宿主
+- 主机墙：PlayStation 排到 Xbox 前面；所有家族默认折叠
 
 ## 0.4.1-beta.1 — 2026-11-03 · NDS/DSi 整条线 + 设置拆分 + GBA 金手指
 

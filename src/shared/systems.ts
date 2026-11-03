@@ -76,8 +76,8 @@ export const SYSTEMS: SystemDef[] = [
 
 export const FAMILIES: { id: FamilyId; name: string; locked: boolean }[] = [
   { id: 'nintendo',    name: 'Nintendo',    locked: false },
-  { id: 'xbox',        name: 'Xbox',        locked: true },
   { id: 'playstation', name: 'PlayStation', locked: false },
+  { id: 'xbox',        name: 'Xbox',        locked: true },
 ];
 
 export const systemById = new Map(SYSTEMS.map((s) => [s.id, s]));
