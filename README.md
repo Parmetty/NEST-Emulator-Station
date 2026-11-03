@@ -5,7 +5,7 @@
 
 ![Nest 首页](shots/app.png)
 
-> 当前：**0.4.1-beta.1** —— Windows 桌面版 · 九台任天堂主机（含 NDS 四机型）· 六个内置引擎 + 自写 libretro 宿主 · 免安装携带版
+> 当前：**0.4.1-beta.1** —— Windows 桌面版 · 九台任天堂主机（含 NDS 四机型）+ 四台 PlayStation（界面就绪）· 六个内置引擎 + 自写 libretro 宿主 · 免安装携带版
 
 ## 下载
 
@@ -14,8 +14,8 @@
 **[Nest-0.4.1-beta.1-portable.zip](https://github.com/Parmetty/NEST-Emulator-Station/releases/download/v0.4.1-beta.1/Nest-0.4.1-beta.1-portable.zip)** · 264 MB · [Release 页面](https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.4.1-beta.1)
 
 ```
-SHA256  235753F404CCFF3494D6A4C25861265C23B624F99BE5DAC4CA0DAD504D99CA22
-解压    640 MB / 3172 个文件
+SHA256  0C38660097C310BCC296A4B051D09096E1591111B88314A4A1E4C4BAEE246308
+解压    633 MB / 3171 个文件
 ```
 
 1. 解压到任意目录（可放 U 盘）
@@ -38,10 +38,14 @@ SHA256  235753F404CCFF3494D6A4C25861265C23B624F99BE5DAC4CA0DAD504D99CA22
 | Wii | Dolphin 2609a / libretro 宿主 | 🟡 代码就绪，待镜像验证 | ✅ Wii Menu（WAD，经 libretro 宿主，无 UIA） |
 | 3DS | Azahar 2126.2 | ✅ | ❌ 引擎不支持 HOME Menu |
 | Wii U | Cemu 2.6 | ✅ `.wua/.wud/.wux` | ⚠️ **实验性** Wii U Menu（Cemu 2.6 限制，见下方已知限制） |
+| PS1 | SwanStation（待接入） | ✖ | 🟡 计划：DuckStation BIOS shell（可选） |
+| PS2 | PCSX2（待接入） | ✖ | 🟡 计划：BIOS 浏览器（`-bios`） |
+| PSP | PPSSPP（待接入） | ✖ | 🟡 计划：XMB（需 PPSSPP 1.21+） |
+| PS3 | RPCS3（待接入） | ✖ | ❌ 无 XMB |
 
 其它能力：
 
-- **主机墙**：9 台任天堂主机按发售年份排列，全屏照片 + 树状列表 + 信息卡；平台切换时年代标尺跟着换
+- **主机墙**：9 台任天堂 + 4 台 PlayStation（PS1/PS2/PSP/PS3，界面已就绪、引擎待接）按发售年份排列，全屏照片 + 树状列表 + 信息卡；平台切换时年代标尺跟着换
 - **游戏库 + 自动扫描**：添加过的文件夹会在启动时自动重扫，新 ROM 自动出现；支持 `.cia` 与磁盘头 magic 判定 GC/Wii
 - **自动封面**：游戏运行期间由独立抓屏工具持续取帧，退出时存为封面（NDS/3DS 只截上屏）
 - **自写 libretro 宿主**：`resources/tools/nest-libretro.exe`（约 90 KB，C# + SDL3）托管官方 `dolphin_libretro.dll`，**Wii 系统菜单不再依赖 Dolphin Qt GUI 自动化**，直接加载 `wii-menu.wad` 进菜单；键盘 + 鼠标绝对指针（鼠标即 Wiimote 光标，左键 = A）
@@ -80,6 +84,10 @@ SHA256  235753F404CCFF3494D6A4C25861265C23B624F99BE5DAC4CA0DAD504D99CA22
 | 金手指入口 | 金手指编辑 |
 |---|---|
 | ![金手指菜单](shots/cheat-menu.png) | ![金手指面板](shots/cheat-dialog.png) |
+
+| PlayStation 主机墙 | |
+|---|---|
+| ![PlayStation](shots/ps-family.png) | |
 
 ## 从源码运行
 

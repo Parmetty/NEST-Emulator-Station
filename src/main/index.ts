@@ -497,6 +497,14 @@ async function boot(): Promise<void> {
                })(); true`,
             );
           }
+          {
+            const expandArg = process.argv.find((arg) => arg.startsWith('--expand='));
+            if (expandArg) {
+              await mainWindow!.webContents.executeJavaScript(
+                `window.__NEST_EXPAND__ && window.__NEST_EXPAND__(${JSON.stringify(expandArg.slice('--expand='.length))}); true`,
+              );
+            }
+          }
           if (process.argv.includes('--cheat')) {
             await mainWindow!.webContents.executeJavaScript(
               'window.__NEST_OPEN_CHEAT__ && window.__NEST_OPEN_CHEAT__(); true',

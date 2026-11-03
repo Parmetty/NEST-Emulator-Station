@@ -2,7 +2,7 @@
 
 本文件记录每次发布的可见变化。技术细节在 `docs/nintendo/STATE.md`，决策理由在 `docs/nintendo/DECISIONS.md`，待办在 `docs/nintendo/PROGRESS.md`。
 
-## 未发布 — PS 调研 + 文档按家族归档
+## 未发布 — PS 主机墙 + 调研 + 文档按家族归档
 
 - 文档重构：任天堂系全部文档移入 `docs/nintendo/`（含 evidence / mock-v1 / patches），
   新增 `docs/playstation/PLAN-PLAYSTATION.md` 与总路线 `docs/ROADMAP.md`
@@ -11,6 +11,8 @@
   （PS1 用 SwanStation 替代 DuckStation、PS2 BIOS 浏览器、PSP XMB 需 1.21+、PS3 无 XMB）写入 `docs/playstation/RESEARCH-P6.0.md` 与 ENGINE 文档
 - PS1 主选改为 **SwanStation**（GPLv3、DuckStation hard fork、libretro core、OpenBIOS 兜底、可随包）；DuckStation 因 CC BY-NC-ND 降级为用户自装可选
 - PS3 系统模式结论：无 XMB 也无替代，只做直读；如需展示用 Nest 原生游戏库视图（不冒充系统界面）
+- **PlayStation 主机墙界面就绪**：解锁 PlayStation 家族，PS1/PS2/PSP/PS3 四台主机配图（PS1/PS2/PS3 为 Evan-Amos 公有领域照片，PSP 为 CC BY-SA 3.0）、年份与年代标尺；引擎未接入显示「需要配置」并给出计划说明
+- README 修正 0.4.1 便携包的 SHA256/解压体积（旧值停留在 0.4.0）
 
 ## 0.4.1-beta.1 — 2026-11-03 · NDS/DSi 整条线 + 设置拆分 + GBA 金手指
 

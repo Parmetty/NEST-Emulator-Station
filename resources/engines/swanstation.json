@@ -1,0 +1,30 @@
+{
+  "id": "swanstation",
+  "name": "SwanStation (libretro)",
+  "systems": ["ps1"],
+  "kind": "native",
+  "detect": {
+    "paths": []
+  },
+  "download": {
+    "homepage": "https://github.com/libretro/swanstation"
+  },
+  "launch": {
+    "args": [
+      "--core", "{engines}/swanstation/swanstation_libretro.dll",
+      "--rom", "{rom}",
+      "--system-dir", "{userData}/libretro/sys",
+      "--save-dir", "{userData}/libretro/save",
+      "--shot-dir", "{userData}/covers-pending",
+      "--shot-every", "120",
+      "--timeout", "0",
+      "--log", "{userData}/libretro/nest-libretro.log"
+    ],
+    "systemArgs": [],
+    "cwd": "engineDir"
+  },
+  "capabilities": {
+    "saveStates": true,
+    "systemMode": null
+  }
+}

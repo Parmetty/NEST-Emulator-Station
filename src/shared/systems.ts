@@ -68,16 +68,16 @@ export const SYSTEMS: SystemDef[] = [
   { id: 'xbox',    name: 'Xbox',     short: 'XBX',  year: 2001, kind: '家用机', family: 'xbox', engine: 'xemu',    image: '', state: 'locked' },
   { id: 'xbox360', name: 'Xbox 360', short: 'X360', year: 2005, kind: '家用机', family: 'xbox', engine: 'xenia',   image: '', state: 'locked' },
 
-  { id: 'ps1', name: 'PlayStation',          short: 'PS1', year: 1994, kind: '家用机', family: 'playstation', engine: 'duckstation', image: '', state: 'locked' },
-  { id: 'ps2', name: 'PlayStation 2',        short: 'PS2', year: 2000, kind: '家用机', family: 'playstation', engine: 'pcsx2',       image: '', state: 'locked' },
-  { id: 'psp', name: 'PlayStation Portable', short: 'PSP', year: 2004, kind: '掌机',   family: 'playstation', engine: 'ppsspp',      image: '', state: 'locked' },
-  { id: 'ps3', name: 'PlayStation 3',        short: 'PS3', year: 2006, kind: '家用机', family: 'playstation', engine: 'rpcs3',       image: '', state: 'locked' },
+  { id: 'ps1', name: 'PlayStation',          short: 'PS1', year: 1994, kind: '家用机', family: 'playstation', engine: 'swanstation', image: 'consoles/ps1.webp', state: 'warn', note: '界面已就绪；引擎待接入（P6.1 SwanStation）' },
+  { id: 'ps2', name: 'PlayStation 2',        short: 'PS2', year: 2000, kind: '家用机', family: 'playstation', engine: 'pcsx2',       image: 'consoles/ps2.webp', state: 'warn', note: '界面已就绪；引擎待接入（P6.3），系统菜单为 BIOS 浏览器' },
+  { id: 'psp', name: 'PlayStation Portable', short: 'PSP', year: 2004, kind: '掌机',   family: 'playstation', engine: 'ppsspp',      image: 'consoles/psp.webp', state: 'warn', note: '界面已就绪；引擎待接入（P6.2），XMB 需 PPSSPP 1.21+' },
+  { id: 'ps3', name: 'PlayStation 3',        short: 'PS3', year: 2006, kind: '家用机', family: 'playstation', engine: 'rpcs3',       image: 'consoles/ps3.webp', state: 'warn', note: '界面已就绪；引擎待接入（P6.4），无系统菜单' },
 ];
 
 export const FAMILIES: { id: FamilyId; name: string; locked: boolean }[] = [
   { id: 'nintendo',    name: 'Nintendo',    locked: false },
   { id: 'xbox',        name: 'Xbox',        locked: true },
-  { id: 'playstation', name: 'PlayStation', locked: true },
+  { id: 'playstation', name: 'PlayStation', locked: false },
 ];
 
 export const systemById = new Map(SYSTEMS.map((s) => [s.id, s]));
@@ -110,6 +110,7 @@ export const ENGINE_LABEL: Record<string, string> = {
   azahar: 'Azahar',
   cemu: 'Cemu',
   duckstation: 'DuckStation',
+  swanstation: 'SwanStation',
   pcsx2: 'PCSX2',
   ppsspp: 'PPSSPP',
   rpcs3: 'RPCS3',

@@ -897,6 +897,11 @@ export default function App() {
 
   (window as unknown as Record<string, unknown>).__NEST_SAY__ = (text: string) => say(text);
 
+  // Used by `--expand=<family>` screenshots: expand a family row.
+  (window as unknown as Record<string, unknown>).__NEST_EXPAND__ = (id: string) => {
+    setExpanded((prev) => new Set(prev).add(id));
+  };
+
   // Used by `--stab=<id>` screenshots: switch the settings tab without clicking.
   (window as unknown as Record<string, unknown>).__NEST_SETTINGS_TAB__ = (id: string) => {
     if (SETTINGS_TABS.some((tab) => tab.id === id)) setSettingsTab(id as SettingsTab);
