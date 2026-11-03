@@ -420,6 +420,21 @@ export default function App() {
     );
   }, [keyDrafts, keyEngine, keyView]);
 
+  useEffect(() => {
+    if (keySystemPinned.current) {
+      keySystemPinned.current = false;
+      return;
+    }
+    const isPlaystationEngine = (engine: string) => engine === 'swanstation' || engine === 'pcsx2';
+    if (settingsTab === 'playstation' && !isPlaystationEngine(keySystem.engine)) {
+      setKeySystemId('ps1');
+    } else if (settingsTab === 'nintendo' && isPlaystationEngine(keySystem.engine)) {
+      setKeySystemId('gba');
+    }
+  }, [settingsTab]);
+
+  const keySystemPinned = useRef(false);
+
   const openSettings = useCallback(() => {
     setSettingsOpen(true);
     refreshFirmware();
@@ -915,6 +930,7 @@ export default function App() {
   // Used by `--keysystem=<id>` screenshots: focus one console's key panel.
   (window as unknown as Record<string, unknown>).__NEST_KEY_SYSTEM__ = (id: string) => {
     if (KEY_SYSTEMS.some((system) => system.id === id)) {
+      keySystemPinned.current = true;
       setSettingsTab('playstation');
       setKeySystemId(id as SystemId);
     }
@@ -1634,42 +1650,61 @@ export default function App() {
                 </div>
 
               ) : settingsTab === 'playstation' ? (
-                <div className="settings-panel">
-                  <h2>PlayStation</h2>
-                  <p className="dlg-note">
-                    PS1（SwanStation）与 PS2（PCSX2）已接入；PSP / PS3 还在接入中。
-                    PS1 BIOS 可选，缺省会自动使用 OpenBIOS。
-                  </p>
-                  {firmware
-                    .filter((item) => item.kind === 'ps1-bios' || item.kind === 'ps2-bios')
-                    .map((item) => (
-                      <div className="fw-row" key={item.kind}>
-                        <span>
-                          {item.label}
-                          <small>
-                            {item.status === 'ok'
-                              ? '已导入'
-                              : item.status === 'invalid'
-                                ? '校验未通过'
-                                : '未导入'}
-                            {item.detail ? ` · ${item.detail}` : ''}
-                          </small>
-                        </span>
-                        <button className="ghost-btn" onClick={() => void importFirmware(item.kind)}>
-                          选择文件…
-                        </button>
-                      </div>
-                    ))}
-                  <div className="settings-cols keys-single">{renderKeys()}</div>
+                <div className="settings-cols">
+                  <div className="settings-col">
+                    <h2>系统文件（自备）</h2>
+                    <p className="dlg-note">
+                      PS1 BIOS 可选（缺省用 OpenBIOS）；PS2 BIOS 必需，直读和 PS2 浏览器都要。
+                      文件只复制到本机数据目录，Nest 不打包也不下载。
+                    </p>
 
-                  <div className="locked-systems">
-                    {(families.find((family) => family.id === 'playstation')?.systems ?? []).map((system) => (
-                      <span key={system.id}>
-                        {system.name}
-                        <small>{system.year}</small>
-                      </span>
-                    ))}
+                    {firmware
+                      .filter((item) => item.kind === 'ps1-bios' || item.kind === 'ps2-bios')
+                      .map((item) => (
+                        <div className="fw-row" key={item.kind}>
+                          <span>
+                            {item.label}
+                            <small>
+                              {item.status === 'ok'
+                                ? '已导入'
+                                : item.status === 'invalid'
+                                  ? '校验未通过'
+                                  : '未导入'}
+                              {item.detail ? ` · ${item.detail}` : ''}
+                            </small>
+                          </span>
+                          <button className="ghost-btn" onClick={() => void importFirmware(item.kind)}>
+                            选择文件…
+                          </button>
+                        </div>
+                      ))}
+
+                    <h2>子主机键位</h2>
+                    <p className="dlg-note">
+                      点主机名直接打开它的键位；PSP / PS3 尚未接入，暂时不可选。
+                    </p>
+                    <div className="key-engines" role="group" aria-label="选择 PlayStation 主机键位">
+                      {(families.find((family) => family.id === 'playstation')?.systems ?? []).map((system) => {
+                        const keyable = KEY_SYSTEMS.some((keySystem) => keySystem.id === system.id);
+                        return (
+                          <button
+                            key={system.id}
+                            className={`key-engine${system.id === keySystem.id ? ' on' : ''}`}
+                            disabled={!keyable}
+                            title={keyable ? `打开 ${system.name} 的键位` : `${system.name} 尚未接入`}
+                            onClick={() => {
+                              if (keyable) pickKeySystem(system.id);
+                            }}
+                          >
+                            {system.short ?? system.name}{' '}
+                            <small>{keyable ? system.year : '未接入'}</small>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
+
+                  {renderKeys()}
                 </div>
               ) : (
                 <div className="settings-panel">
