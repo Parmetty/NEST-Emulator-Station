@@ -383,8 +383,10 @@ async function boot(): Promise<void> {
       mainWindow?.minimize();
     }
     if (e.state === 'running') {
-      if (engineIdForSession(e.sessionId) === 'dolphin-lr') {
+      if (['dolphin-lr', 'swanstation'].includes(engineIdForSession(e.sessionId) ?? '')) {
         // The libretro host renders its own frames: no external window to grab.
+        // Starting nest-capture here would also steal keyboard focus from the
+        // host window, which breaks BIOS/system menus.
         console.log('[nest] libretro host session: host supplies cover frames');
       } else {
         const system = systemById.get(e.systemId as SystemId);
@@ -417,7 +419,7 @@ async function boot(): Promise<void> {
     }
     if (e.state === 'exited' || e.state === 'crashed') {
       const engineId = engineIdForSession(e.sessionId);
-      if (engineId === 'dolphin-lr') {
+      if (engineId === 'dolphin-lr' || engineId === 'swanstation') {
         void finishHostCoverCapture(e.gameId).finally(() => forgetSessionEngine(e.sessionId));
       } else {
         void finishCoverCapture(e.sessionId, e.gameId);
