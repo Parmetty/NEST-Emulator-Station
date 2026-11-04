@@ -28,7 +28,7 @@
       "--system-dir", "{userData}/libretro/sys",
       "--save-dir", "{userData}/libretro/save",
       "--core-option", "swanstation_MemoryCards_Card1Type=None",
-      "--controller-device", "5",
+      "--controller-preset",
       "--timeout", "0",
       "--log", "{userData}/libretro/nest-libretro.log"
     ],
