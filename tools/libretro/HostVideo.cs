@@ -1160,12 +1160,9 @@ namespace NestLibretro
         /// </summary>
         public static void EnsureFocus()
         {
-            if (_window == IntPtr.Zero || _headless) return;
-            if (++_focusGuardTick % 30 != 0) return;
-            if (Sdl3.SDL_GetKeyboardFocus() == _window) return;
-            Sdl3.SDL_RaiseWindow(_window);
-            Sdl3.SDL_SetWindowInputFocus(_window);
-            Log.Write("focus guard: restored keyboard focus to host window");
+            // The bundled SDL3 build does not export SDL_SetWindowInputFocus;
+            // calling it through P/Invoke killed the host with an
+            // EntryPointNotFoundException. Focus is left to SDL/Windows.
         }
 
         private static bool _scaleReady;

@@ -27,6 +27,7 @@
       "--core", "{engines}/swanstation/swanstation_libretro.dll",
       "--system-dir", "{userData}/libretro/sys",
       "--save-dir", "{userData}/libretro/save",
+      "--core-option", "swanstation_MemoryCards_Card1Type=None",
       "--timeout", "0",
       "--log", "{userData}/libretro/nest-libretro.log"
     ],
