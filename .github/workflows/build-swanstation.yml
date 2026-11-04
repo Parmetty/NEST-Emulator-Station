@@ -1,0 +1,65 @@
+name: build-swanstation
+
+# Builds the SwanStation libretro core on a hosted Windows runner (MSYS2/MinGW),
+# so no local Visual Studio or CMake install is needed. The resulting DLL is
+# committed to the `ci/swanstation-artifact` branch, which Nest's maintainers can
+# fetch and copy into resources/engines/swanstation/.
+#
+# Trigger: push to ci/swanstation-build (or run manually from the Actions tab).
+
+on:
+  push:
+    branches:
+      - ci/swanstation-build
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout Nest
+        uses: actions/checkout@v4
+
+      - name: Checkout SwanStation source
+        uses: actions/checkout@v4
+        with:
+          repository: libretro/swanstation
+          path: swanstation
+          fetch-depth: 1
+
+      - name: Set up MSYS2 / MinGW
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: false
+          install: >-
+            make
+            git
+            mingw-w64-x86_64-gcc
+
+      - name: Build libretro core
+        shell: msys2 {0}
+        run: |
+          cd swanstation
+          make -f Makefile.libretro platform=win -j"$(nproc)"
+          ls -lh swanstation_libretro.dll
+
+      - name: Stage DLL in the Nest tree
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path resources/engines/swanstation | Out-Null
+          Copy-Item swanstation/swanstation_libretro.dll resources/engines/swanstation/swanstation_libretro.dll -Force
+          Get-Item resources/engines/swanstation/swanstation_libretro.dll | Select-Object Length, LastWriteTime
+
+      - name: Publish DLL to artifact branch
+        shell: bash
+        run: |
+          git config user.name "nest-ci"
+          git config user.email "nest-ci@users.noreply.github.com"
+          git add resources/engines/swanstation/swanstation_libretro.dll
+          git commit -m "ci: SwanStation core build (${GITHUB_SHA})" || true
+          git push --force origin HEAD:ci/swanstation-artifact
