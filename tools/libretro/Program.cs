@@ -46,6 +46,7 @@ namespace NestLibretro
         private static bool _noAudio;
         private static bool _fast;
         private static bool _controllerPreset;
+        private static int _controllerDeviceOverride = -1;
         private static bool _noCrashGuard;
         private static bool _glDisabled;
         private static readonly List<string[]> CoreOptions = new List<string[]>();
@@ -135,6 +136,13 @@ namespace NestLibretro
                     case "--no-audio": _noAudio = true; break;
                     case "--fast": _fast = true; break;
                     case "--controller-preset": _controllerPreset = true; break;
+                    case "--controller-device":
+                        if (!NextInt(args, ref i, out _controllerDeviceOverride) || _controllerDeviceOverride < 0 || _controllerDeviceOverride > 255)
+                        {
+                            exitCode = 1;
+                            return false;
+                        }
+                        break;
                     case "--no-crash-guard": _noCrashGuard = true; break;
                     case "--no-gl": _glDisabled = true; break;
                     case "--help":
@@ -496,6 +504,7 @@ namespace NestLibretro
                 if (hasJoypad) chosen = 1;
                 else if (types.Length > 0) chosen = types[0] != 0 ? types[0] : (types.Length > 1 ? types[1] : 0);
 
+                if (_controllerDeviceOverride >= 0 && pair.Key == 0) chosen = (uint)_controllerDeviceOverride;
                 if (chosen != 0)
                 {
                     LibretroCore.SetControllerPortDevice(pair.Key, chosen);
