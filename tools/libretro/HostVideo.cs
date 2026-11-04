@@ -1151,6 +1151,23 @@ namespace NestLibretro
 
         private const uint GL_VIEWPORT = 0x0BA2;
 
+        private static int _focusGuardTick;
+
+        /// <summary>
+        /// Some frontends (and Windows' own foreground rules) can pull keyboard
+        /// focus away from the host window while the emulated BIOS boots. Keep
+        /// the game window focused so SDL_GetKeyboardState keeps returning keys.
+        /// </summary>
+        public static void EnsureFocus()
+        {
+            if (_window == IntPtr.Zero || _headless) return;
+            if (++_focusGuardTick % 30 != 0) return;
+            if (Sdl3.SDL_GetKeyboardFocus() == _window) return;
+            Sdl3.SDL_RaiseWindow(_window);
+            Sdl3.SDL_SetWindowInputFocus(_window);
+            Log.Write("focus guard: restored keyboard focus to host window");
+        }
+
         private static bool _scaleReady;
         private static uint _scaleFbo;
         private static uint _scaleTex;
@@ -1173,6 +1190,8 @@ namespace NestLibretro
         /// </summary>
         private static void PresentHardwareScaled(bool capture)
         {
+            EnsureFocus();
+
             int fw = _hwWidth > 0 ? _hwWidth : _coreVpWidth;
             int fh = _hwHeight > 0 ? _hwHeight : _coreVpHeight;
             if (fw <= 0 || fh <= 0) return;
