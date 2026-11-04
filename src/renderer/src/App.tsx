@@ -1266,7 +1266,8 @@ export default function App() {
                   </button>
                   {selectedSystem.systemMode ? (
                     <button className="key" onClick={() => askEnter(selectedSystem, 'system')}>
-                      <kbd>X</kbd>系统模式
+                      <kbd>X</kbd>
+                      {selectedSystem.systemMode.includes('故障') ? '系统模式（故障）' : '系统模式'}
                     </button>
                   ) : null}
                   <button
