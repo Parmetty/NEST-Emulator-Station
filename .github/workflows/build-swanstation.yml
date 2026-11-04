@@ -1,11 +1,9 @@
-name: build-swanstation
+﻿name: build-swanstation
 
-# Builds the SwanStation libretro core on a hosted Windows runner (MSYS2/MinGW),
-# so no local Visual Studio or CMake install is needed. The resulting DLL is
-# committed to the `ci/swanstation-artifact` branch, which Nest's maintainers can
-# fetch and copy into resources/engines/swanstation/.
-#
-# Trigger: push to ci/swanstation-build (or run manually from the Actions tab).
+# Builds the SwanStation libretro core on a hosted Windows runner with the
+# preinstalled Visual Studio 2022 + CMake toolchain. No local build environment
+# is needed. The DLL is committed to the `ci/swanstation-artifact` branch so it
+# can be fetched without an Actions artifact token.
 
 on:
   push:
@@ -31,28 +29,24 @@ jobs:
           path: swanstation
           fetch-depth: 1
 
-      - name: Set up MSYS2 / MinGW
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: MINGW64
-          update: false
-          install: >-
-            make
-            git
-            mingw-w64-x86_64-gcc
+      - name: Configure (MSVC x64)
+        shell: pwsh
+        run: |
+          cmake -S swanstation -B swanstation/build -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=Release
 
       - name: Build libretro core
-        shell: msys2 {0}
+        shell: pwsh
         run: |
-          cd swanstation
-          make -f Makefile.libretro platform=win -j"$(nproc)"
-          ls -lh swanstation_libretro.dll
+          cmake --build swanstation/build --config Release --target swanstation_libretro --parallel
+          Get-ChildItem swanstation/build -Recurse -Filter swanstation_libretro.dll | Select-Object FullName, Length
 
       - name: Stage DLL in the Nest tree
         shell: pwsh
         run: |
+          $dll = Get-ChildItem swanstation/build -Recurse -Filter swanstation_libretro.dll | Select-Object -First 1
+          if (-not $dll) { throw 'swanstation_libretro.dll was not produced' }
           New-Item -ItemType Directory -Force -Path resources/engines/swanstation | Out-Null
-          Copy-Item swanstation/swanstation_libretro.dll resources/engines/swanstation/swanstation_libretro.dll -Force
+          Copy-Item $dll.FullName resources/engines/swanstation/swanstation_libretro.dll -Force
           Get-Item resources/engines/swanstation/swanstation_libretro.dll | Select-Object Length, LastWriteTime
 
       - name: Publish DLL to artifact branch
