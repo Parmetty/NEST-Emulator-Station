@@ -113,6 +113,7 @@ namespace NestLibretro
         private static readonly Dictionary<string, int> Bindings = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
         private static ushort _mask;
+        private static ushort _lastLoggedMask;
         private static int _leftX;
         private static int _leftY;
         private static int _rightX;
@@ -502,6 +503,11 @@ namespace NestLibretro
             UpdateGamepad();
 
             UpdateMaskAndSticks();
+            if (_mask != _lastLoggedMask)
+            {
+                _lastLoggedMask = _mask;
+                Log.Write("input mask changed: 0x" + _mask.ToString("X4"));
+            }
         }
 
         private static void UpdateGamepad()
