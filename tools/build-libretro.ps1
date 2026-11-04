@@ -32,6 +32,7 @@ if ($sources.Count -eq 0) {
 }
 
 & $csc /nologo /optimize+ /target:exe /platform:x64 /warn:4 `
+  "/win32icon:$PSScriptRoot\..\resources\tools\nest.ico" `
   "/out:$exe" `
   /reference:System.dll `
   /reference:System.Core.dll `

@@ -1151,6 +1151,56 @@ namespace NestLibretro
 
         private const uint GL_VIEWPORT = 0x0BA2;
 
+        private static int _focusGuardTick;
+
+        /// <summary>
+        /// Some frontends (and Windows' own foreground rules) can pull keyboard
+        /// focus away from the host window while the emulated BIOS boots. Keep
+        /// the game window focused so SDL_GetKeyboardState keeps returning keys.
+        /// </summary>
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool attach);
+
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+        private static extern uint GetCurrentThreadId();
+
+        [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+        private static extern IntPtr FindWindow(string className, string windowName);
+
+        /// <summary>
+        /// Keep the host window as the real Windows foreground window. SDL's own
+        /// focus flag can be true while another process still owns the foreground,
+        /// which makes held keys look dead in BIOS menus.
+        /// </summary>
+        public static void EnsureFocus()
+        {
+            if (_window == IntPtr.Zero || _headless) return;
+            if (++_focusGuardTick % 30 != 0) return;
+
+            IntPtr foreground = GetForegroundWindow();
+            uint pid;
+            GetWindowThreadProcessId(foreground, out pid);
+            if (pid == (uint)System.Diagnostics.Process.GetCurrentProcess().Id) return;
+
+            IntPtr own = FindWindow(null, "Nest");
+            if (own == IntPtr.Zero) return;
+            uint foregroundPid;
+            uint foregroundThread = GetWindowThreadProcessId(foreground, out foregroundPid);
+            bool attached = AttachThreadInput(GetCurrentThreadId(), foregroundThread, true);
+            SetForegroundWindow(own);
+            if (attached) AttachThreadInput(GetCurrentThreadId(), foregroundThread, false);
+            Log.Write("focus guard: forced foreground to host window (foreground pid was " + pid + ")");
+        }
+
         private static bool _scaleReady;
         private static uint _scaleFbo;
         private static uint _scaleTex;
@@ -1173,6 +1223,8 @@ namespace NestLibretro
         /// </summary>
         private static void PresentHardwareScaled(bool capture)
         {
+            EnsureFocus();
+
             int fw = _hwWidth > 0 ? _hwWidth : _coreVpWidth;
             int fh = _hwHeight > 0 ? _hwHeight : _coreVpHeight;
             if (fw <= 0 || fh <= 0) return;

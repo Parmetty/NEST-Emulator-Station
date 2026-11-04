@@ -62,7 +62,7 @@ let services: Services | null = null;
  * stray window never blocks the test harness.
  */
 
-const DEV_FLAG = /^--(smoke|flow|selftest|trylaunch|trysystem|shot=|dump=|scan=|shelf=|select=|settings|hold)/;
+const DEV_FLAG = /^--(smoke|flow|selftest|trylaunch|trysystem|startsystem|shot=|dump=|scan=|shelf=|select=|settings|hold)/;
 const DEV_RUN = process.argv.slice(1).some((arg) => DEV_FLAG.test(arg));
 if (DEV_RUN) console.log('[nest] dev run: single instance lock bypassed');
 
@@ -383,8 +383,10 @@ async function boot(): Promise<void> {
       mainWindow?.minimize();
     }
     if (e.state === 'running') {
-      if (engineIdForSession(e.sessionId) === 'dolphin-lr') {
+      if (['dolphin-lr', 'swanstation'].includes(engineIdForSession(e.sessionId) ?? '')) {
         // The libretro host renders its own frames: no external window to grab.
+        // Starting nest-capture here would also steal keyboard focus from the
+        // host window, which breaks BIOS/system menus.
         console.log('[nest] libretro host session: host supplies cover frames');
       } else {
         const system = systemById.get(e.systemId as SystemId);
@@ -417,7 +419,7 @@ async function boot(): Promise<void> {
     }
     if (e.state === 'exited' || e.state === 'crashed') {
       const engineId = engineIdForSession(e.sessionId);
-      if (engineId === 'dolphin-lr') {
+      if (engineId === 'dolphin-lr' || engineId === 'swanstation') {
         void finishHostCoverCapture(e.gameId).finally(() => forgetSessionEngine(e.sessionId));
       } else {
         void finishCoverCapture(e.sessionId, e.gameId);
@@ -629,6 +631,17 @@ async function boot(): Promise<void> {
         );
         services?.supervisor.stopAll();
         app.exit(0);
+      }, 1500);
+    });
+  }
+
+  const startSystemFlag = process.argv.find((arg) => arg.startsWith('--startsystem='));
+  if (startSystemFlag) {
+    mainWindow.webContents.once('did-finish-load', () => {
+      const systemId = startSystemFlag.split('=')[1];
+      setTimeout(async () => {
+        const result = await startLaunch(services!, { systemId, mode: 'system' });
+        console.log(`[nest] startsystem ${result.ok ? 'ok' : 'failed'}: ${result.ok ? systemId : result.error}`);
       }, 1500);
     });
   }

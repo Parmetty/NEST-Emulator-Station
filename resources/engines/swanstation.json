@@ -23,12 +23,20 @@
       "--timeout", "0",
       "--log", "{userData}/libretro/nest-libretro.log"
     ],
-    "systemArgs": [],
+    "systemArgs": [
+      "--core", "{engines}/swanstation/swanstation_libretro.dll",
+      "--system-dir", "{userData}/libretro/sys",
+      "--save-dir", "{userData}/libretro/save",
+      "--core-option", "swanstation_MemoryCards_Card1Type=None",
+      "--controller-preset",
+      "--timeout", "0",
+      "--log", "{userData}/libretro/nest-libretro.log"
+    ],
     "cwd": "engineDir"
   },
   "captureAspect": 1.333333,
   "capabilities": {
     "saveStates": true,
-    "systemMode": null
+    "systemMode": "PS1 系统菜单（BIOS）"
   }
 }

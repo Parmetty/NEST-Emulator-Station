@@ -127,6 +127,16 @@ namespace NestLibretro
         public static extern IntPtr SDL_GetKeyboardState(out int numkeys);
 
         [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr SDL_GetKeyboardFocus();
+
+        [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SDL_RaiseWindow(IntPtr window);
+
+        [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool SDL_SetWindowInputFocus(IntPtr window);
+
+        [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr SDL_CreateWindow(IntPtr title, int w, int h, ulong flags);
 
         [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)]
