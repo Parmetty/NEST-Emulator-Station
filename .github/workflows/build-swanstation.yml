@@ -34,7 +34,8 @@ jobs:
           $f = 'swanstation/src/libretro/libretro_host_interface.cpp'
           $t = Get-Content $f -Raw
           if (-not $t.Contains('if (!BootSystem(std::move(bp)))')) { throw 'patch anchor not found' }
-          $t = $t.Replace('if (!BootSystem(std::move(bp)))', "UpdateSettings();`r`n`r`n  if (!BootSystem(std::move(bp)))")
+          $replacement = "UpdateSettings();`r`n  g_settings.controller_types[0] = ControllerType::DigitalController;`r`n`r`n  if (!BootSystem(std::move(bp)))"
+          $t = $t.Replace('if (!BootSystem(std::move(bp)))', $replacement)
           Set-Content -Path $f -Value $t -NoNewline
           Select-String -Path $f -Pattern 'UpdateSettings\(\);' | Select-Object -Last 3
 
