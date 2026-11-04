@@ -68,7 +68,7 @@ export const SYSTEMS: SystemDef[] = [
   { id: 'xbox',    name: 'Xbox',     short: 'XBX',  year: 2001, kind: '家用机', family: 'xbox', engine: 'xemu',    image: '', state: 'locked' },
   { id: 'xbox360', name: 'Xbox 360', short: 'X360', year: 2005, kind: '家用机', family: 'xbox', engine: 'xenia',   image: '', state: 'locked' },
 
-  { id: 'ps1', name: 'PlayStation',          short: 'PS1', year: 1994, kind: '家用机', family: 'playstation', engine: 'swanstation', image: 'consoles/ps1.webp', state: 'ready', note: 'SwanStation 直读；BIOS 可选（OpenBIOS 兜底）；无系统菜单（BIOS shell 需 DuckStation）' },
+  { id: 'ps1', name: 'PlayStation',          short: 'PS1', year: 1994, kind: '家用机', family: 'playstation', engine: 'swanstation', image: 'consoles/ps1.webp', state: 'ready', systemMode: 'PS1 系统菜单（BIOS）', note: 'SwanStation 直读 + BIOS 开机菜单；BIOS 可选（OpenBIOS 兜底）' },
   { id: 'ps2', name: 'PlayStation 2',        short: 'PS2', year: 2000, kind: '家用机', family: 'playstation', engine: 'pcsx2',       image: 'consoles/ps2.webp', state: 'ready', systemMode: 'PS2 浏览器（BIOS）', note: '直读与系统浏览器均可用；需自备 PS2 BIOS' },
   { id: 'psp', name: 'PlayStation Portable', short: 'PSP', year: 2004, kind: '掌机',   family: 'playstation', engine: 'ppsspp',      image: 'consoles/psp.webp', state: 'warn', note: '界面已就绪；引擎待接入（P6.2），XMB 需 PPSSPP 1.21+' },
   { id: 'ps3', name: 'PlayStation 3',        short: 'PS3', year: 2006, kind: '家用机', family: 'playstation', engine: 'rpcs3',       image: 'consoles/ps3.webp', state: 'warn', note: '界面已就绪；引擎待接入（P6.4），无系统菜单' },

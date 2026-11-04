@@ -25,6 +25,7 @@
 - 主机墙：PlayStation 排到 Xbox 前面；所有家族默认折叠
 - **PS2 接入（PCSX2 2.8.2）**：内置 PCSX2（含 VC++ 运行库，避免旧运行库弹窗）；`-datapath` 隔离数据；PS2 BIOS 导入（4 MB 校验）；`-bios` 系统模式 = PS2 浏览器；扫描 `.iso`（PLAYSTATION 标记）
 - PS2 键位接入 Nest 面板（`PCSX2.ini` 的 `[Pad1]`，`Keyboard/` 绑定写入）
+- PS1 系统模式：SwanStation 无游戏启动会进入 BIOS 开机菜单（实测约 20 秒到达 MAIN MENU；需自备 BIOS，OpenBIOS 可兜底）
 - 键位面板补全：PlayStation 设置页改成和 Nintendo 一致的双栏布局（左系统文件 / 右键位），PS1/PS2 芯片直接作为子主机键位入口；删掉重复的「子主机键位」区块，BIOS 标签去掉冗余说明
 - 无游戏时用带 PLAYSTATION 标记的假 ISO 验证了「扫描 → 启动 → 进程」链路
 
