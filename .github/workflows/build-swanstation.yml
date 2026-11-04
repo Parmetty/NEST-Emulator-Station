@@ -48,6 +48,15 @@ jobs:
             binutils
             mingw-w64-x86_64-gcc
 
+      - name: Patch controller init before BIOS boot
+        shell: pwsh
+        run: |
+          $f = 'swanstation/src/libretro/libretro_host_interface.cpp'
+          $t = Get-Content $f -Raw
+          $t = $t.Replace('if (!BootSystem(std::move(bp)))', "UpdateSettings();`n`n  if (!BootSystem(std::move(bp)))")
+          Set-Content -Path $f -Value $t -NoNewline
+          Select-String -Path $f -Pattern 'UpdateSettings\\(\\);' | Select-Object -Last 2
+
       - name: Build libretro core
         shell: msys2 {0}
         run: |
