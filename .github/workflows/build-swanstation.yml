@@ -1,9 +1,8 @@
-﻿name: build-swanstation
+name: build-swanstation
 
-# Builds the SwanStation libretro core on a hosted Windows runner, without a
-# local Visual Studio/CMake install. MSYS2/MinGW is used with a fully static
-# runtime so the resulting DLL has no libwinpthread/libstdc++ dependencies.
-# The DLL is committed to `ci/swanstation-artifact`.
+# Builds the SwanStation libretro core on a hosted Windows runner (MSYS2/MinGW),
+# applies the controller-before-BIOS-init patch, and commits the resulting DLL to
+# the `ci/swanstation-artifact` branch.
 
 on:
   push:
@@ -29,6 +28,16 @@ jobs:
           path: swanstation
           fetch-depth: 1
 
+      - name: Patch controller initialization before BIOS boot
+        shell: pwsh
+        run: |
+          $f = 'swanstation/src/libretro/libretro_host_interface.cpp'
+          $t = Get-Content $f -Raw
+          if (-not $t.Contains('if (!BootSystem(std::move(bp)))')) { throw 'patch anchor not found' }
+          $t = $t.Replace('if (!BootSystem(std::move(bp)))', "UpdateSettings();`r`n`r`n  if (!BootSystem(std::move(bp)))")
+          Set-Content -Path $f -Value $t -NoNewline
+          Select-String -Path $f -Pattern 'UpdateSettings\(\);' | Select-Object -Last 3
+
       - name: Link MinGW runtime statically
         shell: pwsh
         run: |
@@ -48,22 +57,12 @@ jobs:
             binutils
             mingw-w64-x86_64-gcc
 
-      - name: Patch controller init before BIOS boot
-        shell: pwsh
-        run: |
-          $f = 'swanstation/src/libretro/libretro_host_interface.cpp'
-          $t = Get-Content $f -Raw
-          $t = $t.Replace('if (!BootSystem(std::move(bp)))', "UpdateSettings();`n`n  if (!BootSystem(std::move(bp)))")
-          Set-Content -Path $f -Value $t -NoNewline
-          Select-String -Path $f -Pattern 'UpdateSettings\\(\\);' | Select-Object -Last 2
-
       - name: Build libretro core
         shell: msys2 {0}
         run: |
           cd swanstation
           make -f Makefile.libretro platform=win -j"$(nproc)"
           ls -lh swanstation_libretro.dll
-          objdump -p swanstation_libretro.dll | grep 'DLL Name' || true
 
       - name: Stage DLL in the Nest tree
         shell: pwsh
