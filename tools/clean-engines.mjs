@@ -107,6 +107,20 @@ function scrubCemuPortable() {
 
 scrubCemuPortable();
 
+/** PPSSPP portable mode keeps memstick/config next to the exe; never ship user data. */
+function scrubPpsspp() {
+  const engineDir = join(enginesDir, 'ppsspp');
+  if (!existsSync(engineDir)) return;
+  for (const name of ['memstick', 'portable.txt']) {
+    const full = join(engineDir, name);
+    if (!existsSync(full)) continue;
+    removed.push(relative(root, full));
+    if (!checkOnly) rmSync(full, { recursive: true, force: true });
+  }
+}
+
+scrubPpsspp();
+
 /** Anything still pointing at the build machine is a packaging bug. */
 const LOCAL_PATH_PATTERNS = [/[A-Za-z]:\\\\workstop/i, /[A-Za-z]:\/workstop/i, /[A-Za-z]:\\\\Users\\\\/i];
 const TEXT_EXT = /\.(ini|bml|toml|cfg|conf|json|txt|xml|yml|yaml)$/i;

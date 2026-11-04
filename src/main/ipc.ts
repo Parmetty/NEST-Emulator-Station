@@ -38,6 +38,7 @@ import {
 } from './controls';
 import { findAzaharHomeMenu } from './azahar-home';
 import { ensurePcsx2Data, pcsx2BiosDir, pcsx2BiosFiles } from './pcsx2';
+import { ensurePpssppPortable, hasPspFirmware } from './ppsspp';
 import { cheatExtraArgs, readCheatFile, saveCheatText } from './cheats';
 import { selectNdsSystemCart } from './nds-cart';
 import { EngineRegistry, buildArgs } from './engines';
@@ -1134,6 +1135,15 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   }
 
   if (azaharHomeMenu) args = [azaharHomeMenu];
+
+  if (engine.id === 'ppsspp') {
+    ensurePpssppPortable(enginesDir());
+    if (mode === 'system' && !hasPspFirmware(enginesDir())) {
+      console.error('[nest] PSP XMB 需要固件：请先在 PPSSPP 设置 → 工具 → PSP 固件里安装。');
+      return { ok: false, error: 'missing-psp-firmware' };
+    }
+    applyControls(services, 'ppsspp', false);
+  }
 
   if (engine.id === 'pcsx2') {
     // PCSX2 needs a complete ini; seed it once, then refuse a BIOS-less boot

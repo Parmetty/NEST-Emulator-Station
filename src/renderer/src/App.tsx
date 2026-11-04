@@ -26,7 +26,7 @@ type Selection = { type: 'family' | 'system'; id: string };
 const SHELF_COLUMNS = 5;
 
 /** Consoles with editable keyboard bindings, in the order the chips are shown. */
-const KEY_SYSTEMS = (['gba', 'fc', 'sfc', 'n64', 'nds', 'ngc', 'wii', '3ds', 'wiiu', 'ps1', 'ps2'] as const).flatMap((id) => {
+const KEY_SYSTEMS = (['gba', 'fc', 'sfc', 'n64', 'nds', 'ngc', 'wii', '3ds', 'wiiu', 'ps1', 'ps2', 'psp'] as const).flatMap((id) => {
   const system = systemById.get(id);
   return system ? [system] : [];
 });
@@ -425,7 +425,7 @@ export default function App() {
       keySystemPinned.current = false;
       return;
     }
-    const isPlaystationEngine = (engine: string) => engine === 'swanstation' || engine === 'pcsx2';
+    const isPlaystationEngine = (engine: string) => engine === 'swanstation' || engine === 'pcsx2' || engine === 'ppsspp';
     if (settingsTab === 'playstation' && !isPlaystationEngine(keySystem.engine)) {
       setKeySystemId('ps1');
     } else if (settingsTab === 'nintendo' && isPlaystationEngine(keySystem.engine)) {
@@ -723,6 +723,7 @@ export default function App() {
         'bad-size-ps1-bios': 'PS1 BIOS 应为 512 KB（scph5500/scph5501/scph5502）',
         'bad-size-ps2-bios': 'PS2 BIOS 应为 4 MB（scph39001 等）',
         'missing-ps2-bios': '缺少 PS2 BIOS：请到「设置 → PlayStation」导入自备的 PS2 BIOS',
+        'missing-psp-firmware': '缺少 PSP 固件：请在 PPSSPP 里安装 6.61 固件后再启动 XMB',
         'missing-3ds-system-files':
           '3DS HOME Menu 需要 Azahar 系统文件：请先用真机 + Artic Setup Tool 在 Azahar 里执行 Set Up System Files',
       };
@@ -943,7 +944,7 @@ export default function App() {
   };
 
   const keySystemsVisible = KEY_SYSTEMS.filter((system) => {
-    const playstation = system.engine === 'swanstation' || system.engine === 'pcsx2';
+    const playstation = system.engine === 'swanstation' || system.engine === 'pcsx2' || system.engine === 'ppsspp';
     return settingsTab === 'playstation' ? playstation : !playstation;
   });
 
@@ -1267,7 +1268,11 @@ export default function App() {
                   {selectedSystem.systemMode ? (
                     <button className="key" onClick={() => askEnter(selectedSystem, 'system')}>
                       <kbd>X</kbd>
-                      {selectedSystem.systemMode.includes('故障') ? '系统模式（故障）' : '系统模式'}
+                      {selectedSystem.systemMode.includes('故障')
+                        ? '系统模式（故障）'
+                        : selectedSystem.systemMode.includes('需固件')
+                          ? '系统模式（需固件）'
+                          : '系统模式'}
                     </button>
                   ) : null}
                   <button

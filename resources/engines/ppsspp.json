@@ -1,29 +1,23 @@
 {
-    "id":  "ppsspp",
-    "name":  "PPSSPP",
-    "systems":  [
-                    "psp"
-                ],
-    "kind":  "native",
-    "detect":  {
-                   "paths":  [
-                                 "%PROGRAMFILES%\\PPSSPP\\PPSSPPWindows64.exe"
-                             ]
-               },
-    "download":  {
-                     "homepage":  "https://www.ppsspp.org/"
-                 },
-    "launch":  {
-                   "args":  [
-                                "{rom}"
-                            ],
-                   "systemArgs":  [
-
-                                  ],
-                   "cwd":  "engineDir"
-               },
-    "capabilities":  {
-                         "saveStates":  true,
-                         "systemMode":  null
-                     }
+  "id": "ppsspp",
+  "name": "PPSSPP",
+  "systems": ["psp"],
+  "kind": "native",
+  "detect": {
+    "paths": ["{engines}/ppsspp/PPSSPPWindows64.exe"]
+  },
+  "download": {
+    "homepage": "https://www.ppsspp.org/"
+  },
+  "launch": {
+    "args": ["--pause-menu-exit", "{rom}"],
+    "systemArgs": ["--vsh"],
+    "fullscreenFlag": "--fullscreen",
+    "cwd": "engineDir"
+  },
+  "captureAspect": 1.777777,
+  "capabilities": {
+    "saveStates": true,
+    "systemMode": "PSP XMB（需固件）"
+  }
 }

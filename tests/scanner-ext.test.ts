@@ -40,6 +40,18 @@ describe('scanner extensions', () => {
     expect(EXT_TO_SYSTEM.srl).toBe('nds');
   });
 
+  it('maps PSP disc formats and recognizes PSP ISO markers', async () => {
+    expect(EXT_TO_SYSTEM.cso).toBe('psp');
+    expect(EXT_TO_SYSTEM.elf).toBe('psp');
+
+    const dir = await tempDir();
+    const buffer = Buffer.alloc(0x2000);
+    buffer.write('PSP GAME', 0x100, 'latin1');
+    const fake = path.join(dir, 'fake-psp.iso');
+    await writeFile(fake, buffer);
+    expect(await systemForFile(fake)).toBe('psp');
+  });
+
   it('maps PS1 disc formats', () => {
     expect(EXT_TO_SYSTEM.cue).toBe('ps1');
     expect(EXT_TO_SYSTEM.chd).toBe('ps1');

@@ -34,6 +34,8 @@ export const EXT_TO_SYSTEM: Record<string, string> = {
   wua: 'wiiu',
   wud: 'wiiu',
   wux: 'wiiu',
+  cso: 'psp',
+  elf: 'psp',
   cue: 'ps1',
   chd: 'ps1',
   pbp: 'ps1',
@@ -122,6 +124,7 @@ async function sniffDiscSystem(file: string, ext: string): Promise<string | null
     if (probeRead.bytesRead > 0) {
       const text = probe.subarray(0, probeRead.bytesRead).toString('latin1');
       if (text.includes('PLAYSTATION')) return 'ps2';
+      if (text.includes('PSP GAME')) return 'psp';
     }
     return null;
   } catch {

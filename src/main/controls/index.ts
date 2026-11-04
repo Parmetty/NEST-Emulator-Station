@@ -14,6 +14,7 @@ import { applyDolphinControls, readDolphinControls } from './dolphin';
 import { applyMgbaControls, readMgbaControls } from './mgba';
 import { applyMelondsControls, readMelondsControls } from './melonds';
 import { applyPcsx2Controls, readPcsx2Controls } from './pcsx2';
+import { applyPpssppControls, readPpssppControls } from './ppsspp';
 import { CONTROL_ENGINE_IDS, WRITABLE_ENGINE_IDS } from './keymap';
 import type { ApplyResult } from './util';
 
@@ -70,6 +71,8 @@ function engineDirs(
       return { engineDir: engineDir ?? path.join(paths.enginesDir, 'cemu') };
     case 'pcsx2':
       return { root: path.join(paths.userData, 'playstation', 'PCSX2') };
+    case 'ppsspp':
+      return { engineDir: engineDir ?? path.join(paths.enginesDir, 'ppsspp') };
     case 'swanstation':
       return { engineDir: engineDir ?? path.join(paths.enginesDir, 'swanstation') };
     default:
@@ -122,6 +125,9 @@ export function applyEngineControls(
     case 'pcsx2':
       result = applyPcsx2Controls(dirs.root!, bindings, force);
       break;
+    case 'ppsspp':
+      result = applyPpssppControls(dirs.engineDir!, bindings, force);
+      break;
     default:
       return unsupported;
   }
@@ -152,6 +158,8 @@ export function readEngineControls(
       return null;
     case 'pcsx2':
       return readPcsx2Controls(dirs.root!);
+    case 'ppsspp':
+      return readPpssppControls(dirs.engineDir!);
     default:
       return null;
   }
