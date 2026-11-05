@@ -11,7 +11,7 @@ Nest 的文档按「家族」归档：任天堂系（已接入）与 PlayStation
 
 ## 常用入口
 
-- 项目主日志：[nintendo/HISTORY.md](nintendo/HISTORY.md)
+- 项目主日志：[HISTORY.md](HISTORY.md)
 - 发布级变化：[nintendo/CHANGELOG.md](nintendo/CHANGELOG.md)
 - 当前技术状态：[nintendo/STATE.md](nintendo/STATE.md)
 - 逐日进度与待办：[nintendo/PROGRESS.md](nintendo/PROGRESS.md)
