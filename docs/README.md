@@ -4,14 +4,13 @@ Nest 的文档按「家族」归档：任天堂系（已接入）与 PlayStation
 
 | 目录 | 内容 |
 |---|---|
-| [nintendo/](nintendo/) | 任天堂系全部文档：变更日志、项目主日志、状态、决策、进度、键位、金手指、发布流程与历史计划 |
+| [nintendo/](nintendo/) | 任天堂系公开文档：变更日志、状态、决策、进度、键位、金手指、发布流程与历史计划 |
 | [playstation/](playstation/) | PlayStation 家族计划：引擎选型、接入顺序、验收标准（Xbox 后续同模式） |
 
 跨家族的总路线见 **[ROADMAP.md](ROADMAP.md)**。
 
 ## 常用入口
 
-- 项目主日志：[HISTORY.md](HISTORY.md)
 - 发布级变化：[nintendo/CHANGELOG.md](nintendo/CHANGELOG.md)
 - 当前技术状态：[nintendo/STATE.md](nintendo/STATE.md)
 - 逐日进度与待办：[nintendo/PROGRESS.md](nintendo/PROGRESS.md)

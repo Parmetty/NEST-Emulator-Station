@@ -188,7 +188,7 @@ cemu/             keys.txt、MLC 路径记录
 | P4 | Wii U（Cemu 2.6 + keys/MLC 导入） | 引擎完成，系统菜单实验性 |
 | P5 | 封面质量、Cemu 键位适配、自动构建脚本、安装包（按需） | 进行中 |
 
-总路线见 [ROADMAP.md](docs/ROADMAP.md)；功能编年史见 [HISTORY.md](docs/HISTORY.md)，发布级变化见 [CHANGELOG.md](docs/nintendo/CHANGELOG.md)，现状见 [STATE.md](docs/nintendo/STATE.md)，逐日进展见 [PROGRESS.md](docs/nintendo/PROGRESS.md)。
+总路线见 [ROADMAP.md](docs/ROADMAP.md)；发布级变化见 [CHANGELOG.md](docs/nintendo/CHANGELOG.md)，现状见 [STATE.md](docs/nintendo/STATE.md)，逐日进展见 [PROGRESS.md](docs/nintendo/PROGRESS.md)。功能编年史为内部文档，不随仓库发布。
 
 ## 法律
 

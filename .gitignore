@@ -34,3 +34,6 @@ docs/nintendo/evidence/libretro/ref/
 resources/engines/cemu/portable/
 resources/engines/ppsspp/memstick/
 resources/engines/ppsspp/portable.txt
+# internal-only documents (kept locally, never pushed)
+docs/HISTORY.md
+docs/nintendo/HISTORY.md

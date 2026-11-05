@@ -1,9 +1,9 @@
 # Nest 开发进度与待办
 
-> 项目里程碑与各版本主线见 [../HISTORY.md](../HISTORY.md)；本文件只记逐日进度与待办。
+> 项目里程碑与各版本主线见内部功能编年史（不随仓库发布）；本文件只记逐日进度与待办。
 
 > 更新于 2026-11-06（Asia/Shanghai）｜版本 `0.4.2-beta.1`，最新 tag `v0.4.2-beta.1`
-> 依据：`git log/tag`、`docs/HISTORY.md`、`docs/nintendo/STATE.md`、`docs/nintendo/DECISIONS.md`、`README.md`、`resources/engines/*.json`、`src/shared/systems.ts`、`src/main/*`
+> 依据：`git log/tag`、内部功能编年史、`docs/nintendo/STATE.md`、`docs/nintendo/DECISIONS.md`、`README.md`、`resources/engines/*.json`、`src/shared/systems.ts`、`src/main/*`
 >
 > 说明：顶部 §1–§2 是**当前快照**；§3 起是逐日进度与历史记录（2026-10-28 的旧分析保留备查）。
 
@@ -44,7 +44,7 @@
 - 设置拆分为 Nest / Nintendo / Xbox / PlayStation 四页；任天堂系统文件与键位集中在 Nintendo。
 - 测试：typecheck 通过，单测 **100** 条。
 
-> 以下 §3 起为历史记录。当前里程碑见 [../HISTORY.md](../HISTORY.md)，发布级变化见 [CHANGELOG.md](CHANGELOG.md)。
+> 以下 §3 起为历史记录。当前里程碑见内部功能编年史，发布级变化见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 3. 历史：0.2.0 时期的提交（截至 2026-10-28，保留备查）
 
