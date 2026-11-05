@@ -200,6 +200,7 @@ export function installMockApi(): void {
       return { ok: true };
     },
     openHomepage: async () => ({ ok: true }),
+    openPpsspp: async () => ({ ok: true }),
     onLaunchEvent: (cb) => {
       listener = cb;
       return () => {

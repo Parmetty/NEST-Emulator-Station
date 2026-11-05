@@ -39,6 +39,7 @@ export interface NestApi {
     kind: FirmwareKind,
   ): Promise<{ ok: boolean; canceled?: boolean; error?: string; state?: FirmwareState }>;
   openHomepage(url: string): Promise<{ ok: boolean }>;
+  openPpsspp(): Promise<{ ok: boolean; error?: string }>;
   onLibraryChanged(cb: (info: { roots: number; added: number }) => void): () => void;
   onLaunchEvent(cb: (event: LaunchEvent) => void): () => void;
 }

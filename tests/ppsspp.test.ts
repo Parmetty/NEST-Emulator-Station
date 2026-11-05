@@ -9,6 +9,7 @@ import {
   readPpssppControls,
 } from '../src/main/controls/ppsspp';
 import { DEFAULT_KEYBOARD } from '../src/main/controls/keymap';
+import { hasPspFirmware, importPspFlash0 } from '../src/main/ppsspp';
 
 describe('PPSSPP adapter', () => {
   it('maps codes to PPSSPP key codes', () => {
@@ -19,6 +20,24 @@ describe('PPSSPP adapter', () => {
     expect(codeToNkcode('Enter')).toBe(66);
     expect(nkcodeToCode(38)).toBe('KeyJ');
     expect(nkcodeToCode(19)).toBe('ArrowUp');
+  });
+
+  it('imports a decrypted flash0 directory as a junction', async () => {
+    const dir = await mkdtemp(path.join(os.tmpdir(), 'nest-psp-fw-'));
+    try {
+      const source = path.join(dir, 'source', 'flash0');
+      const module = path.join(source, 'vsh', 'module');
+      await mkdir(module, { recursive: true });
+      await writeFile(path.join(module, 'vshmain.prx'), 'fake');
+
+      const enginesDir = path.join(dir, 'engines');
+      const result = importPspFlash0(enginesDir, source);
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.path).toContain('flash0');
+      expect(hasPspFirmware(enginesDir)).toBe(true);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
   });
 
   it('writes and reads [ControlMapping] keyboard bindings', async () => {

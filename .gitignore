@@ -32,3 +32,5 @@ docs/nintendo/evidence/libretro/runtime/
 docs/nintendo/evidence/libretro/ref/
 *.log.crash.txt
 resources/engines/cemu/portable/
+resources/engines/ppsspp/memstick/
+resources/engines/ppsspp/portable.txt

@@ -73,6 +73,9 @@ const api = {
   openHomepage: (url: string): Promise<{ ok: boolean }> =>
     ipcRenderer.invoke(CH.openHomepage, { url }),
 
+  openPpsspp: (): Promise<{ ok: boolean; error?: string }> =>
+    ipcRenderer.invoke(CH.openPpsspp),
+
   onLibraryChanged: (cb: (info: { roots: number; added: number }) => void): (() => void) => {
     const handler = (_e: unknown, info: { roots: number; added: number }) => cb(info);
     ipcRenderer.on(CH.libraryChanged, handler);

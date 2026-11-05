@@ -23,6 +23,7 @@
 - 宿主渲染：非 Dolphin core 改为**可缩放窗口**（默认 1024×768，按核心宽高比 letterbox 缩放），不再出现固定小窗口/大黑边
 - PS1 键位接入 Nest 键位面板：新增 SwanStation 引擎 + PS1 芯片，默认方向键 / J/K/U/I / Q/E / Enter / Backspace，启动时用 `--keys` 传给宿主
 - 主机墙：PlayStation 排到 Xbox 前面；所有家族默认折叠
+- PSP 设置新增「PSP 固件（flash0）」导入：可直接选已解密的 flash0 目录，Nest 用 junction 接入；并提供「打开 PPSSPP」子入口供官方 EBOOT.PBP 安装
 - **PSP 接入（PPSSPP master）**：内置 PPSSPP（含 1.21 XMB 功能）、`.iso/.cso/.chd/.pbp/.elf` 扫描、`--vsh` 系统模式、PPSSPP 键位适配（`controls.ini`），缺 PSP 固件时明确提示
 - **PS2 接入（PCSX2 2.8.2）**：内置 PCSX2（含 VC++ 运行库，避免旧运行库弹窗）；`-datapath` 隔离数据；PS2 BIOS 导入（4 MB 校验）；`-bios` 系统模式 = PS2 浏览器；扫描 `.iso`（PLAYSTATION 标记）
 - PS2 键位接入 Nest 面板（`PCSX2.ini` 的 `[Pad1]`，`Keyboard/` 绑定写入）

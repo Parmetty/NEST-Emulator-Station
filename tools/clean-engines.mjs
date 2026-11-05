@@ -10,7 +10,7 @@
 // Run:  node tools/clean-engines.mjs [--check]
 //   --check  only report problems, exit 1 if anything would change.
 
-import { readFileSync, writeFileSync, existsSync, rmSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, rmSync, readdirSync, statSync, lstatSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -111,6 +111,20 @@ scrubCemuPortable();
 function scrubPpsspp() {
   const engineDir = join(enginesDir, 'ppsspp');
   if (!existsSync(engineDir)) return;
+  // flash0 may be a junction to a firmware folder outside the repo; unlink the
+  // junction only, never recurse through it and delete the user's firmware.
+  const flash0 = join(engineDir, 'memstick', 'PSP', 'NAND', 'flash0');
+  if (existsSync(flash0)) {
+    try {
+      if (lstatSync(flash0).isSymbolicLink()) {
+        removed.push(relative(root, flash0));
+        if (!checkOnly) rmSync(flash0, { force: true });
+      }
+    } catch {
+      /* best effort */
+    }
+  }
+
   for (const name of ['memstick', 'portable.txt']) {
     const full = join(engineDir, name);
     if (!existsSync(full)) continue;

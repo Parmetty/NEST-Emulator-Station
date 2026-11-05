@@ -722,6 +722,9 @@ export default function App() {
         'missing-cemu-keys': '缺少 Cemu keys.txt：请到「设置 → 系统文件（自备）」导入自备密钥',
         'bad-size-ps1-bios': 'PS1 BIOS 应为 512 KB（scph5500/scph5501/scph5502）',
         'bad-size-ps2-bios': 'PS2 BIOS 应为 4 MB（scph39001 等）',
+        'invalid-psp-flash0': '目录里没有 vsh/module/vshmain.prx，不是有效的 PSP flash0',
+        'psp-flash0-io-error': '导入 PSP 固件失败：检查目标目录权限',
+        'missing-ppsspp': '找不到内置 PPSSPP 引擎',
         'missing-ps2-bios': '缺少 PS2 BIOS：请到「设置 → PlayStation」导入自备的 PS2 BIOS',
         'missing-psp-firmware': '缺少 PSP 固件：请在 PPSSPP 里安装 6.61 固件后再启动 XMB',
         'missing-3ds-system-files':
@@ -1583,7 +1586,7 @@ export default function App() {
                           IPL / WAD 需要你自己从主机 dump，Nest 不打包也不下载；导入后会复制到本机数据目录。
                         </p>
 
-                        {firmware.filter((item) => item.kind !== 'ps1-bios' && item.kind !== 'ps2-bios').map((item) => (
+                        {firmware.filter((item) => item.kind !== 'ps1-bios' && item.kind !== 'ps2-bios' && item.kind !== 'psp-firmware').map((item) => (
                           <div className="fw-row" key={item.kind}>
                             <span>
                               {item.label}
@@ -1660,12 +1663,12 @@ export default function App() {
                   <div className="settings-col">
                     <h2>系统文件（自备）</h2>
                     <p className="dlg-note">
-                      PS1 BIOS 可选（缺省用 OpenBIOS）；PS2 BIOS 必需，直读和 PS2 浏览器都要。
-                      文件只复制到本机数据目录，Nest 不打包也不下载。
+                      PS1 BIOS 可选（缺省用 OpenBIOS）；PS2 BIOS 必需；PSP XMB 需要 flash0 固件。
+                      文件只复制/链接到本机数据目录，Nest 不打包也不下载。
                     </p>
 
                     {firmware
-                      .filter((item) => item.kind === 'ps1-bios' || item.kind === 'ps2-bios')
+                      .filter((item) => item.kind === 'ps1-bios' || item.kind === 'ps2-bios' || item.kind === 'psp-firmware')
                       .map((item) => (
                         <div className="fw-row" key={item.kind}>
                           <span>
@@ -1680,12 +1683,21 @@ export default function App() {
                             </small>
                           </span>
                           <button className="ghost-btn" onClick={() => void importFirmware(item.kind)}>
-                            选择文件…
+                            {item.kind === 'psp-firmware' ? '选择目录…' : '选择文件…'}
                           </button>
                         </div>
                       ))}
 
                   </div>
+
+                  <p className="dlg-note">
+                    PSP 固件有两种来源：已解密的 <code>flash0</code> 目录可直接「选择目录…」导入；
+                    如果只有官方 6.61 升级程序 EBOOT.PBP，点下面的按钮打开 PPSSPP，在
+                    设置 → 工具 → PSP 固件里安装一次，Nest 会自动识别同一个 memstick。
+                  </p>
+                  <button className="ghost-btn" onClick={() => void window.nest.openPpsspp()}>
+                    打开 PPSSPP（安装 PSP 固件）
+                  </button>
 
                   {renderKeys()}
                 </div>

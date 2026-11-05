@@ -15,6 +15,7 @@ export const CH = {
   stop: 'nest:stop',
   favorite: 'nest:favorite',
   openHomepage: 'nest:open-homepage',
+  openPpsspp: 'nest:open-ppsspp',
   launchEvent: 'nest:launch-event',
   libraryChanged: 'nest:library-changed',
   rescan: 'nest:rescan',
@@ -37,6 +38,7 @@ export type FirmwareKind =
   | 'cemu-keys'
   | 'ps1-bios'
   | 'ps2-bios'
+  | 'psp-firmware'
   | 'wiiu-mlc';
 
 export type FirmwareState = {

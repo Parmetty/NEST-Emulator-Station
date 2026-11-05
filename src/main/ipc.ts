@@ -38,7 +38,7 @@ import {
 } from './controls';
 import { findAzaharHomeMenu } from './azahar-home';
 import { ensurePcsx2Data, pcsx2BiosDir, pcsx2BiosFiles } from './pcsx2';
-import { ensurePpssppPortable, hasPspFirmware } from './ppsspp';
+import { ensurePpssppPortable, hasPspFirmware, importPspFlash0, pspFlash0Dir } from './ppsspp';
 import { cheatExtraArgs, readCheatFile, saveCheatText } from './cheats';
 import { selectNdsSystemCart } from './nds-cart';
 import { EngineRegistry, buildArgs } from './engines';
@@ -360,6 +360,25 @@ function firmwareStates(services: Services): FirmwareState[] {
     });
   }
 
+  const pspFlash0 = pspFlash0Dir(enginesDir());
+  if (hasPspFirmware(enginesDir())) {
+    states.push({
+      kind: 'psp-firmware',
+      label: 'PSP 固件（flash0，XMB 需要）',
+      status: 'ok',
+      path: pspFlash0,
+      detail: 'vshmain.prx 就绪',
+    });
+  } else {
+    states.push({
+      kind: 'psp-firmware',
+      label: 'PSP 固件（flash0，XMB 需要）',
+      status: 'missing',
+      path: null,
+      detail: '未导入；也可在 PPSSPP 里安装 6.61 固件',
+    });
+  }
+
   const wad = wiiMenuWadPath();
   if (existsSync(wad)) {
     const size = statSync(wad).size;
@@ -483,7 +502,8 @@ async function pickFirmware(services: Services, raw: unknown): Promise<{
     kind !== 'cemu-keys' &&
     kind !== 'wiiu-mlc' &&
     kind !== 'ps1-bios' &&
-    kind !== 'ps2-bios'
+    kind !== 'ps2-bios' &&
+    kind !== 'psp-firmware'
   ) {
     return { ok: false, error: 'bad-request' };
   }
@@ -528,6 +548,18 @@ async function pickFirmware(services: Services, raw: unknown): Promise<{
     mkdirSync(ps1BiosDir(), { recursive: true });
     copyFileSync(source, path.join(ps1BiosDir(), path.basename(source).toLowerCase()));
     console.log(`[nest] ps1 bios imported: ${source} -> ${ps1BiosDir()}`);
+    return { ok: true, state: firmwareStates(services).find((state) => state.kind === kind) };
+  }
+
+  if (kind === 'psp-firmware') {
+    const picked = await dialog.showOpenDialog({
+      title: '选择 PSP flash0 目录（含 vsh/module/vshmain.prx）',
+      properties: ['openDirectory'],
+    });
+    if (picked.canceled || picked.filePaths.length === 0) return { ok: true, canceled: true };
+    const result = importPspFlash0(enginesDir(), picked.filePaths[0]);
+    if (!result.ok) return { ok: false, error: result.error };
+    console.log(`[nest] psp flash0 imported: ${picked.filePaths[0]} -> ${result.path}`);
     return { ok: true, state: firmwareStates(services).find((state) => state.kind === kind) };
   }
 
@@ -947,6 +979,14 @@ export function registerIpc(services: Services): void {
   ipcMain.handle(CH.firmwareStatus, () => firmwareStates(services));
 
   ipcMain.handle(CH.pickFirmware, async (_event, raw) => pickFirmware(services, raw));
+
+  ipcMain.handle(CH.openPpsspp, async () => {
+    ensurePpssppPortable(enginesDir());
+    const exe = path.join(enginesDir(), 'ppsspp', 'PPSSPPWindows64.exe');
+    if (!existsSync(exe)) return { ok: false, error: 'missing-ppsspp' };
+    const error = await shell.openPath(exe);
+    return error ? { ok: false, error: 'io-error' } : { ok: true };
+  });
 
   ipcMain.handle(CH.openHomepage, async (_event, raw) => {
     const url = String((raw as { url?: unknown })?.url ?? '');
