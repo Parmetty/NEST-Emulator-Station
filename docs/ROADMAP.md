@@ -1,6 +1,6 @@
 # Nest 总路线图（跨家族）
 
-> 最后更新：2026-11-03 · 当前版本 `0.4.1-beta.1`
+> 最后更新：2026-11-06 · 当前版本 `0.4.2-beta.1`
 > 原始计划（2026-10-25，只覆盖任天堂）保留在 [nintendo/PLAN.md](nintendo/PLAN.md)，作为历史对照；
 > 本文是**现在生效的路线图**：任天堂系收尾 + PlayStation 系主线 + Xbox 预留。
 
@@ -29,11 +29,11 @@ GBA 金手指、Cemu 键位。
 |---|---|---|---|
 | P5.1 | 任天堂收尾（小修小补） | 随 PS 主线并行：3DS 系统模式（等系统文件）、NGC/Wii 菜单插盘、Wii U Menu 等上游、NDS 存档备份 | 持续 |
 | **P6.0** | **PS 调研** | 四引擎的便携模式/CLI/许可/体积/系统模式均已核实，产出 RESEARCH-P6.0 + 4 份 ENGINE 规格 | ✅ 完成（2026-11-03） |
-| **P6.1** | **PS1（SwanStation libretro）** | 扫描 `.cue/.bin/.chd/.pbp` → 宿主启动 → 封面 → 键位（DuckStation 仅可选探测） | 🟡 直读/BIOS/封面完成；键位与系统模式（可选 BIOS shell）待做 |
+| **P6.1** | **PS1（SwanStation libretro）** | 扫描 `.cue/.bin/.chd/.pbp` → 宿主启动 → 封面 → 键位（DuckStation 仅可选探测） | ✅ 完成；BIOS 菜单入口保留但标记「故障」（输入无响应） |
 | P6.UI | PS 主机墙 | PS1/PS2/PSP/PS3 四台主机与家族导航（界面已就绪，引擎待接） | ✅ 完成 |
-| **P6.2** | **PSP（PPSSPP）** | 扫描 `.iso/.cso/.pbp` → 启动 → 存档目录隔离 → 键位 | 待 P6.1 完成 |
-| **P6.3** | **PS2（PCSX2）** | BIOS/记忆卡、`.iso/.chd/.bin+cue`、BIOS 浏览器入口 | 待 P6.2 |
-| **P6.4** | **PS3（RPCS3）** | 固件 PUP、游戏目录/ISO、键位（无 XMB，系统模式不做） | 后置 |
+| **P6.2** | **PSP（PPSSPP）** | 扫描 `.iso/.cso/.pbp` → 启动 → 存档目录隔离 → 键位 | ✅ 完成；XMB 需 PPSSPP 1.21+ 与自备 flash0，支持目录导入/自带安装入口 |
+| **P6.3** | **PS2（PCSX2）** | BIOS/记忆卡、`.iso/.chd/.bin+cue`、BIOS 浏览器入口 | ✅ 完成（内置 PCSX2 2.8.2） |
+| **P6.4** | **PS3（RPCS3）** | 固件 PUP、游戏目录/ISO、键位（无 XMB，系统模式不做） | ⏸️ 后置；RPCS3 XMB 仍为未合并 PR #19444（part 1/3） |
 | P7 | Xbox 家族 | xemu（Xbox）/ Xenia（Xbox 360），与 PS 同模式 | 预留 |
 | P8 | 平台收尾 | 首启向导、自动更新、安装版、手柄导航全覆盖 | 未排期 |
 

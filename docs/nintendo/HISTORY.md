@@ -13,9 +13,26 @@
 | 2026-10-30 | `v0.3.2`（`a16a2cb`） | P3 | 引擎矩阵补全：N64/Dolphin/NDS/3DS、系统菜单、键位面板、自动扫描、便携 zip |
 | 2026-11-01 | `v0.4.0-beta.1`（`4a7b667`） | P3.5–P4 | 自写 libretro 宿主（Wii 菜单去 UIA）+ Cemu/Wii U 接入（菜单实验性） |
 | 2026-11-03 | `v0.4.1-beta.1` | P4.5 | NDS/DSi 整条线可用（机型、DSi Menu、菜单插卡）+ Cemu 键位 + GBA 金手指 + 设置拆分 |
+| 2026-11-06 | `v0.4.2-beta.1` | P6.1–P6.3 | PlayStation 三机接入：PS1 SwanStation、PS2 PCSX2、PSP PPSSPP（含 XMB/flash0 导入） |
 
 阶段说明：P0 骨架 → P1 库/扫描 → P2 GBA/FC/SFC 闭环 → P3 Dolphin/NDS/3DS +
 系统菜单 → P4 Wii U/Cemu → P5 打磨（封面、构建、安装包）。
+
+---
+
+## v0.4.2-beta.1 · 2026-11-06
+
+**主题：PlayStation 三机接入（PS1 / PS2 / PSP）+ PSP 固件绿色导入。** 发布类型：Latest（版本号仍为 beta）。
+发布页：https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.4.2-beta.1
+
+- PS1：SwanStation libretro 直读，`.cue/.chd/.pbp/.mds/.ccd` 扫描，BIOS 可选导入，键位面板接入；
+  系统 BIOS 菜单入口保留但标记「故障」（输入无响应）
+- PS2：PCSX2 2.8.2 内置，`.iso` 扫描，4 MB BIOS 导入，`-bios` 进入 PS2 浏览器，`[Pad1]` 键位适配
+- PSP：PPSSPP master 内置，`.iso/.cso/.elf` 扫描，`--vsh` XMB；PSP 固件支持导入已解密 `flash0` 目录，
+  也可从 Nest 直接打开 PPSSPP 安装官方 EBOOT.PBP
+- PS 主机墙、PlayStation 设置双栏布局、PS1/PS2/PSP 键位芯片完成
+- 固件绿色化：PSP flash0、Cemu MLC 等用户数据放在 `nest-assets`，引擎侧用 junction，打包清理不会删源数据
+- 修复：PlayStation 设置里 PSP 说明/按钮误挂在 grid 外造成的右侧大空白
 
 ---
 

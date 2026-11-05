@@ -2,7 +2,7 @@
 
 > 新会话开场只需读这一份，再读 `PLAN.md` 与 `DECISIONS.md`。
 >
-> **发布状态：0.4.1-beta.1**（tag `v0.4.1-beta.1`）—— Windows 桌面版，九台任天堂主机全部接入；NDS/DSi 整条线打通，设置按御三家拆分。
+> **发布状态：0.4.2-beta.1**（tag `v0.4.2-beta.1`）—— Windows 桌面版，九台任天堂 + PS1/PS2/PSP 接入；PS3 界面就绪、引擎后置。
 
 ## 进度
 
@@ -18,9 +18,9 @@
 | P4 Wii U（Cemu） | 🟡 直读链路就绪；系统菜单实验性 |
 | P4.5 设置拆分 / 金手指 / 键位 | ✅ 完成（Nest/Nintendo/Xbox/PS 四页；GBA 金手指；Cemu 键位） |
 
-## 0.4.1-beta.1 快照（2026-11-03）
+## 0.4.2-beta.1 快照（2026-11-06）
 
-- 发布：`v0.4.1-beta.1`（便携包 `Nest-0.4.1-beta.1-portable.zip`，264 MB / 解压 633 MB / 3171 文件）
+- 发布：`v0.4.2-beta.1`（便携包 `Nest-0.4.2-beta.1-portable.zip`，328.5 MB / 解压 807.1 MB / 3597 文件）
 - 主机：九台任天堂全部接入。GBA/FC/SFC/N64 直读；NGC 直读 + GameCube Menu（IPL + Qt/UIA）；
   Wii Menu 走自写 libretro 宿主；NDS 四机型（DS/DSL/DSi/DSiLL）直读，DS 菜单与 DSi Menu 均可用且进菜单自动插卡；
   3DS 直读；HOME Menu 入口已恢复（需 Azahar 系统文件，未验证）；Wii U 直读，系统菜单实验性

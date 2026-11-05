@@ -116,6 +116,14 @@ launches emulators you provide and scans files you already own.
 - GPLv3 requires offering the corresponding source when distributing binaries;
   this repository links the upstream release and does not vendor the source.
 
+### PPSSPP 1.20.4-dev — `resources/engines/ppsspp/`
+
+- Project: https://www.ppsspp.org/ · Source: https://github.com/hrydgard/ppsspp
+- License: **GPLv2+** — full text at `resources/engines/ppsspp/LICENSE.TXT` (upstream repo).
+- Covers PSP (direct boot, `.iso/.cso`, and `--vsh` XMB). Redistributed unmodified.
+- Ships PPSSPP's `assets/` (fonts, shaders, lang, themes). No PSP firmware, update PBP, or game data is included.
+- Firmware is user-supplied: Nest can link a decrypted `flash0` directory or open PPSSPP for the official EBOOT.PBP install.
+
 ### SDL3 — `resources/tools/SDL3.dll`
 
 - License: **Zlib** · https://github.com/libsdl-org/SDL

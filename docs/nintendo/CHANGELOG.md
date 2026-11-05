@@ -2,7 +2,13 @@
 
 本文件记录每次发布的可见变化。技术细节在 `docs/nintendo/STATE.md`，决策理由在 `docs/nintendo/DECISIONS.md`，待办在 `docs/nintendo/PROGRESS.md`。
 
-## 未发布 — PS1 接入 + PS 主机墙 + 调研 + 文档按家族归档
+## 0.4.2-beta.1 — 2026-11-06 · PlayStation 三机接入 + PSP 固件导入
+
+便携包：Nest-0.4.2-beta.1-portable.zip 328.5 MB（解压 807.1 MB / 3597 文件）
+SHA256 A447EE2EF2581A7492FD61FB51DE11D4B1E8915CF00167EC7F80261C1B2D6402
+
+本版把 PlayStation 从「界面就绪」推进到 **PS1 / PS2 / PSP 三机可直读**：PS1 走 SwanStation（libretro），
+PS2 走 PCSX2，PSP 走 PPSSPP；PS 键位面板、BIOS/固件导入和 PSP XMB 入口一并落地。PS3 继续后置。
 
 - 文档重构：任天堂系全部文档移入 `docs/nintendo/`（含 evidence / mock-v1 / patches），
   新增 `docs/playstation/PLAN-PLAYSTATION.md` 与总路线 `docs/ROADMAP.md`

@@ -2,7 +2,7 @@
 
 > 项目里程碑与各版本主线见 [HISTORY.md](HISTORY.md)；本文件只记逐日进度与待办。
 
-> 更新于 2026-11-03（Asia/Shanghai）｜版本 `0.4.1-beta.1`，最新 tag `v0.4.1-beta.1`
+> 更新于 2026-11-06（Asia/Shanghai）｜版本 `0.4.2-beta.1`，最新 tag `v0.4.2-beta.1`
 > 依据：`git log/tag`、`docs/nintendo/HISTORY.md`、`docs/nintendo/STATE.md`、`docs/nintendo/DECISIONS.md`、`README.md`、`resources/engines/*.json`、`src/shared/systems.ts`、`src/main/*`
 >
 > 说明：顶部 §1–§2 是**当前快照**；§3 起是逐日进度与历史记录（2026-10-28 的旧分析保留备查）。
@@ -10,9 +10,16 @@
 ## 1. 一句话现状
 
 一个 Electron「主机启动站」：扫描 ROM → 卡片墙 → 内置引擎子进程启动 → 退出回 Nest 并自动生成封面。
-**九台任天堂主机全部接入：GBA/FC/SFC/N64/NDS/3DS/NGC 直读已验证；Wii 系统菜单经自写 libretro 宿主启动（无 UIA）；**
-**NDS/DSi 整条线打通（机型选择、DS 菜单、DSi Menu、系统菜单插卡）；Wii U 引擎（Cemu 2.6）已内置，直读链路验证通过、系统菜单为实验性。**
-**设置已按 Nest / Nintendo / Xbox / PlayStation 四页拆分；GBA 金手指、Cemu 键位已接入面板。**
+**九台任天堂主机全部接入；PS1/PS2/PSP 已接入（SwanStation / PCSX2 / PPSSPP）；PS3 仅界面占位、引擎后置。**
+**PSP XMB 可用（需自备 flash0，支持目录导入或从 Nest 打开 PPSSPP 安装）；PS1 BIOS 菜单入口保留但标记「故障」。**
+**设置按 Nest / Nintendo / Xbox / PlayStation 四页拆分；GBA 金手指、Cemu 键位、PS 键位均已接入面板。**
+
+## 0.4.2-beta.1 发布记录（2026-11-06）
+
+- 便携包：`Nest-0.4.2-beta.1-portable.zip`（328.5 MB / 解压 807.1 MB / 3597 文件）
+- SHA256：`A447EE2EF2581A7492FD61FB51DE11D4B1E8915CF00167EC7F80261C1B2D6402`
+- 主线：PS1 SwanStation、PS2 PCSX2、PSP PPSSPP + flash0 导入；PS3 后置
+- 回归：typecheck 通过，单测 112 条；便携包 smoke + GBA 启动/封面验证通过
 
 ## 2. 能力矩阵（当前）
 

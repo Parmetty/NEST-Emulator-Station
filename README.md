@@ -5,17 +5,17 @@
 
 ![Nest 首页](shots/app.png)
 
-> 当前：**0.4.1-beta.1** —— Windows 桌面版 · 九台任天堂主机（含 NDS 四机型）+ PS1/PS2（PSP/PS3 界面就绪）· 六个内置引擎 + 自写 libretro 宿主 · 免安装携带版
+> 当前：**0.4.2-beta.1** —— Windows 桌面版 · 九台任天堂主机 + PS1/PS2/PSP 接入（PS3 界面就绪）· 九个内置引擎 + 自写 libretro 宿主 · 免安装携带版
 
 ## 下载
 
 直接下免安装版，解压双击即可用，不需要安装 Node 或任何依赖：
 
-**[Nest-0.4.1-beta.1-portable.zip](https://github.com/Parmetty/NEST-Emulator-Station/releases/download/v0.4.1-beta.1/Nest-0.4.1-beta.1-portable.zip)** · 264 MB · [Release 页面](https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.4.1-beta.1)
+**[Nest-0.4.2-beta.1-portable.zip](https://github.com/Parmetty/NEST-Emulator-Station/releases/download/v0.4.2-beta.1/Nest-0.4.2-beta.1-portable.zip)** · 328.5 MB · [Release 页面](https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.4.2-beta.1)
 
 ```
-SHA256  0C38660097C310BCC296A4B051D09096E1591111B88314A4A1E4C4BAEE246308
-解压    633 MB / 3171 个文件
+SHA256  A447EE2EF2581A7492FD61FB51DE11D4B1E8915CF00167EC7F80261C1B2D6402
+解压    807.1 MB / 3597 个文件
 ```
 
 1. 解压到任意目录（可放 U 盘）
@@ -38,19 +38,19 @@ SHA256  0C38660097C310BCC296A4B051D09096E1591111B88314A4A1E4C4BAEE246308
 | Wii | Dolphin 2609a / libretro 宿主 | 🟡 代码就绪，待镜像验证 | ✅ Wii Menu（WAD，经 libretro 宿主，无 UIA） |
 | 3DS | Azahar 2126.2 | ✅ | 🟡 **实验性** HOME Menu（需 Azahar 系统文件，已恢复入口） |
 | Wii U | Cemu 2.6 | ✅ `.wua/.wud/.wux` | ⚠️ **实验性** Wii U Menu（Cemu 2.6 限制，见下方已知限制） |
-| PS1 | SwanStation（libretro） | ✅ | ❌ 无系统菜单（可选 DuckStation BIOS shell） |
+| PS1 | SwanStation（libretro） | ✅ | ⚠️ BIOS 菜单入口保留但标记「故障」（输入无响应） |
 | PS2 | PCSX2 2.8.2 | ✅ | ✅ PS2 浏览器（`-bios`，需 BIOS） |
-| PSP | PPSSPP（待接入） | ✖ | 🟡 计划：XMB（需 PPSSPP 1.21+） |
-| PS3 | RPCS3（待接入） | ✖ | ❌ 无 XMB |
+| PSP | PPSSPP master | ✅ | ✅ PSP XMB（`--vsh`，需自备 flash0 固件；可直接导入目录或用内置入口安装） |
+| PS3 | RPCS3（后置） | ✖ | ❌ 无 XMB（RPCS3 尚未合并 XMB PR） |
 
 其它能力：
 
-- **主机墙**：9 台任天堂 + 4 台 PlayStation（PS1/PS2/PSP/PS3，界面已就绪、引擎待接）按发售年份排列，全屏照片 + 树状列表 + 信息卡；平台切换时年代标尺跟着换
+- **主机墙**：9 台任天堂 + 4 台 PlayStation（PS1/PS2/PSP 已接入，PS3 预留）按发售年份排列，全屏照片 + 树状列表 + 信息卡；平台切换时年代标尺跟着换
 - **游戏库 + 自动扫描**：添加过的文件夹会在启动时自动重扫，新 ROM 自动出现；支持 `.cia` 与磁盘头 magic 判定 GC/Wii
 - **自动封面**：游戏运行期间由独立抓屏工具持续取帧，退出时存为封面（NDS/3DS 只截上屏）
 - **自写 libretro 宿主**：`resources/tools/nest-libretro.exe`（约 90 KB，C# + SDL3）托管官方 `dolphin_libretro.dll`，**Wii 系统菜单不再依赖 Dolphin Qt GUI 自动化**，直接加载 `wii-menu.wad` 进菜单；键盘 + 鼠标绝对指针（鼠标即 Wiimote 光标，左键 = A）
-- **键位面板**：mGBA / ares / Dolphin / Azahar / melonDS / Cemu 六引擎键盘绑定可在 Nest 里改，保存立即生效；首次启动自动写默认布局，不覆盖你已有的自定义
-- **设置分类**：设置窗口拆成 **Nest / Nintendo / Xbox / PlayStation** 四页，任天堂系统文件与键位集中在 Nintendo 页，PS/Xbox 预留
+- **键位面板**：mGBA / ares / Dolphin / Azahar / melonDS / Cemu / SwanStation / PCSX2 / PPSSPP 九引擎键盘绑定可在 Nest 里改，保存立即生效；首次启动自动写默认布局，不覆盖你已有的自定义
+- **设置分类**：设置窗口拆成 **Nest / Nintendo / Xbox / PlayStation** 四页；PlayStation 页含 PS1 BIOS、PS2 BIOS、PSP flash0 导入与 PS1/PS2/PSP 键位
 - **NDS 系统菜单插卡**：进 DS/DSi 菜单时自动插入最近玩的 NDS 游戏（设置 → Nintendo 可关）
 - **GBA 金手指**：游戏右键「金手指…」编辑 mGBA `.cheats`，保存后启动自动生效（见 [CHEATS-GBA.md](docs/nintendo/CHEATS-GBA.md)）
 - **固件中心**：GameCube IPL（CRC32 白名单）、Wii 系统菜单 WAD、NDS BIOS+固件、**DSi BIOS+固件+NAND**、**Cemu keys.txt / Wii U NAND（MLC）**，一键导入（MLC 只记路径，不复制）
@@ -64,6 +64,7 @@ SHA256  0C38660097C310BCC296A4B051D09096E1591111B88314A4A1E4C4BAEE246308
 | GBA / NDS / 3DS | 方向键 = 十字键，Space = A，J = B，Q/E = L/R，Enter = Start，Backspace = Select |
 | FC / SFC / N64 | W/S/A/D = 十字键，J/K = A/B，U/I = X/Y（SFC），Q/E = L/R，Enter = Start，右 Shift = Select |
 | NGC / Wii 直读 | Dolphin GCPad 键盘布局 |
+| PS1 / PS2 / PSP | 方向键 + J/K/U/I + Q/E + Enter/Backspace（写入引擎自己的配置） |
 | Wii 系统菜单 | 键盘 + 鼠标：鼠标即 Wiimote 光标（绝对定位，需 Cemu 无），左键 = A |
 
 细节见 [KEYS-GBA.md](docs/nintendo/KEYS-GBA.md)、[KEYS-DOLPHIN.md](docs/nintendo/KEYS-DOLPHIN.md)、
@@ -87,7 +88,7 @@ SHA256  0C38660097C310BCC296A4B051D09096E1591111B88314A4A1E4C4BAEE246308
 
 | PlayStation 主机墙 | PlayStation 设置 |
 |---|---|
-| ![PlayStation](shots/ps-family.png) | ![PlayStation 设置](shots/settings-playstation.png) |
+| ![PlayStation](shots/ps-family.png) | ![PlayStation 设置](shots/settings-playstation-psp-firmware.png) |
 
 ## 从源码运行
 
@@ -192,7 +193,7 @@ cemu/             keys.txt、MLC 路径记录
 ## 法律
 
 - 本仓库**不含**任何 ROM、BIOS、NAND 或密钥；只启动你提供的模拟器、扫描你已有的文件。
-- 内置引擎与许可证：mGBA（MPL 2.0）、ares（ISC）、Dolphin（GPLv2+）、Azahar（GPLv3）、melonDS（GPLv3）、Cemu（MPL 2.0）、dolphin_libretro（GPLv2+）、SDL3（Zlib）。
+- 内置引擎与许可证：mGBA（MPL 2.0）、ares（ISC）、Dolphin（GPLv2+）、Azahar（GPLv3）、melonDS（GPLv3）、Cemu（MPL 2.0）、SwanStation（GPLv3）、PCSX2（GPLv3）、PPSSPP（GPLv2+）、dolphin_libretro（GPLv2+）、SDL3（Zlib）。
 - 主机照片来自 Wikimedia Commons：多数为公有领域素材（Evan-Amos），已做裁切/去色/模糊处理；
   DSi 与 DSi XL 两张为 **CC BY-SA 3.0**（Evan-Amos），署名与许可证见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。
 - 各主机商标归各自权利人所有，本项目与任天堂、微软、索尼无关联。
