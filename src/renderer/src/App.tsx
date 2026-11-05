@@ -1688,16 +1688,15 @@ export default function App() {
                         </div>
                       ))}
 
+                    <button className="ghost-btn" onClick={() => void window.nest.openPpsspp()}>
+                      打开 PPSSPP（安装 PSP 固件）
+                    </button>
+                    <p className="dlg-note">
+                      PSP 固件有两种来源：已解密的 <code>flash0</code> 目录可直接「选择目录…」导入；
+                      如果只有官方 6.61 升级程序 EBOOT.PBP，点上面的按钮打开 PPSSPP，在
+                      设置 → 工具 → PSP 固件里安装一次，Nest 会自动识别同一个 memstick。
+                    </p>
                   </div>
-
-                  <p className="dlg-note">
-                    PSP 固件有两种来源：已解密的 <code>flash0</code> 目录可直接「选择目录…」导入；
-                    如果只有官方 6.61 升级程序 EBOOT.PBP，点下面的按钮打开 PPSSPP，在
-                    设置 → 工具 → PSP 固件里安装一次，Nest 会自动识别同一个 memstick。
-                  </p>
-                  <button className="ghost-btn" onClick={() => void window.nest.openPpsspp()}>
-                    打开 PPSSPP（安装 PSP 固件）
-                  </button>
 
                   {renderKeys()}
                 </div>
