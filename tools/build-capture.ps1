@@ -24,6 +24,7 @@ $targets = @(
   @{ Source = 'window\NestWindow.cs';   Exe = 'nest-window.exe';  Extra = @() },
   @{ Source = 'pads\NestPads.cs';       Exe = 'nest-pads.exe';    Extra = @() },
   @{ Source = 'menu\NestMenu.cs';       Exe = 'nest-menu.exe';    Extra = @("/reference:$wpf\UIAutomationClient.dll", "/reference:$wpf\UIAutomationTypes.dll", "/reference:$wpf\WindowsBase.dll") }
+  @{ Source = 'dialog\NestDialog.cs';   Exe = 'nest-dialog.exe';   Extra = @("/reference:$wpf\UIAutomationClient.dll", "/reference:$wpf\UIAutomationTypes.dll", "/reference:$wpf\WindowsBase.dll") }
 )
 
 foreach ($target in $targets) {

@@ -187,6 +187,18 @@ export const engineManifestSchema = z.object({
   captureTopOnly: z.boolean().optional(),
 
   /**
+   * Native launch prompt to dismiss with UIA before the cover capture starts
+   * (Xenia shows a disclaimer MessageBox on every launch).
+   */
+  dismissDialog: z
+    .object({
+      title: z.string().default('Xenia'),
+      button: z.string().default('是'),
+      timeout: z.number().int().positive().optional(),
+    })
+    .optional(),
+
+  /**
    * System mode reached through the engine's own GUI: wait for the window, then
    * open a known top-level menu and invoke the target item.
    */

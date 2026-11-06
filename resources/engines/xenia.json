@@ -16,6 +16,11 @@
     "fullscreenFlag": "--fullscreen",
     "cwd": "engineDir"
   },
+  "dismissDialog": {
+    "title": "Xenia",
+    "button": "是",
+    "timeout": 15000
+  },
   "captureAspect": 1.777777,
   "capabilities": {
     "saveStates": false,

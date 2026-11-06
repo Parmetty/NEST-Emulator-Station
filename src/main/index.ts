@@ -132,10 +132,38 @@ async function newestShot(): Promise<string | null> {
  * a different amount of chrome, so this is a property of the engine, not of the
  * console. Omitted means "the client area is already the screen" (e.g. FCEUX).
  */
-function captureToolPath(): string {
+function toolsPath(name: string): string {
   return app.isPackaged
-    ? path.join(process.resourcesPath, 'tools', 'nest-capture.exe')
-    : path.join(app.getAppPath(), 'resources', 'tools', 'nest-capture.exe');
+    ? path.join(process.resourcesPath, 'tools', name)
+    : path.join(app.getAppPath(), 'resources', 'tools', name);
+}
+
+function captureToolPath(): string {
+  return toolsPath('nest-capture.exe');
+}
+
+/** Fast UIA dismissal of engine launch prompts (Xenia disclaimer) before cover capture. */
+function dismissLaunchDialog(
+  pid: number,
+  dialog: { title?: string; button?: string; timeout?: number },
+): void {
+  const exe = toolsPath('nest-dialog.exe');
+  if (!existsSync(exe)) return;
+  const args = [
+    '--pid',
+    String(pid),
+    '--title',
+    dialog.title ?? 'Xenia',
+    '--button',
+    dialog.button ?? '是',
+    '--timeout',
+    String(dialog.timeout ?? 15000),
+    '--log',
+    path.join(shotsDir(), 'dialog.log'),
+  ];
+  const helper = spawn(exe, args, { windowsHide: true, stdio: 'ignore' });
+  helper.once('exit', (code) => console.log('[nest] nest-dialog finished (code ' + code + ') pid=' + pid));
+  console.log('[nest] nest-dialog armed for pid=' + pid);
 }
 
 function startShotHelper(
@@ -401,6 +429,7 @@ async function boot(): Promise<void> {
           const windowed = !services?.store.getSettings().fullscreen;
           const cropTop = windowed ? engine?.captureCropTop ?? 0 : 0;
           const cropBottom = windowed ? engine?.captureCropBottom ?? 0 : 0;
+          if (engine?.dismissDialog) dismissLaunchDialog(pid, engine.dismissDialog);
           void clearShots().then(() =>
             startShotHelper(
           e.sessionId,
