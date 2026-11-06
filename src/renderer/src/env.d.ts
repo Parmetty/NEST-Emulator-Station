@@ -19,6 +19,7 @@ export interface NestApi {
   games(systemId: string): Promise<GameRecord[]>;
   scan(systemId?: string, path?: string): Promise<ScanResult>;
   removeGame(gameId: string): Promise<{ ok: boolean; error?: string }>;
+  renameGame(gameId: string, title: string): Promise<{ ok: boolean; error?: string; game?: GameRecord }>;
   launch(systemId: string, mode?: LaunchMode, rom?: string): Promise<LaunchResult>;
   stop(sessionId: string): Promise<{ ok: boolean }>;
   rescan(): Promise<ScanResult>;

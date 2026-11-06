@@ -133,10 +133,19 @@ export class Store {
   async upsertGames(files: ScannedFile[]): Promise<{ added: number; skipped: number }> {
     let added = 0;
     let skipped = 0;
+    let titlesChanged = false;
     const byId = new Map(this.data.games.map((g) => [g.id, g]));
     for (const file of files) {
       const id = file.sha1.slice(0, 16);
       if (byId.has(id)) {
+        const existing = byId.get(id)!;
+        // Older GOD scans used the Title ID (e.g. 4D530AA4) as the title. A
+        // fresh scan can recover the real title from the STFS header; only
+        // replace ID-like placeholders, never a name the user chose.
+        if (file.title && file.title !== existing.title && /^[0-9A-F]{8}$/i.test(existing.title)) {
+          byId.set(id, { ...existing, title: file.title });
+          titlesChanged = true;
+        }
         skipped += 1;
         continue;
       }
@@ -156,7 +165,7 @@ export class Store {
       byId.set(id, record);
       added += 1;
     }
-    if (added > 0) {
+    if (added > 0 || titlesChanged) {
       this.data.games = [...byId.values()];
       await this.save();
     }

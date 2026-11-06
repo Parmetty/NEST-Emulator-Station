@@ -50,6 +50,7 @@ SHA256  A447EE2EF2581A7492FD61FB51DE11D4B1E8915CF00167EC7F80261C1B2D6402
 - **主机墙**：9 台任天堂 + 4 台 PlayStation（PS1/PS2/PSP 已接入，PS3 预留）+ 2 台 Xbox（主机墙已加入，xemu/Xenia 引擎接入中）按发售年份排列，全屏照片 + 树状列表 + 信息卡；平台切换时年代标尺跟着换
 - **游戏库 + 自动扫描**：添加过的文件夹会在启动时自动重扫，新 ROM 自动出现；支持 `.cia` 与磁盘头 magic 判定 GC/Wii
 - **自动封面**：游戏运行期间由独立抓屏工具持续取帧，退出时存为封面（NDS/3DS 只截上屏）
+- **游戏右键重命名**：只改 Nest 库里的显示名，不改磁盘文件名；GOD 游戏的 `4D530AA4` 这类占位标题也可以手动改掉
 - **自写 libretro 宿主**：`resources/tools/nest-libretro.exe`（约 90 KB，C# + SDL3）托管官方 `dolphin_libretro.dll`，**Wii 系统菜单不再依赖 Dolphin Qt GUI 自动化**，直接加载 `wii-menu.wad` 进菜单；键盘 + 鼠标绝对指针（鼠标即 Wiimote 光标，左键 = A）
 - **键位面板**：mGBA / ares / Dolphin / Azahar / melonDS / Cemu / SwanStation / PCSX2 / PPSSPP / Xenia 十引擎键盘绑定可在 Nest 里改，保存立即生效；首次启动自动写默认布局，不覆盖你已有的自定义
 - **设置分类**：设置窗口拆成 **Nest / Nintendo / Xbox / PlayStation** 四页；PlayStation 页含 PS1 BIOS、PS2 BIOS、PSP flash0 导入与 PS1/PS2/PSP 键位

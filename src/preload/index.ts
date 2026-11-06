@@ -29,6 +29,12 @@ const api = {
   removeGame: (gameId: string): Promise<{ ok: boolean; error?: string }> =>
     ipcRenderer.invoke(CH.removeGame, { gameId }),
 
+  renameGame: (
+    gameId: string,
+    title: string,
+  ): Promise<{ ok: boolean; error?: string; game?: GameRecord }> =>
+    ipcRenderer.invoke(CH.renameGame, { gameId, title }),
+
   launch: (systemId: string, mode: LaunchMode = 'game', rom?: string): Promise<LaunchResult> =>
     ipcRenderer.invoke(CH.launch, { systemId, mode, rom }),
 

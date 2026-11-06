@@ -9,6 +9,7 @@ export const CH = {
   games: 'nest:games',
   scan: 'nest:scan',
   removeGame: 'nest:remove-game',
+  renameGame: 'nest:rename-game',
   settings: 'nest:settings',
   saveSettings: 'nest:settings-save',
   launch: 'nest:launch',

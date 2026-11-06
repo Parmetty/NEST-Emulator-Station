@@ -142,6 +142,7 @@ export default function App() {
   const [runningSystems, setRunningSystems] = useState<Record<string, number>>({});
   const [runningGames, setRunningGames] = useState<Record<string, number>>({});
   const [menu, setMenu] = useState<{ x: number; y: number; game: GameRecord } | null>(null);
+  const [rename, setRename] = useState<{ game: GameRecord; text: string } | null>(null);
   const [cheat, setCheat] = useState<{
     game: GameRecord;
     text: string;
@@ -650,6 +651,28 @@ export default function App() {
     },
     [say, shelf, refreshHome],
   );
+
+  const openRename = useCallback((game: GameRecord) => {
+    setMenu(null);
+    setRename({ game, text: game.title });
+  }, []);
+
+  const commitRename = useCallback(async () => {
+    if (!rename) return;
+    const title = rename.text.trim();
+    if (!title) return;
+    const result = await window.nest.renameGame(rename.game.id, title).catch(() => null);
+    if (!result?.ok) {
+      say('重命名失败');
+      return;
+    }
+    setRename(null);
+    say('已重命名');
+    if (shelf && result.game) {
+      setShelf({ ...shelf, games: shelf.games.map((g) => (g.id === result.game!.id ? result.game! : g)) });
+    }
+    void refreshHome();
+  }, [rename, shelf, say, refreshHome]);
 
   const moveShelf = useCallback(
     (dx: number, dy: number) => {
@@ -1416,10 +1439,45 @@ export default function App() {
                 <span className="ctx-hint">mGBA .cheats 文件</span>
               </button>
             ) : null}
+            <button className="ctx-item" onClick={() => openRename(menu.game)}>
+              <span className="ctx-label">重命名…</span>
+              <span className="ctx-hint">只改显示名，不改文件名</span>
+            </button>
             <button className="ctx-item" onClick={() => void removeGame(menu.game)}>
               <span className="ctx-label">从库中移除</span>
               <span className="ctx-hint">不删除磁盘上的文件</span>
             </button>
+          </div>
+        </div>
+      ) : null}
+
+      {rename ? (
+        <div className="dialog open" role="dialog" aria-modal="true" onClick={() => setRename(null)}>
+          <div className="dialog-card" onClick={(event) => event.stopPropagation()}>
+            <div className="dlg-tag">
+              <i />重命名
+            </div>
+            <h2>重命名游戏</h2>
+            <p>只改 Nest 库里的显示名，不会改磁盘上的文件名。</p>
+            <input
+              className="dlg-input"
+              autoFocus
+              maxLength={120}
+              value={rename.text}
+              onChange={(event) => setRename({ ...rename, text: event.target.value })}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') void commitRename();
+                if (event.key === 'Escape') setRename(null);
+              }}
+            />
+            <div className="dlg-actions">
+              <button className="dlg-btn" onClick={() => setRename(null)}>
+                取消
+              </button>
+              <button className="dlg-btn primary" disabled={!rename.text.trim()} onClick={() => void commitRename()}>
+                保存
+              </button>
+            </div>
           </div>
         </div>
       ) : null}
@@ -1717,14 +1775,6 @@ export default function App() {
                       没有 Dashboard / 系统菜单。Xbox 初代将使用 xemu（需自备 MCPX、BIOS、HDD 镜像），
                       仍在接入中（P7.1）。
                     </p>
-                    <div className="locked-systems">
-                      {(families.find((family) => family.id === 'xbox')?.systems ?? []).map((system) => (
-                        <span key={system.id}>
-                          {system.name}
-                          <small>{system.year}</small>
-                        </span>
-                      ))}
-                    </div>
                     <p className="dlg-note">
                       键位面板当前对应 Xbox 360（Xenia，[HID.Key]）；Xbox 初代接入后会复用同一入口。
                     </p>

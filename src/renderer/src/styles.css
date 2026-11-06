@@ -1867,3 +1867,18 @@ kbd {
 .settings-panel h2:not(:first-child) {
   margin-top: 22px;
 }
+.dlg-input {
+  width: 100%;
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+}
+.dlg-input:focus {
+  border-color: rgba(232, 195, 122, 0.65);
+}

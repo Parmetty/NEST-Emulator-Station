@@ -164,6 +164,17 @@ export function installMockApi(): void {
       }, 2200);
       return { ok: true, sessionId: 'mock' };
     },
+    renameGame: async (gameId, title) => {
+      let updated;
+      for (const key of Object.keys(games)) {
+        games[key] = games[key].map((g) => {
+          if (g.id !== gameId) return g;
+          updated = { ...g, title };
+          return updated;
+        });
+      }
+      return updated ? { ok: true, game: updated } : { ok: false, error: 'not-found' };
+    },
     removeGame: async (gameId) => {
       for (const key of Object.keys(games)) {
         games[key] = games[key].filter((g) => g.id !== gameId);

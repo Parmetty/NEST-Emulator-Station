@@ -927,6 +927,16 @@ export function registerIpc(services: Services): void {
     return removed ? { ok: true } : { ok: false, error: 'not-found' };
   });
 
+  ipcMain.handle(CH.renameGame, async (_event, raw) => {
+    const body = (raw ?? {}) as { gameId?: unknown; title?: unknown };
+    const gameId = String(body.gameId ?? '');
+    const title = String(body.title ?? '').trim();
+    if (!gameId || !title || title.length > 120) return { ok: false, error: 'bad-request' };
+    const game = await store.updateGame(gameId, { title });
+    if (!game) return { ok: false, error: 'not-found' };
+    return { ok: true, game: withCover(game) };
+  });
+
   ipcMain.handle(CH.scan, async (event, raw): Promise<ScanResult> => {
     const parsed = scanRequestSchema.safeParse(raw ?? {});
     if (!parsed.success) return { ok: false, error: 'bad-request' };
