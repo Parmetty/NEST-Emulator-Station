@@ -84,6 +84,12 @@ nest-assets\roms\xbox 360\4D530AA4\00007000\99B5F58BC37BA43E6271
 nest-assets\roms\xbox 360\4D530AA4\00007000\99B5F58BC37BA43E6271.data\Data0000...
 ```
 
+## 当前实测状态
+
+- **Xenia Canary 直读已跑通**：GOD 包《Forza Horizon 2》能进入开场画面（Direct3D 12）
+- 启动时会弹一次 Xenia 免责声明框；`headless=true` 并不能跳过它，目前需要手动点一下
+- Dashboard / 系统模式仍不做
+
 ## 三、下载后交给 Nest 的方式
 
 1. 引擎压缩包放 `E:\workstop\ps\`

@@ -1704,9 +1704,9 @@ export default function App() {
                 <div className="settings-panel">
                   <h2>Xbox</h2>
                   <p className="dlg-note">
-                    Xbox 家族已加入主机墙。Xbox 初代将使用 xemu（需自备 MCPX、BIOS、HDD 镜像）；
-                    Xbox 360 将使用 Xenia（无需固件，且没有 Dashboard / 系统菜单）。
-                    当前只展示主机墙，引擎接入（P7.1 / P7.2）后解锁直读。
+                    Xbox 360 已接入 Xenia Canary：支持 GOD / ISO / XEX 直读，无需固件，
+                    没有 Dashboard / 系统菜单。Xbox 初代将使用 xemu（需自备 MCPX、BIOS、HDD 镜像），
+                    仍在接入中（P7.1）。
                   </p>
                   <div className="locked-systems">
                     {(families.find((family) => family.id === 'xbox')?.systems ?? []).map((system) => (

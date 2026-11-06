@@ -43,7 +43,7 @@ SHA256  A447EE2EF2581A7492FD61FB51DE11D4B1E8915CF00167EC7F80261C1B2D6402
 | PSP | PPSSPP master | ✅ | ✅ PSP XMB（`--vsh`，需自备 flash0 固件；可直接导入目录或用内置入口安装） |
 | PS3 | RPCS3（后置） | ✖ | ❌ 无 XMB（RPCS3 尚未合并 XMB PR） |
 | Xbox | xemu（待接入 P7.1） | ✖ | —（可选 Dashboard，需 HDD） |
-| Xbox 360 | Xenia（待接入 P7.2） | ✖ | ❌ 无 Dashboard / 系统菜单 |
+| Xbox 360 | Xenia Canary | ✅（GOD 实测） | ❌ 无 Dashboard / 系统菜单 |
 
 其它能力：
 

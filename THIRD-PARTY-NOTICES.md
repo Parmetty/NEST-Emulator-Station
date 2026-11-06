@@ -118,6 +118,15 @@ launches emulators you provide and scans files you already own.
 - GPLv3 requires offering the corresponding source when distributing binaries;
   this repository links the upstream release and does not vendor the source.
 
+### Xenia Canary — `resources/engines/xenia/`
+
+- Project: https://github.com/xenia-canary/xenia-canary
+- License: **BSD 3-Clause** — full text at `resources/engines/xenia/LICENSE`
+- Covers Xbox 360 direct boot (ISO, GOD/STFS, extracted `default.xex`).
+- Redistributed unmodified. No Xbox 360 firmware, dashboard/dash pack, or game data is included.
+- The Microsoft Visual C++ 2015-2022 x64 runtime DLLs are copied next to the exe because
+  this machine's `System32` has an older `msvcp140.dll` that crashes Xenia at startup.
+
 ### PPSSPP 1.20.4-dev — `resources/engines/ppsspp/`
 
 - Project: https://www.ppsspp.org/ · Source: https://github.com/hrydgard/ppsspp

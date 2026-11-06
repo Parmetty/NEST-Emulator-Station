@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
-import { open, readdir, stat } from 'node:fs/promises';
+import { open, readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 /**
@@ -50,6 +50,7 @@ export const EXT_TO_SYSTEM: Record<string, string> = {
   cxi: '3ds',
   '3dsx': '3ds',
   cia: '3ds',
+  xex: 'xbox360',
 };
 
 /** Disc images whose system must be decided by the header, not the extension. */
@@ -146,6 +147,66 @@ export async function systemForFile(file: string): Promise<string | null> {
   return byExtension;
 }
 
+
+/**
+ * Xbox 360 GOD / STFS installs are directories, not single files:
+ *
+ *   4D530AA4/00007000/<package-hash>        <- 45 KB STFS header, magic "LIVE"
+ *   .../<package-hash>.data/Data0000...     <- split payload
+ *
+ * The header file is a valid launch target for Xenia and gives us a stable path.
+ */
+async function godTitle(header: string): Promise<string | null> {
+  try {
+    const text = (await readFile(header)).toString('utf16le');
+    for (const match of text.matchAll(/[ -~]{4,}/g)) {
+      const value = match[0].trim();
+      if (!value) continue;
+      if (/installed game|original game disc|microsoft|xbox|http/i.test(value)) continue;
+      return titleFrom(value);
+    }
+  } catch {
+    /* fall through to the folder name */
+  }
+  return null;
+}
+
+async function detectXbox360God(
+  dir: string,
+): Promise<{ header: string; titleDir: string; title: string | null } | null> {
+  const base = path.basename(dir);
+  const godDir = base === '00007000' ? dir : path.join(dir, '00007000');
+  const titleDir = base === '00007000' ? path.dirname(dir) : dir;
+  let entries;
+  try {
+    entries = await readdir(godDir, { withFileTypes: true });
+  } catch {
+    return null;
+  }
+  for (const entry of entries) {
+    if (!entry.isFile()) continue;
+    const header = path.join(godDir, entry.name);
+    const dataDir = `${header}.data`;
+    try {
+      const dataStat = await stat(dataDir);
+      if (!dataStat.isDirectory()) continue;
+      const handle = await open(header, 'r');
+      try {
+        const magic = Buffer.alloc(4);
+        const { bytesRead } = await handle.read(magic, 0, 4, 0);
+        if (bytesRead === 4 && magic.toString('latin1') === 'LIVE') {
+          return { header, titleDir, title: await godTitle(header) };
+        }
+      } finally {
+        await handle.close();
+      }
+    } catch {
+      /* not a GOD package */
+    }
+  }
+  return null;
+}
+
 /** Recursively collects ROMs under `root`. Unreadable files are skipped, not fatal. */
 export async function scanFolder(root: string, options: ScanOptions = {}): Promise<ScannedFile[]> {
   // Engines are spawned with `cwd` set to the engine folder, so every stored
@@ -170,6 +231,27 @@ export async function scanFolder(root: string, options: ScanOptions = {}): Promi
       if (entry.name.startsWith('.')) continue;
       const full = path.join(dir, entry.name);
       if (entry.isDirectory()) {
+        const god = await detectXbox360God(full);
+        if (god) {
+          if (seen >= maxFiles) return;
+          if (!options.systemId || options.systemId === 'xbox360') {
+            seen += 1;
+            try {
+              const info = await stat(god.header);
+              found.push({
+                path: god.header,
+                fileName: path.basename(god.titleDir),
+                size: info.size,
+                sha1: await sha1Of(god.header),
+                systemId: 'xbox360',
+                title: god.title ?? titleFrom(path.basename(god.titleDir)),
+              });
+            } catch {
+              /* unreadable GOD package: skip */
+            }
+          }
+          continue;
+        }
         await walk(full, depth + 1);
         continue;
       }

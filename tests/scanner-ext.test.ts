@@ -93,15 +93,25 @@ describe('scanner extensions', () => {
     const root = await tempDir();
     const nested = path.join(root, 'roms', 'gba');
     await mkdir(nested, { recursive: true });
-    await writeFile(path.join(nextFile(root), 'x.cia'), 'cia');
+    await writeFile(path.join(root, 'x.cia'), 'cia');
     await writeFile(path.join(nested, 'y.gba'), 'gba');
-
-    function nextFile(base: string): string {
-      return base;
-    }
 
     const found = await scanFolder(root);
     const bySystem = found.map((file) => file.systemId).sort();
     expect(bySystem).toEqual(['3ds', 'gba']);
+  });
+
+  it('recognizes an Xbox 360 GOD/STFS install folder', async () => {
+    const root = await tempDir();
+    const title = path.join(root, '4D530AA4', '00007000');
+    const header = path.join(title, '99B5F58BC37BA43E6271');
+    await mkdir(path.join(title, '99B5F58BC37BA43E6271.data'), { recursive: true });
+    await writeFile(header, Buffer.concat([Buffer.from('LIVE'), Buffer.alloc(64)]));
+    await writeFile(path.join(title, '99B5F58BC37BA43E6271.data', 'Data0000'), 'data');
+
+    const found = await scanFolder(root);
+    expect(found).toHaveLength(1);
+    expect(found[0].systemId).toBe('xbox360');
+    expect(found[0].path).toBe(header);
   });
 });

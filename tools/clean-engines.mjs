@@ -135,6 +135,26 @@ function scrubPpsspp() {
 
 scrubPpsspp();
 
+/** Xenia keeps profiles/saves/cache next to the exe in portable mode. */
+function scrubXeniaRuntime() {
+  const engineDir = join(enginesDir, 'xenia');
+  if (!existsSync(engineDir)) return;
+  for (const name of ['cache', 'cache0', 'cache1', 'cache_host', 'content']) {
+    const full = join(engineDir, name);
+    if (!existsSync(full)) continue;
+    removed.push(relative(root, full));
+    if (!checkOnly) rmSync(full, { recursive: true, force: true });
+  }
+  for (const name of ['xconfig.settings', 'xenia.log', 'recent.toml', 'xenia-canary.config.toml', 'xenia-canary.config.toml.before-headless']) {
+    const full = join(engineDir, name);
+    if (!existsSync(full)) continue;
+    removed.push(relative(root, full));
+    if (!checkOnly) rmSync(full, { force: true });
+  }
+}
+
+scrubXeniaRuntime();
+
 /** Anything still pointing at the build machine is a packaging bug. */
 const LOCAL_PATH_PATTERNS = [/[A-Za-z]:\\\\workstop/i, /[A-Za-z]:\/workstop/i, /[A-Za-z]:\\\\Users\\\\/i];
 const TEXT_EXT = /\.(ini|bml|toml|cfg|conf|json|txt|xml|yml|yaml)$/i;

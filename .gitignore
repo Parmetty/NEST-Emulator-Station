@@ -37,3 +37,14 @@ resources/engines/ppsspp/portable.txt
 # internal-only documents (kept locally, never pushed)
 docs/HISTORY.md
 docs/nintendo/HISTORY.md
+# Xenia runtime state (test runs)
+resources/engines/xenia/cache/
+resources/engines/xenia/cache0/
+resources/engines/xenia/cache1/
+resources/engines/xenia/cache_host/
+resources/engines/xenia/content/
+resources/engines/xenia/xconfig.settings
+resources/engines/xenia/xenia.log
+resources/engines/xenia/xenia-canary.config.toml
+resources/engines/xenia/xenia-canary.config.toml.before-headless
+resources/engines/xenia/recent.toml
