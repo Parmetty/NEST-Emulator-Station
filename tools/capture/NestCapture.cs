@@ -61,6 +61,9 @@ internal static class Program
     [DllImport("user32.dll")]
     private static extern uint GetDpiForWindow(IntPtr hWnd);
 
+    [DllImport("user32.dll")]
+    private static extern bool SystemParametersInfo(uint action, uint param, out Rect rect, uint winIni);
+
     private const uint GA_ROOT = 2;
 
     private static string _log;
@@ -93,6 +96,7 @@ internal static class Program
         int cropBottom = 0;
         double contentAspect = 0;
         bool topOnly = false;
+        bool fitWorkArea = false;
 
         for (int i = 0; i < args.Length; i++)
         {
@@ -138,6 +142,9 @@ internal static class Program
                     break;
                 case "--top-only":
                     topOnly = true;
+                    break;
+                case "--fit-work-area":
+                    fitWorkArea = true;
                     break;
                 case "--log":
                     _log = args[++i];
@@ -209,7 +216,7 @@ internal static class Program
 
             try
             {
-                if (Capture(handle, outDir, aspect, written + 1, allowBackground, anchorTop, cropTop, cropBottom, contentAspect, topOnly))
+                if (Capture(handle, outDir, aspect, written + 1, allowBackground, anchorTop, cropTop, cropBottom, contentAspect, topOnly, fitWorkArea))
                 {
                     written++;
                     Prune(outDir, maxFiles);
@@ -231,7 +238,7 @@ internal static class Program
     }
 
     private static bool Capture(IntPtr handle, string outDir, double aspect, int index, bool allowBackground, bool anchorTop,
-        int cropTop, int cropBottom, double contentAspect, bool topOnly)
+        int cropTop, int cropBottom, double contentAspect, bool topOnly, bool fitWorkArea)
     {
         Rect rect;
         if (!GetClientRect(handle, out rect)) return false;
@@ -244,6 +251,21 @@ internal static class Program
         origin.X = 0;
         origin.Y = 0;
         if (!ClientToScreen(handle, ref origin)) return false;
+
+        // Borderless fullscreen windows can extend under the Windows taskbar;
+        // clamp to the desktop work area so the cover never contains the taskbar.
+        if (fitWorkArea)
+        {
+            Rect work;
+            if (SystemParametersInfo(0x0030, 0, out work, 0))
+            {
+                if (origin.Y < work.Bottom && origin.Y + height > work.Bottom)
+                    height = work.Bottom - origin.Y;
+                if (origin.X < work.Right && origin.X + width > work.Right)
+                    width = work.Right - origin.X;
+                if (width <= 0 || height <= 0) return false;
+            }
+        }
 
         // Screen capture only sees what is on top, and a window that just
         // appeared can already own its rectangle while still showing whatever

@@ -85,11 +85,7 @@ internal static class Program
             {
                 string name = button.Current.Name ?? string.Empty;
                 if (name.Length == 0) continue;
-                if (name.IndexOf(buttonText, StringComparison.OrdinalIgnoreCase) < 0 &&
-                    !name.StartsWith("是", StringComparison.OrdinalIgnoreCase) &&
-                    !name.StartsWith("Yes", StringComparison.OrdinalIgnoreCase) &&
-                    !name.StartsWith("OK", StringComparison.OrdinalIgnoreCase) &&
-                    !name.StartsWith("确定", StringComparison.OrdinalIgnoreCase)) continue;
+                if (name.IndexOf(buttonText, StringComparison.OrdinalIgnoreCase) < 0) continue;
                 object pattern;
                 if (button.TryGetCurrentPattern(InvokePattern.Pattern, out pattern))
                 {
@@ -113,11 +109,7 @@ internal static class Program
             GetClassName(child, cls, cls.Capacity);
             GetWindowText(child, text, text.Capacity);
             string label = text.ToString();
-            if (label.IndexOf(buttonText, StringComparison.OrdinalIgnoreCase) < 0 &&
-                !label.StartsWith("是", StringComparison.OrdinalIgnoreCase) &&
-                !label.StartsWith("Yes", StringComparison.OrdinalIgnoreCase) &&
-                !label.StartsWith("OK", StringComparison.OrdinalIgnoreCase) &&
-                !label.StartsWith("确定", StringComparison.OrdinalIgnoreCase)) continue;
+            if (label.IndexOf(buttonText, StringComparison.OrdinalIgnoreCase) < 0) continue;
             SendMessage(child, BM_CLICK, IntPtr.Zero, IntPtr.Zero);
             Log("clicked via WM_CLICK: " + label);
             return true;
@@ -130,7 +122,7 @@ internal static class Program
         int pid = 0;
         int timeoutMs = 15000;
         string title = "Xenia";
-        string button = "是";
+        string button = "否";
         for (int i = 0; i < args.Length; i++)
         {
             switch (args[i])

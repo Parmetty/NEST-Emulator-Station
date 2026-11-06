@@ -1176,6 +1176,10 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
 
   if (azaharHomeMenu) args = [azaharHomeMenu];
 
+  if (engine.id === 'xenia') {
+    applyControls(services, 'xenia', false);
+  }
+
   if (engine.id === 'ppsspp') {
     ensurePpssppPortable(enginesDir());
     if (mode === 'system' && !hasPspFirmware(enginesDir())) {

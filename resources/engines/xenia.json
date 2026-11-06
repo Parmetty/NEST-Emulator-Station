@@ -18,10 +18,11 @@
   },
   "dismissDialog": {
     "title": "Xenia",
-    "button": "是",
+    "button": "否",
     "timeout": 15000
   },
   "captureAspect": 1.777777,
+  "captureFitWorkArea": true,
   "capabilities": {
     "saveStates": false,
     "systemMode": null

@@ -7,9 +7,9 @@
  */
 import { PAD_ACTIONS, type KeyboardBindings, type PadAction } from '../../shared/contract';
 
-export const CONTROL_ENGINE_IDS = ['mgba', 'ares', 'dolphin', 'azahar', 'melonds', 'cemu', 'swanstation', 'pcsx2', 'ppsspp'] as const;
+export const CONTROL_ENGINE_IDS = ['mgba', 'ares', 'dolphin', 'azahar', 'melonds', 'cemu', 'swanstation', 'pcsx2', 'ppsspp', 'xenia', 'xemu'] as const;
 
-export const WRITABLE_ENGINE_IDS = ['mgba', 'ares', 'dolphin', 'azahar', 'melonds', 'cemu', 'swanstation', 'pcsx2', 'ppsspp'] as const;
+export const WRITABLE_ENGINE_IDS = ['mgba', 'ares', 'dolphin', 'azahar', 'melonds', 'cemu', 'swanstation', 'pcsx2', 'ppsspp', 'xenia'] as const;
 export type ControlEngineId = (typeof CONTROL_ENGINE_IDS)[number];
 
 export function isPadAction(value: string): value is PadAction {
@@ -451,6 +451,34 @@ export const DEFAULT_KEYBOARD: Record<ControlEngineId, KeyboardBindings> = {
     select: 'Backspace',
   },
   pcsx2: {
+    up: 'ArrowUp',
+    down: 'ArrowDown',
+    left: 'ArrowLeft',
+    right: 'ArrowRight',
+    a: 'KeyJ',
+    b: 'KeyK',
+    x: 'KeyU',
+    y: 'KeyI',
+    l: 'KeyQ',
+    r: 'KeyE',
+    start: 'Enter',
+    select: 'Backspace',
+  },
+  xemu: {
+    up: 'ArrowUp',
+    down: 'ArrowDown',
+    left: 'ArrowLeft',
+    right: 'ArrowRight',
+    a: 'KeyJ',
+    b: 'KeyK',
+    x: 'KeyU',
+    y: 'KeyI',
+    l: 'KeyQ',
+    r: 'KeyE',
+    start: 'Enter',
+    select: 'Backspace',
+  },
+  xenia: {
     up: 'ArrowUp',
     down: 'ArrowDown',
     left: 'ArrowLeft',

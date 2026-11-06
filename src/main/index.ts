@@ -155,7 +155,7 @@ function dismissLaunchDialog(
     '--title',
     dialog.title ?? 'Xenia',
     '--button',
-    dialog.button ?? '是',
+    dialog.button ?? '否',
     '--timeout',
     String(dialog.timeout ?? 15000),
     '--log',
@@ -164,6 +164,31 @@ function dismissLaunchDialog(
   const helper = spawn(exe, args, { windowsHide: true, stdio: 'ignore' });
   helper.once('exit', (code) => console.log('[nest] nest-dialog finished (code ' + code + ') pid=' + pid));
   console.log('[nest] nest-dialog armed for pid=' + pid);
+}
+
+/**
+ * Xenia sometimes keeps its process alive after the game window is closed.
+ * Watch the render window like the Dolphin system-mode path; once it disappears,
+ * stop the Nest session so the shelf stops showing "running".
+ */
+function watchXeniaWindow(sessionId: string, pid: number): void {
+  const exe = toolsPath('nest-window.exe');
+  if (!existsSync(exe)) return;
+  const args = [
+    '--pid',
+    String(pid),
+    '--render-title',
+    'Xenia-canary',
+    '--timeout',
+    '21600',
+    '--log',
+    path.join(shotsDir(), 'xenia-window.log'),
+  ];
+  const watcher = spawn(exe, args, { windowsHide: true, stdio: 'ignore' });
+  watcher.once('exit', (code) => {
+    console.log('[nest] xenia window watcher finished (code ' + code + ') pid=' + pid);
+    if (code === 0 && services?.supervisor.has(sessionId)) services.supervisor.stop(sessionId);
+  });
 }
 
 function startShotHelper(
@@ -176,6 +201,7 @@ function startShotHelper(
   cropBottom?: number,
   contentAspect?: number,
   topOnly?: boolean,
+  fitWorkArea?: boolean,
 ): void {
   const exe = captureToolPath();
   const args = [
@@ -197,6 +223,7 @@ function startShotHelper(
   if (cropBottom && cropBottom > 0) args.push('--crop-bottom', String(cropBottom));
   if (contentAspect && contentAspect > 0) args.push('--content-aspect', String(contentAspect));
   if (topOnly) args.push('--top-only');
+  if (fitWorkArea) args.push('--fit-work-area');
 
   const helper = spawn(exe, args, { windowsHide: true, stdio: 'ignore' });
   captureHelpers.set(sessionId, helper);
@@ -430,6 +457,7 @@ async function boot(): Promise<void> {
           const cropTop = windowed ? engine?.captureCropTop ?? 0 : 0;
           const cropBottom = windowed ? engine?.captureCropBottom ?? 0 : 0;
           if (engine?.dismissDialog) dismissLaunchDialog(pid, engine.dismissDialog);
+          if (e.systemId === 'xbox360') watchXeniaWindow(e.sessionId, pid);
           void clearShots().then(() =>
             startShotHelper(
           e.sessionId,
@@ -441,6 +469,7 @@ async function boot(): Promise<void> {
           cropBottom,
           engine?.captureContentAspect,
           engine?.captureTopOnly,
+          engine?.captureFitWorkArea,
         ),
           );
         }

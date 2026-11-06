@@ -26,7 +26,7 @@ type Selection = { type: 'family' | 'system'; id: string };
 const SHELF_COLUMNS = 5;
 
 /** Consoles with editable keyboard bindings, in the order the chips are shown. */
-const KEY_SYSTEMS = (['gba', 'fc', 'sfc', 'n64', 'nds', 'ngc', 'wii', '3ds', 'wiiu', 'ps1', 'ps2', 'psp'] as const).flatMap((id) => {
+const KEY_SYSTEMS = (['gba', 'fc', 'sfc', 'n64', 'nds', 'ngc', 'wii', '3ds', 'wiiu', 'ps1', 'ps2', 'psp', 'xbox', 'xbox360'] as const).flatMap((id) => {
   const system = systemById.get(id);
   return system ? [system] : [];
 });
@@ -426,10 +426,15 @@ export default function App() {
       return;
     }
     const isPlaystationEngine = (engine: string) => engine === 'swanstation' || engine === 'pcsx2' || engine === 'ppsspp';
+    const isXboxEngine = (engine: string) => engine === 'xenia';
     if (settingsTab === 'playstation' && !isPlaystationEngine(keySystem.engine)) {
       setKeySystemId('ps1');
     } else if (settingsTab === 'nintendo' && isPlaystationEngine(keySystem.engine)) {
       setKeySystemId('gba');
+    } else if (settingsTab === 'xbox' && !isXboxEngine(keySystem.engine)) {
+      setKeySystemId('xbox360');
+    } else if (settingsTab !== 'xbox' && isXboxEngine(keySystem.engine)) {
+      setKeySystemId(settingsTab === 'playstation' ? 'ps1' : 'gba');
     }
   }, [settingsTab]);
 
@@ -948,7 +953,10 @@ export default function App() {
 
   const keySystemsVisible = KEY_SYSTEMS.filter((system) => {
     const playstation = system.engine === 'swanstation' || system.engine === 'pcsx2' || system.engine === 'ppsspp';
-    return settingsTab === 'playstation' ? playstation : !playstation;
+    const xbox = system.engine === 'xenia' || system.engine === 'xemu';
+    if (settingsTab === 'playstation') return playstation;
+    if (settingsTab === 'xbox') return xbox;
+    return !playstation && !xbox;
   });
 
   const renderKeys = () => (
@@ -1701,21 +1709,27 @@ export default function App() {
                   {renderKeys()}
                 </div>
               ) : (
-                <div className="settings-panel">
-                  <h2>Xbox</h2>
-                  <p className="dlg-note">
-                    Xbox 360 已接入 Xenia Canary：支持 GOD / ISO / XEX 直读，无需固件，
-                    没有 Dashboard / 系统菜单。Xbox 初代将使用 xemu（需自备 MCPX、BIOS、HDD 镜像），
-                    仍在接入中（P7.1）。
-                  </p>
-                  <div className="locked-systems">
-                    {(families.find((family) => family.id === 'xbox')?.systems ?? []).map((system) => (
-                      <span key={system.id}>
-                        {system.name}
-                        <small>{system.year}</small>
-                      </span>
-                    ))}
+                <div className="settings-cols">
+                  <div className="settings-col">
+                    <h2>Xbox</h2>
+                    <p className="dlg-note">
+                      Xbox 360 已接入 Xenia Canary：支持 GOD / ISO / XEX 直读，无需固件，
+                      没有 Dashboard / 系统菜单。Xbox 初代将使用 xemu（需自备 MCPX、BIOS、HDD 镜像），
+                      仍在接入中（P7.1）。
+                    </p>
+                    <div className="locked-systems">
+                      {(families.find((family) => family.id === 'xbox')?.systems ?? []).map((system) => (
+                        <span key={system.id}>
+                          {system.name}
+                          <small>{system.year}</small>
+                        </span>
+                      ))}
+                    </div>
+                    <p className="dlg-note">
+                      键位面板当前对应 Xbox 360（Xenia，[HID.Key]）；Xbox 初代接入后会复用同一入口。
+                    </p>
                   </div>
+                  {renderKeys()}
                 </div>
               )}
             </div>

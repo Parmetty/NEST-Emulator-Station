@@ -186,6 +186,9 @@ export const engineManifestSchema = z.object({
   /** Keep only the top half of the captured screen (3DS: top screen only). */
   captureTopOnly: z.boolean().optional(),
 
+  /** Clamp the captured client area to the Windows desktop work area (strips the taskbar). */
+  captureFitWorkArea: z.boolean().optional(),
+
   /**
    * Native launch prompt to dismiss with UIA before the cover capture starts
    * (Xenia shows a disclaimer MessageBox on every launch).
@@ -193,7 +196,7 @@ export const engineManifestSchema = z.object({
   dismissDialog: z
     .object({
       title: z.string().default('Xenia'),
-      button: z.string().default('是'),
+      button: z.string().default('否'),
       timeout: z.number().int().positive().optional(),
     })
     .optional(),
