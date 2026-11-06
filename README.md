@@ -5,7 +5,7 @@
 
 ![Nest 首页](shots/app.png)
 
-> 当前：**0.4.2-beta.1** —— Windows 桌面版 · 九台任天堂主机 + PS1/PS2/PSP 接入（PS3 界面就绪）· 九个内置引擎 + 自写 libretro 宿主 · 免安装携带版
+> 当前：**0.4.2-beta.1** —— Windows 桌面版 · 九台任天堂主机 + PS1/PS2/PSP 接入（PS3 界面就绪）+ Xbox / Xbox 360 主机墙 · 九个内置引擎 + 自写 libretro 宿主 · 免安装携带版
 
 ## 下载
 
@@ -42,10 +42,12 @@ SHA256  A447EE2EF2581A7492FD61FB51DE11D4B1E8915CF00167EC7F80261C1B2D6402
 | PS2 | PCSX2 2.8.2 | ✅ | ✅ PS2 浏览器（`-bios`，需 BIOS） |
 | PSP | PPSSPP master | ✅ | ✅ PSP XMB（`--vsh`，需自备 flash0 固件；可直接导入目录或用内置入口安装） |
 | PS3 | RPCS3（后置） | ✖ | ❌ 无 XMB（RPCS3 尚未合并 XMB PR） |
+| Xbox | xemu（待接入 P7.1） | ✖ | —（可选 Dashboard，需 HDD） |
+| Xbox 360 | Xenia（待接入 P7.2） | ✖ | ❌ 无 Dashboard / 系统菜单 |
 
 其它能力：
 
-- **主机墙**：9 台任天堂 + 4 台 PlayStation（PS1/PS2/PSP 已接入，PS3 预留）按发售年份排列，全屏照片 + 树状列表 + 信息卡；平台切换时年代标尺跟着换
+- **主机墙**：9 台任天堂 + 4 台 PlayStation（PS1/PS2/PSP 已接入，PS3 预留）+ 2 台 Xbox（主机墙已加入，xemu/Xenia 引擎接入中）按发售年份排列，全屏照片 + 树状列表 + 信息卡；平台切换时年代标尺跟着换
 - **游戏库 + 自动扫描**：添加过的文件夹会在启动时自动重扫，新 ROM 自动出现；支持 `.cia` 与磁盘头 magic 判定 GC/Wii
 - **自动封面**：游戏运行期间由独立抓屏工具持续取帧，退出时存为封面（NDS/3DS 只截上屏）
 - **自写 libretro 宿主**：`resources/tools/nest-libretro.exe`（约 90 KB，C# + SDL3）托管官方 `dolphin_libretro.dll`，**Wii 系统菜单不再依赖 Dolphin Qt GUI 自动化**，直接加载 `wii-menu.wad` 进菜单；键盘 + 鼠标绝对指针（鼠标即 Wiimote 光标，左键 = A）
@@ -89,6 +91,10 @@ SHA256  A447EE2EF2581A7492FD61FB51DE11D4B1E8915CF00167EC7F80261C1B2D6402
 | PlayStation 主机墙 | PlayStation 设置 |
 |---|---|
 | ![PlayStation](shots/ps-family.png) | ![PlayStation 设置](shots/settings-playstation-psp-firmware.png) |
+
+| Xbox 主机墙 | Xbox 360 主机墙 |
+|---|---|
+| ![Xbox](shots/xbox-wall.png) | ![Xbox 360](shots/xbox360-wall.png) |
 
 ## 从源码运行
 

@@ -65,8 +65,8 @@ export const SYSTEMS: SystemDef[] = [
   { id: '3ds',   name: 'Nintendo 3DS',      short: '3DS',   year: 2011, kind: '掌机',   family: 'nintendo', engine: 'azahar',   image: 'consoles/3ds.webp',  state: 'ready', systemMode: '3DS HOME Menu（实验性）', note: '直读可用；HOME Menu 需先安装 Azahar 系统文件（Artic Setup Tool），未安装时启动会明确提示' },
     { id: 'wiiu',  name: 'Wii U',             short: 'Wii U', year: 2012, kind: '家用机', family: 'nintendo', engine: 'cemu',     image: 'consoles/wiiu.webp', state: 'warn', systemMode: 'Wii U Menu（实验性）', note: '直读需自备 keys.txt 与游戏；Wii U Menu 目前受 Cemu 2.6 限制（只能到背景），标记为实验性' },
 
-  { id: 'xbox',    name: 'Xbox',     short: 'XBX',  year: 2001, kind: '家用机', family: 'xbox', engine: 'xemu',    image: '', state: 'locked' },
-  { id: 'xbox360', name: 'Xbox 360', short: 'X360', year: 2005, kind: '家用机', family: 'xbox', engine: 'xenia',   image: '', state: 'locked' },
+  { id: 'xbox',    name: 'Xbox',     short: 'XBX',  year: 2001, kind: '家用机', family: 'xbox', engine: 'xemu',    image: 'consoles/xbox.webp', state: 'warn', note: '主机墙已加入；xemu 引擎待接入（P7.1），需自备 MCPX/BIOS/HDD' },
+  { id: 'xbox360', name: 'Xbox 360', short: 'X360', year: 2005, kind: '家用机', family: 'xbox', engine: 'xenia',   image: 'consoles/xbox360.webp', state: 'warn', note: '主机墙已加入；Xenia 引擎待接入（P7.2），无需固件，无 Dashboard' },
 
   { id: 'ps1', name: 'PlayStation',          short: 'PS1', year: 1994, kind: '家用机', family: 'playstation', engine: 'swanstation', image: 'consoles/ps1.webp', state: 'ready', systemMode: 'PS1 系统菜单（BIOS · 故障）', note: '直读正常；系统菜单输入无响应，已标记故障；BIOS 可选（OpenBIOS 兜底）' },
   { id: 'ps2', name: 'PlayStation 2',        short: 'PS2', year: 2000, kind: '家用机', family: 'playstation', engine: 'pcsx2',       image: 'consoles/ps2.webp', state: 'ready', systemMode: 'PS2 浏览器（BIOS）', note: '直读与系统浏览器均可用；需自备 PS2 BIOS' },
@@ -77,7 +77,7 @@ export const SYSTEMS: SystemDef[] = [
 export const FAMILIES: { id: FamilyId; name: string; locked: boolean }[] = [
   { id: 'nintendo',    name: 'Nintendo',    locked: false },
   { id: 'playstation', name: 'PlayStation', locked: false },
-  { id: 'xbox',        name: 'Xbox',        locked: true },
+  { id: 'xbox',        name: 'Xbox',        locked: false },
 ];
 
 export const systemById = new Map(SYSTEMS.map((s) => [s.id, s]));

@@ -5,7 +5,8 @@ Nest 的文档按「家族」归档：任天堂系（已接入）与 PlayStation
 | 目录 | 内容 |
 |---|---|
 | [nintendo/](nintendo/) | 任天堂系公开文档：变更日志、状态、决策、进度、键位、金手指、发布流程与历史计划 |
-| [playstation/](playstation/) | PlayStation 家族计划：引擎选型、接入顺序、验收标准（Xbox 后续同模式） |
+| [playstation/](playstation/) | PlayStation 家族计划：引擎选型、接入顺序、验收标准 |
+| [xbox/](xbox/) | Xbox 家族：xemu / Xenia 下载清单与接入计划（P7） |
 
 跨家族的总路线见 **[ROADMAP.md](ROADMAP.md)**。
 

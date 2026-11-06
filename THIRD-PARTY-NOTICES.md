@@ -79,6 +79,8 @@ derived from photographs on Wikimedia Commons by **Evan-Amos**, released into th
 | PS2 | `Sony-PlayStation-2-30001-wController-L.png`（Evan-Amos，公有领域） |
 | PS3 | `Sony-PlayStation-3-4001B-wController-noBG.png`（Evan-Amos，公有领域） |
 | PSP | `PSP-1000.png`（Evan-Amos 摄影，Alphathon 后期，**CC BY-SA 3.0**） |
+| Xbox | `Xbox-Console-Set.png`（Evan-Amos，公有领域） |
+| Xbox 360 | `Xbox-360-Elite-Console-Set.jpg`（Evan-Amos，公有领域） |
 
 They are processed (cut out, desaturated, blurred) by `mock/process.py` and are
 placeholders: the app lets users replace them with their own photos.

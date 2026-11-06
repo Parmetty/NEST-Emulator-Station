@@ -34,7 +34,7 @@ const KEY_SYSTEMS = (['gba', 'fc', 'sfc', 'n64', 'nds', 'ngc', 'wii', '3ds', 'wi
 const SETTINGS_TABS = [
   { id: 'nest', name: 'Nest', hint: '通用偏好 · 游戏文件夹' },
   { id: 'nintendo', name: 'Nintendo', hint: '系统文件 · 键位' },
-  { id: 'xbox', name: 'Xbox', hint: '尚未接入' },
+  { id: 'xbox', name: 'Xbox', hint: '主机墙已加入 · 引擎接入中' },
   { id: 'playstation', name: 'PlayStation', hint: 'PS1/PS2 已接入' },
 ] as const;
 type SettingsTab = (typeof SETTINGS_TABS)[number]['id'];
@@ -1704,7 +1704,9 @@ export default function App() {
                 <div className="settings-panel">
                   <h2>Xbox</h2>
                   <p className="dlg-note">
-                    该家族尚未接入。Nest 已经预留主机位置，引擎接好后会自动出现在游戏库里。
+                    Xbox 家族已加入主机墙。Xbox 初代将使用 xemu（需自备 MCPX、BIOS、HDD 镜像）；
+                    Xbox 360 将使用 Xenia（无需固件，且没有 Dashboard / 系统菜单）。
+                    当前只展示主机墙，引擎接入（P7.1 / P7.2）后解锁直读。
                   </p>
                   <div className="locked-systems">
                     {(families.find((family) => family.id === 'xbox')?.systems ?? []).map((system) => (
