@@ -56,7 +56,6 @@ function ensureConfig(engineDir: string): void {
   if (!existsSync(file)) return;
   const text = readTextFile(file);
   let next = text;
-  next = next.replace(/Keyboard:\s*"[^"]*"/, 'Keyboard: "Keyboard"');
   next = next.replace(/Start games in fullscreen mode:\s*(true|false)/, 'Start games in fullscreen mode: false');
   if (next !== text) {
     backupOnce(file);

@@ -28,7 +28,7 @@ describe('RPCS3 adapter', () => {
       expect(yaml).toContain('Select: Backspace');
 
       const cfg = await readFile(path.join(dir, 'config', 'config.yml'), 'utf8');
-      expect(cfg).toContain('Keyboard: "Keyboard"');
+      expect(cfg).toContain('Keyboard: "Null"');
       expect(cfg).toContain('Start games in fullscreen mode: false');
 
       expect(readRpcs3Controls(dir)).toMatchObject({

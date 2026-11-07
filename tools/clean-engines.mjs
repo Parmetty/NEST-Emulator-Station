@@ -171,6 +171,26 @@ function scrubRpcs3() {
 
 scrubRpcs3();
 
+/** RPCS3 user firmware/HDD/config must never be packaged. */
+function scrubRpcs3Runtime() {
+  const engineDir = join(enginesDir, 'rpcs3');
+  if (!existsSync(engineDir)) return;
+  for (const name of ['dev_flash', 'dev_flash2', 'dev_flash3', 'dev_hdd0', 'dev_hdd1', 'dev_bdvd', 'dev_usb000', 'cache', 'log', 'captures', 'savestates', 'games', 'shaderlog', 'ppu_progs', 'spu_progs']) {
+    const full = join(engineDir, name);
+    if (!existsSync(full)) continue;
+    removed.push(relative(root, full));
+    if (!checkOnly) rmSync(full, { recursive: true, force: true });
+  }
+  for (const name of ['config']) {
+    const full = join(engineDir, name);
+    if (!existsSync(full)) continue;
+    removed.push(relative(root, full));
+    if (!checkOnly) rmSync(full, { recursive: true, force: true });
+  }
+}
+
+scrubRpcs3Runtime();
+
 /** Anything still pointing at the build machine is a packaging bug. */
 const LOCAL_PATH_PATTERNS = [/[A-Za-z]:\\\\workstop/i, /[A-Za-z]:\/workstop/i, /[A-Za-z]:\\\\Users\\\\/i];
 const TEXT_EXT = /\.(ini|bml|toml|cfg|conf|json|txt|xml|yml|yaml)$/i;
