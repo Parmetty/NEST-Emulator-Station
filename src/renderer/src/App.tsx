@@ -35,7 +35,7 @@ const SETTINGS_TABS = [
   { id: 'nest', name: 'Nest', hint: '通用偏好 · 游戏文件夹' },
   { id: 'nintendo', name: 'Nintendo', hint: '系统文件 · 键位' },
   { id: 'xbox', name: 'Xbox', hint: '主机墙已加入 · 引擎接入中' },
-  { id: 'playstation', name: 'PlayStation', hint: 'PS1/PS2 已接入' },
+  { id: 'playstation', name: 'PlayStation', hint: 'PS1/PS2/PSP/PS3 已接入' },
 ] as const;
 type SettingsTab = (typeof SETTINGS_TABS)[number]['id'];
 

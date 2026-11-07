@@ -71,7 +71,7 @@ export const SYSTEMS: SystemDef[] = [
   { id: 'ps1', name: 'PlayStation',          short: 'PS1', year: 1994, kind: '家用机', family: 'playstation', engine: 'swanstation', image: 'consoles/ps1.webp', state: 'ready', systemMode: 'PS1 系统菜单（BIOS · 故障）', note: '直读正常；系统菜单输入无响应，已标记故障；BIOS 可选（OpenBIOS 兜底）' },
   { id: 'ps2', name: 'PlayStation 2',        short: 'PS2', year: 2000, kind: '家用机', family: 'playstation', engine: 'pcsx2',       image: 'consoles/ps2.webp', state: 'ready', systemMode: 'PS2 浏览器（BIOS）', note: '直读与系统浏览器均可用；需自备 PS2 BIOS' },
   { id: 'psp', name: 'PlayStation Portable', short: 'PSP', year: 2004, kind: '掌机',   family: 'playstation', engine: 'ppsspp',      image: 'consoles/psp.webp', state: 'ready', systemMode: 'PSP XMB（需固件）', note: 'PPSSPP 直读；XMB 需 PPSSPP 1.21+ 与自备 PSP 固件（PPSSPP 内安装）' },
-  { id: 'ps3', name: 'PlayStation 3',        short: 'PS3', year: 2006, kind: '家用机', family: 'playstation', engine: 'rpcs3',       image: 'consoles/ps3.webp', state: 'warn', note: '界面已就绪；引擎待接入（P6.4），无系统菜单' },
+  { id: 'ps3', name: 'PlayStation 3',        short: 'PS3', year: 2006, kind: '家用机', family: 'playstation', engine: 'rpcs3',       image: 'consoles/ps3.webp', state: 'ready', note: 'RPCS3 直读；需自备 PS3 固件；无 XMB / 系统菜单；默认窗口化' },
 ];
 
 export const FAMILIES: { id: FamilyId; name: string; locked: boolean }[] = [
