@@ -26,7 +26,7 @@ type Selection = { type: 'family' | 'system'; id: string };
 const SHELF_COLUMNS = 5;
 
 /** Consoles with editable keyboard bindings, in the order the chips are shown. */
-const KEY_SYSTEMS = (['gba', 'fc', 'sfc', 'n64', 'nds', 'ngc', 'wii', '3ds', 'wiiu', 'ps1', 'ps2', 'psp', 'xbox', 'xbox360'] as const).flatMap((id) => {
+const KEY_SYSTEMS = (['gba', 'fc', 'sfc', 'n64', 'nds', 'ngc', 'wii', '3ds', 'wiiu', 'ps1', 'ps2', 'psp', 'ps3', 'xbox', 'xbox360'] as const).flatMap((id) => {
   const system = systemById.get(id);
   return system ? [system] : [];
 });
@@ -426,7 +426,7 @@ export default function App() {
       keySystemPinned.current = false;
       return;
     }
-    const isPlaystationEngine = (engine: string) => engine === 'swanstation' || engine === 'pcsx2' || engine === 'ppsspp';
+    const isPlaystationEngine = (engine: string) => engine === 'swanstation' || engine === 'pcsx2' || engine === 'ppsspp' || engine === 'rpcs3';
     const isXboxEngine = (engine: string) => engine === 'xenia';
     if (settingsTab === 'playstation' && !isPlaystationEngine(keySystem.engine)) {
       setKeySystemId('ps1');
@@ -975,7 +975,7 @@ export default function App() {
   };
 
   const keySystemsVisible = KEY_SYSTEMS.filter((system) => {
-    const playstation = system.engine === 'swanstation' || system.engine === 'pcsx2' || system.engine === 'ppsspp';
+    const playstation = system.engine === 'swanstation' || system.engine === 'pcsx2' || system.engine === 'ppsspp' || system.engine === 'rpcs3';
     const xbox = system.engine === 'xenia' || system.engine === 'xemu';
     if (settingsTab === 'playstation') return playstation;
     if (settingsTab === 'xbox') return xbox;

@@ -1190,6 +1190,10 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     applyControls(services, 'xenia', false);
   }
 
+  if (engine.id === 'rpcs3') {
+    applyControls(services, 'rpcs3', false);
+  }
+
   if (engine.id === 'ppsspp') {
     ensurePpssppPortable(enginesDir());
     if (mode === 'system' && !hasPspFirmware(enginesDir())) {

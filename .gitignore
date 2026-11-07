@@ -48,3 +48,4 @@ resources/engines/xenia/xenia.log
 resources/engines/xenia/xenia-canary.config.toml
 resources/engines/xenia/xenia-canary.config.toml.before-headless
 resources/engines/xenia/recent.toml
+resources/engines/rpcs3/

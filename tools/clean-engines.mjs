@@ -155,6 +155,22 @@ function scrubXeniaRuntime() {
 
 scrubXeniaRuntime();
 
+/** RPCS3 is linked from a test installation outside the repo; never follow it into the zip. */
+function scrubRpcs3() {
+  const link = join(enginesDir, 'rpcs3');
+  if (!existsSync(link)) return;
+  try {
+    if (lstatSync(link).isSymbolicLink()) {
+      removed.push(relative(root, link));
+      if (!checkOnly) rmSync(link, { force: true });
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+scrubRpcs3();
+
 /** Anything still pointing at the build machine is a packaging bug. */
 const LOCAL_PATH_PATTERNS = [/[A-Za-z]:\\\\workstop/i, /[A-Za-z]:\/workstop/i, /[A-Za-z]:\\\\Users\\\\/i];
 const TEXT_EXT = /\.(ini|bml|toml|cfg|conf|json|txt|xml|yml|yaml)$/i;

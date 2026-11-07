@@ -148,6 +148,35 @@ export async function systemForFile(file: string): Promise<string | null> {
 }
 
 
+/** A PS3 game is a folder with PARAM.SFO + USRDIR (or a PS3_GAME folder). */
+async function detectPs3Game(
+  dir: string,
+): Promise<{ root: string; paramSfo: string; titleDir: string } | null> {
+  const candidates = [
+    { root: dir, sfo: path.join(dir, 'PARAM.SFO'), usr: path.join(dir, 'USRDIR') },
+    {
+      root: dir,
+      sfo: path.join(dir, 'PS3_GAME', 'PARAM.SFO'),
+      usr: path.join(dir, 'PS3_GAME', 'USRDIR'),
+    },
+  ];
+  for (const candidate of candidates) {
+    try {
+      const sfo = await stat(candidate.sfo);
+      const usr = await stat(candidate.usr);
+      if (!sfo.isFile() || !usr.isDirectory()) continue;
+      return {
+        root: candidate.root,
+        paramSfo: candidate.sfo,
+        titleDir: path.basename(dir) === 'PS3_GAME' ? path.dirname(dir) : dir,
+      };
+    } catch {
+      /* not a PS3 game folder */
+    }
+  }
+  return null;
+}
+
 /**
  * Xbox 360 GOD / STFS installs are directories, not single files:
  *
@@ -231,6 +260,27 @@ export async function scanFolder(root: string, options: ScanOptions = {}): Promi
       if (entry.name.startsWith('.')) continue;
       const full = path.join(dir, entry.name);
       if (entry.isDirectory()) {
+        const ps3 = await detectPs3Game(full);
+        if (ps3) {
+          if (seen >= maxFiles) return;
+          if (!options.systemId || options.systemId === 'ps3') {
+            seen += 1;
+            try {
+              const info = await stat(ps3.paramSfo);
+              found.push({
+                path: ps3.root,
+                fileName: path.basename(ps3.titleDir),
+                size: info.size,
+                sha1: await sha1Of(ps3.paramSfo),
+                systemId: 'ps3',
+                title: titleFrom(path.basename(ps3.titleDir)),
+              });
+            } catch {
+              /* unreadable PS3 folder: skip */
+            }
+          }
+          continue;
+        }
         const god = await detectXbox360God(full);
         if (god) {
           if (seen >= maxFiles) return;

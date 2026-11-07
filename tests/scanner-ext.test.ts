@@ -101,6 +101,18 @@ describe('scanner extensions', () => {
     expect(bySystem).toEqual(['3ds', 'gba']);
   });
 
+  it('recognizes a PS3 game folder', async () => {
+    const root = await tempDir();
+    const game = path.join(root, 'BLAS50497-[Crysis3]');
+    await mkdir(path.join(game, 'USRDIR'), { recursive: true });
+    await writeFile(path.join(game, 'PARAM.SFO'), 'SFO');
+
+    const found = await scanFolder(root);
+    expect(found).toHaveLength(1);
+    expect(found[0].systemId).toBe('ps3');
+    expect(found[0].path).toBe(game);
+  });
+
   it('recognizes an Xbox 360 GOD/STFS install folder', async () => {
     const root = await tempDir();
     const title = path.join(root, '4D530AA4', '00007000');
