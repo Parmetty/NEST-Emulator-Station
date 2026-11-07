@@ -37,6 +37,26 @@ resources/engines/ppsspp/portable.txt
 # internal-only documents (kept locally, never pushed)
 docs/HISTORY.md
 docs/nintendo/HISTORY.md
+resources/engines/rpcs3/config/
+resources/engines/rpcs3/dev_flash/
+resources/engines/rpcs3/dev_flash2/
+resources/engines/rpcs3/dev_flash3/
+resources/engines/rpcs3/dev_hdd0/
+resources/engines/rpcs3/dev_hdd1/
+resources/engines/rpcs3/dev_bdvd/
+resources/engines/rpcs3/dev_usb000/
+resources/engines/rpcs3/cache/
+resources/engines/rpcs3/log/
+resources/engines/rpcs3/captures/
+resources/engines/rpcs3/savestates/
+resources/engines/rpcs3/games/
+resources/engines/rpcs3/shaderlog/
+resources/engines/rpcs3/ppu_progs/
+resources/engines/rpcs3/spu_progs/
+resources/engines/rpcs3/_block_x*
+resources/engines/rpcs3/rpcs3_vm_sparse.tmp
+resources/engines/rpcs3/RPCS3.buf
+
 # Xenia runtime state (test runs)
 resources/engines/xenia/cache/
 resources/engines/xenia/cache0/
@@ -48,4 +68,3 @@ resources/engines/xenia/xenia.log
 resources/engines/xenia/xenia-canary.config.toml
 resources/engines/xenia/xenia-canary.config.toml.before-headless
 resources/engines/xenia/recent.toml
-resources/engines/rpcs3/

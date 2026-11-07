@@ -1,0 +1,16 @@
+Player 1 Input:
+  Handler: Keyboard
+  Device: Keyboard
+  Config:
+    Up: Up
+    Down: Down
+    Left: Left
+    Right: Right
+    Cross: J
+    Circle: K
+    Square: U
+    Triangle: I
+    Start: Return
+    Select: Backspace
+    L1: Q
+    R1: E

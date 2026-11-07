@@ -5,7 +5,7 @@
  * The keyboard pad handler expands a key code into a `Config:` map. Nest writes
  * a Player 1 block and keeps RPCS3's data next to the bundled engine.
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import type { KeyboardBindings, PadAction } from '../../shared/contract';
 import { backupOnce, readTextFile, writeTextFile } from './util';
@@ -53,7 +53,12 @@ function yamlFile(engineDir: string): string {
 
 function ensureConfig(engineDir: string): void {
   const file = path.join(engineDir, CONFIG);
-  if (!existsSync(file)) return;
+  if (!existsSync(file)) {
+    const seed = path.join(engineDir, 'seed', 'config.yml');
+    if (!existsSync(seed)) return;
+    mkdirSync(path.dirname(file), { recursive: true });
+    copyFileSync(seed, file);
+  }
   const text = readTextFile(file);
   let next = text;
   next = next.replace(/Start games in fullscreen mode:\s*(true|false)/, 'Start games in fullscreen mode: false');
