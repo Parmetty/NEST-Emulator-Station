@@ -127,6 +127,14 @@ launches emulators you provide and scans files you already own.
 - The Microsoft Visual C++ 2015-2022 x64 runtime DLLs are copied next to the exe because
   this machine's `System32` has an older `msvcp140.dll` that crashes Xenia at startup.
 
+### RPCS3 0.0.43 — `resources/engines/rpcs3/`
+
+- Project: https://github.com/RPCS3/rpcs3
+- License: **GPLv2** — upstream license text: https://github.com/RPCS3/rpcs3/blob/master/LICENSE
+- Covers PS3 direct boot (folder games with `PARAM.SFO` + `USRDIR`). Redistributed unmodified
+  engine core only; no PS3 firmware (`dev_flash`), game data, NAND, keys, or user saves are included.
+- Firmware and game data are user-supplied; Nest's packager (`tools/clean-engines.mjs`) strips them.
+
 ### PPSSPP 1.20.4-dev — `resources/engines/ppsspp/`
 
 - Project: https://www.ppsspp.org/ · Source: https://github.com/hrydgard/ppsspp

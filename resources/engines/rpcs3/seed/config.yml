@@ -38,7 +38,7 @@
   MFC Commands Shuffling In Steps: false
   SPU XFloat Accuracy: Approximate
   Accurate PPU 128-byte Reservation Op Max Length: 0
-  Stub PPU Traps: 1
+  Stub PPU Traps: 0
   Precise SPU Verification: false
   PPU Vector NaN Handling: true
   Use Accurate DFMA: true
@@ -72,7 +72,7 @@ VFS:
   Emulate HDD Read Speed: false
   Emulate BD-ROM Read Speed: false
 Video:
-  Renderer: Vulkan
+  Renderer: OpenGL
   Resolution: 1280x720
   Aspect ratio: 16:9
   Frame limit: Auto
@@ -197,7 +197,6 @@ Audio:
   Microphone Devices: "@@@@@@@@@@@@"
   Music Handler: Qt
 Input/Output:
-  Keyboard: "Keyboard"
   Mouse: Basic
   Camera: "Null"
   Camera type: Unknown
@@ -216,7 +215,6 @@ Input/Output:
   Paint move spheres: false
   Allow move hue set by game: false
   Lock overlay input to player one: false
-  Emulated Midi devices: Keyboard脽脽脽@@@Keyboard脽脽脽@@@Keyboard脽脽脽@@@
   Load SDL GameController Mappings: true
   Mouse-based gyro enabled: false
   IO Debug overlay: false
@@ -284,6 +282,7 @@ Miscellaneous:
   Enable GameMode: false
 Log:
   {}
+
 
 
 

@@ -113,3 +113,14 @@ nest-assets\roms\xbox 360\4D530AA4\00007000\99B5F58BC37BA43E6271.data\Data0000..
 - Xenia 没有系统菜单，Xbox 360 只做直读
 - GOD 格式比 ISO 挑版本；优先用最新 Xenia Canary
 - Forza Horizon 2 这类游戏兼容性取决于 Xenia 版本，格式识别不等于可玩
+
+## 六、键盘映射（Nest 键位面板）
+
+- 绑定写在 `xenia-canary.config.toml` 的 `[HID.Key]`，值是 Windows VK 十六进制（如 `"0x4A"`）
+- **必须同时打开 `[HID] keyboard_mode = 1`**：Xenia 默认是 `0`（Disabled），
+  此时所有 `[HID.Key]` 都能解析、但不会送进游戏（表现为“面板里设了，游戏里没反应”）。
+  Nest 适配器现在写键位时会自动把它设成 1，并保持 `keyboard_user_index = 0`
+- **方向键会同时写 D-Pad 与左摇杆**（`keybind_dpad_*` + `keybind_left_thumb_*`）：
+  赛车/射击类游戏的移动读左摇杆，只写 D-Pad 会出现“车不能左右动”
+- **Xbox Live 档案**：首次启动需要档案的游戏会弹 `No Profiles` → 鼠标点 `SIGN IN`
+  → `Create Profile` → 输入 Gamertag → `OK`，Xenia 会把 XUID 记进 `[Profiles] logged_profile_slot_0_xuid`

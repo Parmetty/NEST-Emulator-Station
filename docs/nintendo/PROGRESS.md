@@ -1,10 +1,10 @@
 # Nest 开发进度与待办
 
-> **历史进度记录（截至 0.4.2-beta.1）。** 逐日记录保留用于追溯，不代表当前状态；当前进度见根目录 `README.md` 与 `docs/ROADMAP.md`。
+> **历史进度记录（截至 0.4.2-beta.1；文末附 2026-11-09 的 0.5.0-beta.1 发布记录）。** 逐日记录保留用于追溯，不代表当前状态；当前进度见根目录 `README.md` 与 `docs/ROADMAP.md`。
 
 > 项目里程碑与各版本主线见内部功能编年史（不随仓库发布）；本文件只记逐日进度与待办。
 
-> 更新于 2026-11-06（Asia/Shanghai）｜版本 `0.4.2-beta.1`，最新 tag `v0.4.2-beta.1`
+> 更新于 2026-11-06（Asia/Shanghai）｜版本 `0.4.2-beta.1`，最新 tag `v0.4.2-beta.1`（本文件是快照，0.5.0-beta.1 见文末）
 > 依据：`git log/tag`、内部功能编年史、`docs/nintendo/STATE.md`、`docs/nintendo/DECISIONS.md`、`README.md`、`resources/engines/*.json`、`src/shared/systems.ts`、`src/main/*`
 >
 > 说明：顶部 §1–§2 是**当前快照**；§3 起是逐日进度与历史记录（2026-10-28 的旧分析保留备查）。
@@ -346,3 +346,19 @@ est-pads.exe（SDL3）检测后切 SDL 绑定。
 
 - 启动方式：`Nest.exe` 直接双击为首选（数据在 `%APPDATA%\Nest`）；`启动 Nest.bat` 改为「便携数据模式」备用入口（0.4.0-beta.1 里说明文档仍是旧文案，需随包刷新）
 - 使用说明.txt 同步六引擎 + libretro 宿主
+
+---
+
+## 2026-11-09 · 0.5.0-beta.1 发布
+
+- 版本 0.4.2-beta.1 → 0.5.0-beta.1；README / ROADMAP / CHANGELOG / 发布说明同步（`package-lock.json` 待同步）
+- **Xbox 360（Xenia Canary）直读接入**：GOD/STFS 目录扫描、免责声明自动点「否」、任务栏裁切、退出监视、键位面板、档案流程
+- **PS3（RPCS3 0.0.43）直读接入**：内置引擎核心 + seed 配置（固件/用户数据不进包）、`PARAM.SFO + USRDIR` 扫描、键位面板
+- 键位三项修复：Xenia 强制 `keyboard_mode = 1`；Xbox 360 / PS3 方向键双写左摇杆；PS3 seed 删掉被 RPCS3 拒绝的
+  `Input/Output: Keyboard` 行与乱码 Midi 行
+- 游戏库右键重命名（只改库内显示名）；Xbox 家族主机墙解锁
+- 文档：重建 `docs/README.md` 索引（并注明本文件与 `STATE.md` 是 0.4.2 快照）；新增 `docs/BUILD-PORTABLE.md`；
+  更新 RPCS3 / Xbox 文档
+- 编码事故：2026-11-08 PowerShell 5.1 批量改 docs 损坏 6 份不可恢复文件，已删除（记录见 `docs/archive/README.md`）
+- 回归：typecheck 通过，单测 **118 条全绿**
+- 便携包 `Nest-0.5.0-beta.1-portable.zip`：613.1 MB（642,832,700 字节），解压 1334.7 MB / 4723 个文件，SHA256 `BCE9A9B264EAC8BE351CB4EEFF4790DEBA9F5CAD09AA4F4EA53E80FF917B6BD2`

@@ -2,6 +2,49 @@
 
 本文件记录每次发布的可见变化。技术细节在 `docs/nintendo/STATE.md`，决策理由在 `docs/nintendo/DECISIONS.md`，待办在 `docs/nintendo/PROGRESS.md`。
 
+## 0.5.0-beta.1 — 2026-11-09 · Xbox 360 + PS3 接入
+
+便携包：Nest-0.5.0-beta.1-portable.zip 613.1 MB（解压 1334.7 MB / 4723 文件，SHA256 `BCE9A9B264EAC8BE351CB4EEFF4790DEBA9F5CAD09AA4F4EA53E80FF917B6BD2`）
+
+本版补上两条新家族主线：**Xbox 360（Xenia Canary）直读**与 **PS3（RPCS3 0.0.43）直读**，
+并修掉键位面板「设了但游戏里没反应」的老问题；游戏库支持右键重命名，Xbox 家族主机墙一并解锁。
+
+### 新增
+
+- **Xbox 360 接入（Xenia Canary）**：内置 `resources/engines/xenia/`，直读 GOD / ISO / XEX；
+  GOD / STFS 目录扫描（`00007000/<hash>.data` + LIVE 头）
+- 启动时的免责声明由 `nest-dialog.exe`（UIA）自动点「否」（绝不点「是」）；
+  封面抓取裁掉任务栏（`captureFitWorkArea`）；退出监视走 `nest-window.exe --render-title Xenia-canary`
+- **PS3 接入（RPCS3 0.0.43）**：内置引擎核心 + seed 配置（固件 / 用户数据不进仓库与发布包）；
+  扫描 `PARAM.SFO + USRDIR`（兼容 `PS3_GAME/...`）；直读 `rpcs3.exe --no-gui <游戏目录>`；
+  默认窗口化，seed 配置固定 `Renderer: OpenGL`
+- 键位面板新增 **Xbox 360** 与 **PS3** 芯片（Xenia 写 `xenia-canary.config.toml` 的 `[HID.Key]`；
+  PS3 写 `config/input_configs/global/Default.yml`）
+- **游戏库右键重命名**：只改 Nest 库里的显示名，不动磁盘文件；GOD 的 `4D530AA4` 这类占位标题可手动改
+- **Xbox 家族主机墙解锁**（Xbox / Xbox 360）
+- Xbox 360 首次需要档案：游戏弹 `No Profiles` 时点 `SIGN IN` → `Create Profile` → 输入 Gamertag（用户一次性设置）
+- 文档：新增 `docs/BUILD-PORTABLE.md`；更新 RPCS3 与 Xbox 文档；重建 `docs/README.md` 索引
+
+### 修复
+
+- **Xbox 360「面板里设了、游戏里没反应」**：Xenia 默认 `[HID] keyboard_mode = 0`（键盘禁用），
+  `[HID.Key]` 全部能解析但送不进游戏；适配器写键位时强制 `keyboard_mode = 1`（并保持 `keyboard_user_index = 0`）
+- **Xbox 360 方向键不能转向**：方向键同时写 D-Pad 与左摇杆（`keybind_left_thumb_*`），赛车 / 射击类能用
+- **PS3 方向键不能转向**：同样双写 D-Pad 与 `Left Stick Up/Down/Left/Right`
+- **PS3 渲染器**：seed 固定 `Renderer: OpenGL`——Vulkan 下 Crysis 3 每轮约 70 秒必崩
+- **PS3 seed 配置**：删掉 RPCS3 0.0.43 拒绝的 `Input/Output: Keyboard` 行，删掉 `Emulated Midi devices` 乱码行
+- **文档编码损坏**：2026-11-08 用 PowerShell 5.1 批量改 docs 导致 6 份 Markdown 编码损坏且不可恢复，已删除；
+  重建 `docs/README.md` 索引，记录见 `docs/archive/README.md`
+
+### 已知问题
+
+- **PS3 / Crysis 3 随机超时断言**：游戏自身的 RenderThread 等待超时后 `abort()`（`0x0144517c`，预算约 0.8 秒），
+  随机触发、调参不可根治；RPCS3 只是照执行，不是固件或兼容性列表问题。细节见 `docs/playstation/ENGINE-rpcs3.md`
+- **Xbox 360 无 Dashboard / 系统菜单**：Xenia 不支持，只做直读
+- **PS3 无 XMB / 系统模式**：RPCS3 不模拟 XMB，只做直读；固件（`dev_flash`）需自备
+- **初代 Xbox（xemu）未接入**：主机墙已就位，引擎待 P7.1
+- 测试基线：**118 条单测全绿**
+
 ## 0.4.2-beta.1 — 2026-11-06 · PlayStation 三机接入 + PSP 固件导入
 
 便携包：Nest-0.4.2-beta.1-portable.zip 328.5 MB（解压 807.1 MB / 3597 文件）
@@ -252,3 +295,15 @@ bba657b feat: 3DS covers capture the top screen only (content aspect + top-only 
 c66b313 chore: drop accidental mojibake copy of PROGRESS.md
 ca89d72 feat: merge 10.28 branch - 3DS/Azahar, NGC+Wii system modes, keypad defaults, firmware importer
 ```
+
+---
+
+## 0.5.0-beta.1 便携包信息
+
+| 项 | 值 |
+|---|---|
+| 文件 | `Nest-0.5.0-beta.1-portable.zip` |
+| 大小 | 613.1 MB（642,832,700 字节） |
+| 解压 | 1334.7 MB / 4723 个文件 |
+| SHA256 | `BCE9A9B264EAC8BE351CB4EEFF4790DEBA9F5CAD09AA4F4EA53E80FF917B6BD2` |
+| Release | <https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.5.0-beta.1> |
