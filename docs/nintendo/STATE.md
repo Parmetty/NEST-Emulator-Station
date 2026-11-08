@@ -1,5 +1,7 @@
 # 当前状态
 
+> **历史快照（0.4.2-beta.1，2026-11-06）。** 本文不是当前状态；PS3/PSP/Xbox 360 等后续接入未反映在此。当前状态以根目录 `README.md`、`docs/ROADMAP.md` 和最新 release 说明为准。
+
 > 新会话开场只需读这一份，再读 `PLAN.md` 与 `DECISIONS.md`。
 >
 > **发布状态：0.4.2-beta.1**（tag `v0.4.2-beta.1`）—— Windows 桌面版，九台任天堂 + PS1/PS2/PSP 接入；PS3 界面就绪、引擎后置。

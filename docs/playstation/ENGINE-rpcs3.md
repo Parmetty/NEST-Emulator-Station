@@ -1,35 +1,22 @@
 # ENGINE · RPCS3（PS3）
 
-> 调研状态：官方源码核实（CLI / 无 XMB / 数据目录），未跑真实固件与游戏
-> 适用阶段：P6.4（后置）
+> 状态：**已接入 Nest，直读可用**（0.4.2 之后追加）。
+> PS3 无 XMB / 系统模式；只做直读。Crysis 3 有游戏级兼容性阻塞，见文末。
 
 ## 基本信息
 
 | 项 | 值 |
 |---|---|
 | 项目 | https://github.com/RPCS3/rpcs3 |
-| 作者 | RPCS3 团队（2011 年起） |
-| 最新 | **v0.0.43 Alpha**（2026-09-30） |
 | 许可证 | GPLv2 |
-| Windows 包 | 官网 nightly（GitHub Releases API 没有 Windows 资产） |
-| 数据目录 | Windows 默认 `%APPDATA%\rpcs3`；**没有 portable.txt 开关** |
+| 内置版本 | RPCS3 0.0.43 Alpha（Windows x64） |
+| 引擎目录 | `resources/engines/rpcs3/` |
+| 数据目录 | 跟随引擎目录；`dev_flash` 为用户自备固件 |
+| 启动方式 | `rpcs3.exe --no-gui <游戏目录>` |
 
-## 关键事实
+## Nest 接入
 
-- **固件必需**：PS3 固件 PUP（`--installfw` 或 GUI 安装）才能运行游戏
-- 游戏内容：目录型（`PS3_GAME`/`dev_hdd0`）或 `.iso`；不是单文件格式
-- 数据隔离：Nest 用子进程重定向 `APPDATA` / `LOCALAPPDATA`（与 Azahar 相同思路）
-- CLI（`rpcs3/rpcs3.cpp` 核实）：`no-gui`、`fullscreen`、`config`、`input-config`、`installfw`、`installpkg`、`savestate`、`headless` 等
-
-## 系统模式
-
-- **没有 XMB**：RPCS3 不模拟 PS3 的 XrossMediaBar（固件只用于运行游戏）
-- 因此 PS3 在 Nest 里**只做直读 + 固件安装**，`capabilities.systemMode = null`
-- 文档与 UI 都要写明“PS3 无系统菜单”，不假装
-
-## Nest 接入设计（后置）
-
-清单 `resources/engines/rpcs3.json`（草案）：
+清单：`resources/engines/rpcs3.json`
 
 ```json
 {
@@ -37,20 +24,38 @@
   "name": "RPCS3",
   "systems": ["ps3"],
   "kind": "native",
-  "detect": { "paths": ["{engines}/rpcs3/rpcs3.exe", "%APPDATA%/rpcs3/rpcs3.exe"] },
-  "launch": { "args": ["--no-gui", "--fullscreen", "{rom}"], "systemArgs": [], "fullscreenFlag": "--fullscreen" },
+  "detect": { "paths": ["{engines}/rpcs3/rpcs3.exe"] },
+  "launch": { "args": ["--no-gui", "{rom}"], "systemArgs": [], "cwd": "engineDir" },
+  "captureAspect": 1.777777,
   "capabilities": { "saveStates": true, "systemMode": null }
 }
 ```
 
-- 扫描：游戏目录 / `.iso`；目录型内容需要用户手动指定或按 `PS3_GAME` 结构识别
-- 固件：设置页 PlayStation →「PS3 固件 PUP」导入（`--installfw <pup>`）
-- 键位：`config/input_configs/.../Default.yml`（待实测）
-- 体积/启动时间：文档如实标注，不承诺“即点即玩”
+- 扫描：PS3 游戏文件夹，识别 `PARAM.SFO + USRDIR`（也接受 `PS3_GAME/PARAM.SFO`）
+- 封面：`captureAspect` 16:9，窗口化抓图
+- 默认窗口化：`config.yml` 中 `Start games in fullscreen mode: false`；启动前适配器会补齐
+- 键位：`config/input_configs/global/Default.yml`，默认：
+  - 方向键
+  - Cross=J / Circle=K / Square=U / Triangle=I
+  - L1/R1=Q/E
+  - Start=Enter / Select=Backspace
+- 固件：用户自备 `dev_flash`（PUP 安装后生成）；仓库/发布包不包含固件
+- 系统模式：**无**。RPCS3 不模拟 XMB，`capabilities.systemMode = null`
 
-## 未决问题
+## 配置约定
 
-- [ ] 固件 PUP 安装的 CLI 退出码与错误码
-- [ ] 目录型游戏在扫描器里的识别方式（`PS3_GAME/PARAM.SFO`）
-- [ ] `--no-gui` 与抓帧工具的兼容性
-- [ ] RPCS3 数据目录重定向的副作用（更新检查、固件缓存）
+- 仓库只跟踪引擎核心与 `seed/`：
+  - `seed/config.yml`
+  - `seed/input_configs/global/Default.yml`
+- 运行时 `config/`、`dev_flash*`、`dev_hdd*`、缓存/存档全部 gitignore
+- `clean-engines.mjs` 打包前会剥离这些用户数据
+- 不要强行把 `Input/Output: Keyboard` 写成 `"Keyboard"`：RPCS3 会报 `invalid enum or integer`；玩家 Pad 由 `Player 1 Input: Handler Keyboard` 接管即可
+
+## 当前已知问题
+
+- **Crysis 3（BLAS50497）**
+  - `Stub PPU Traps: 0`：启动阶段 PPU Trap，RenderThread 崩溃
+  - `Stub PPU Traps: 1`：可启动，但游戏 “installing game data” 卡死；安装数据停在约 2.45 GB / 358 文件，无磁盘增长
+  - 判定：游戏 + RPCS3 0.0.43 兼容性问题，不是 Nest 接入问题
+  - 不要反复清空重装；优先换 PS3 游戏验证引擎，或使用真机 PS3 的完整 `dev_hdd0/game/BLAS50497` 数据
+- 原游戏目录只读，Nest/RPCS3 不修改它；删除的只应是 RPCS3 的 `dev_hdd0` 安装数据

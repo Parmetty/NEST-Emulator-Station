@@ -1,5 +1,7 @@
 # PlayStation 家族接入计划
 
+> **历史阶段计划（P6.0 时期）。** P6.1–P6.4 已落地；当前状态见 `docs/ROADMAP.md` 与 `docs/playstation/ENGINE-rpcs3.md`。
+
 > 状态：**P6.0 调研完成**（2026-11-03）→ 下一步 P6.1
 > 调研报告：[RESEARCH-P6.0.md](RESEARCH-P6.0.md)；逐引擎规格：[duckstation](ENGINE-duckstation.md) · [ppsspp](ENGINE-ppsspp.md) · [pcsx2](ENGINE-pcsx2.md) · [rpcs3](ENGINE-rpcs3.md)
 > 目标：把 PS1 / PSP / PS2 / PS3 按「Nest 主机墙 + 扫描 → 卡片 → 启动 → 返回 → 封面」的既有模式接进来，
