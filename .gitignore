@@ -36,6 +36,7 @@ resources/engines/ppsspp/memstick/
 resources/engines/ppsspp/portable.txt
 # internal-only documents (kept locally, never pushed)
 docs/HISTORY.md
+docs/HANDOFF.local.md
 docs/nintendo/HISTORY.md
 resources/engines/rpcs3/config/
 resources/engines/rpcs3/dev_flash/
