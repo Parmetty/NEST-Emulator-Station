@@ -1,26 +1,49 @@
-﻿# Nest 鏂囨。涓績
+# Nest 文档索引
 
-Nest 鐨勬枃妗ｆ寜瀹舵棌褰掓。銆傚綋鍓嶅凡鎺ュ叆 Nintendo銆丳layStation锛圥S1/PS2/PSP/PS3 鐩磋锛夊拰 Xbox 360锛堢洿璇伙級銆?
-| 鐩綍 | 鍐呭 |
+> 当前版本 **0.5.0-beta.1**（2026-11-09）。本目录是开发/内部文档；只想用 Nest 的话看根目录 [README.md](../README.md)。
+
+## 当前状态看哪里
+
+按这个顺序取当前事实，别用旧快照：
+
+1. 根目录 [README.md](../README.md) —— 版本、下载、能力矩阵、已知限制
+2. [ROADMAP.md](ROADMAP.md) —— 跨家族路线与阶段状态
+3. 最新发布说明 [nintendo/RELEASE-0.5.0-beta.1.md](nintendo/RELEASE-0.5.0-beta.1.md)
+4. 发布级变化 [nintendo/CHANGELOG.md](nintendo/CHANGELOG.md)
+
+> `nintendo/STATE.md` 与 `nintendo/PROGRESS.md` 是 **0.4.2 时期的历史快照**，只用于追溯，不代表当前状态。
+
+## 目录
+
+| 位置 | 内容 |
 |---|---|
-| [nintendo/](nintendo/) | 浠诲ぉ鍫傜郴鏂囨。锛氬彉鏇存棩蹇椼€佸喅绛栥€侀敭浣嶃€侀噾鎵嬫寚銆佸彂甯冩祦绋?|
-| [playstation/](playstation/) | PlayStation 鏂囨。锛氬紩鎿庤鏍笺€佹帴鍏ヨ璁°€佷笅杞芥竻鍗?|
-| [xbox/](xbox/) | Xbox 瀹舵棌锛歑ena / xemu 涓嬭浇娓呭崟涓庢帴鍏ヨ褰?|
-| [archive/](archive/) | 鍘嗗彶璁″垝涓庢棫鐗堟湰鍙戝竷璇存槑锛涘彧鐢ㄤ簬杩芥函锛屼笉浠ｈ〃褰撳墠鐘舵€?|
+| [nintendo/](nintendo/) | 任天堂系：发布日志、键位（KEYS-*）、内核构建指南、DECISIONS、证据与补丁 |
+| [playstation/](playstation/) | PS 家族：计划、P6.0 调研、各引擎规格（ENGINE-*）与下载清单 |
+| [xbox/](xbox/) | Xbox 家族：引擎与系统文件清单、键盘映射 |
+| [archive/](archive/) | 归档：旧计划、旧发布说明（含 2026-11-08 编码事故记录） |
+| [BUILD-PORTABLE.md](BUILD-PORTABLE.md) | 便携包（portable zip）编译手册 |
+| [ROADMAP.md](ROADMAP.md) | 跨家族总路线 |
 
-璺ㄥ鏃忕殑鎬昏矾绾胯 **[ROADMAP.md](ROADMAP.md)**銆?
-## 褰撳墠鐘舵€佸叆鍙?
-- 椤圭洰鏍圭洰褰?[`../README.md`](../README.md)锛氱増鏈€佷笅杞姐€佸綋鍓嶈兘鍔?- 璺ㄥ鏃忚矾绾夸笌鐘舵€侊細[`ROADMAP.md`](ROADMAP.md)
-- 鏈€鏂板彂甯冭鏄庯細[`nintendo/RELEASE-0.4.2-beta.1.md`](nintendo/RELEASE-0.4.2-beta.1.md)
-- 鍙戝竷娴佺▼锛歔`nintendo/RELEASE-RUNBOOK.md`](nintendo/RELEASE-RUNBOOK.md)
+## 常用入口
 
-> `nintendo/STATE.md`銆乣nintendo/PROGRESS.md` 鏄?0.4.2 鏃舵湡鐨勫巻鍙插揩鐓у拰閫愭棩璁板綍锛屼笉鑳藉綋浣滃綋鍓嶇姸鎬侊紱
-> 褰撳墠鐘舵€佷互鏍圭洰褰?README銆丷OADMAP 鍜屾渶鏂?release 璇存槑涓哄噯銆?
-## 鍙傝€冭祫鏂?
-- 寮曟搸瑙勬牸锛歔SwanStation](playstation/ENGINE-swanstation.md) 路 [PPSSPP](playstation/ENGINE-ppsspp.md) 路 [PCSX2](playstation/ENGINE-pcsx2.md) 路 [RPCS3](playstation/ENGINE-rpcs3.md)
-- PS3 褰撳墠鏄?RPCS3 鐩磋锛屾棤 XMB锛涜瑙?[ENGINE-rpcs3.md](playstation/ENGINE-rpcs3.md)
-- 绱犳潗娓呭崟锛歔PS1 / PS2 闇€瑕佸噯澶囦粈涔圿(playstation/DOWNLOADS-PS1-PS2.md) 路 [Xbox 360 闇€瑕佸噯澶囦粈涔圿(xbox/DOWNLOADS-XBOX.md)
-- 寮曟搸鏋勫缓鍙傝€冿細[nintendo/BUILD-CORE-GUIDE.md](nintendo/BUILD-CORE-GUIDE.md)
-- 鍘嗗彶璧勬枡锛歔archive/](archive/)
+- 便携包怎么打 — [BUILD-PORTABLE.md](BUILD-PORTABLE.md)
+- 发布流程 — [nintendo/RELEASE-RUNBOOK.md](nintendo/RELEASE-RUNBOOK.md)
+- 发布说明 — [nintendo/RELEASE-0.5.0-beta.1.md](nintendo/RELEASE-0.5.0-beta.1.md)
+- PS3 引擎与 Crysis 3 已知问题 — [playstation/ENGINE-rpcs3.md](playstation/ENGINE-rpcs3.md)
+- Xbox 360 引擎与档案流程 — [xbox/DOWNLOADS-XBOX.md](xbox/DOWNLOADS-XBOX.md)
+- 键位细节 — [nintendo/KEYS-GBA.md](nintendo/KEYS-GBA.md)、[nintendo/KEYS-DOLPHIN.md](nintendo/KEYS-DOLPHIN.md)、
+  [nintendo/KEYS-3DS.md](nintendo/KEYS-3DS.md)、[nintendo/KEYS-ARES.md](nintendo/KEYS-ARES.md)、[nintendo/KEYS-CEMU.md](nintendo/KEYS-CEMU.md)
 
-鍐呴儴浜ゆ帴鏂囨。 `docs/HANDOFF.local.md` 涓嶈繘鍏ュ叕寮€浠撳簱锛屼篃涓嶅湪鍏紑鏂囨。涓摼鎺ャ€?
+## 内部文件（未跟踪，不随仓库发布）
+
+- `HANDOFF.local.md` —— 交接/新对话启动说明
+- `HISTORY.md` —— 按功能组织的项目编年史
+- `nintendo/HISTORY.md` —— 指向 `../HISTORY.md` 的重定向
+
+## 维护约定
+
+- 文本一律 UTF-8（无 BOM）。2026-11-08 用 PowerShell 5.1 的 `Get-Content`/`Set-Content`/`>` 批量改 Markdown，
+  把 6 份文档按 GBK 解错后又存回 UTF-8，内容不可无损恢复，只能删除（见 [archive/README.md](archive/README.md)）。
+  改文档请用 UTF-8 编辑器 / 仓库工具的 read/edit/write。
+- 新增文档放进对应家族目录；跨家族的放本目录。
+- 发布说明按 `nintendo/RELEASE-<version>.md` 命名，CHANGELOG 与根 README 同步更新。
