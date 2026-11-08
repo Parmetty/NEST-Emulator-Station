@@ -28,6 +28,19 @@ const BUTTONS: Array<[PadAction, string]> = [
   ['r', 'R1'],
 ];
 
+/**
+ * Directional actions are also bound to the left stick: most PS3 3D titles
+ * read the analog stick for movement, so a D-Pad-only layout leaves the
+ * character/car unable to move. Writing both keeps menus (D-Pad) and
+ * gameplay (stick) working from one panel entry.
+ */
+const STICK_BUTTONS: Array<[PadAction, string]> = [
+  ['up', 'Left Stick Up'],
+  ['down', 'Left Stick Down'],
+  ['left', 'Left Stick Left'],
+  ['right', 'Left Stick Right'],
+];
+
 const NAMED: Record<string, string> = {
   Enter: 'Return',
   Backspace: 'Backspace',
@@ -85,6 +98,13 @@ export function applyRpcs3Controls(
     '  Config:',
   ];
   for (const [action, button] of BUTTONS) {
+    const code = bindings[action];
+    if (!code) continue;
+    const key = codeToRpcs3Key(code);
+    if (!key) continue;
+    lines.push(`    ${button}: ${key}`);
+  }
+  for (const [action, button] of STICK_BUTTONS) {
     const code = bindings[action];
     if (!code) continue;
     const key = codeToRpcs3Key(code);

@@ -26,6 +26,11 @@ describe('RPCS3 adapter', () => {
       expect(yaml).toContain('Cross: J');
       expect(yaml).toContain('Start: Return');
       expect(yaml).toContain('Select: Backspace');
+      // Direction keys also drive the left stick so 3D titles can move.
+      expect(yaml).toContain('Left Stick Up: Up');
+      expect(yaml).toContain('Left Stick Down: Down');
+      expect(yaml).toContain('Left Stick Left: Left');
+      expect(yaml).toContain('Left Stick Right: Right');
 
       const cfg = await readFile(path.join(dir, 'config', 'config.yml'), 'utf8');
       expect(cfg).toContain('Keyboard: "Null"');

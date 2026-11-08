@@ -27,6 +27,18 @@ const BUTTONS: Array<[PadAction, string]> = [
   ['r', 'keybind_right_shoulder'],
 ];
 
+/**
+ * Xbox 360 3D titles (racing, shooters) steer with the left stick, not the
+ * D-Pad: bind the four directions to both so one panel entry drives menus and
+ * gameplay. Stick entries are write-only; the panel keeps reading the D-Pad.
+ */
+const STICKS: Array<[PadAction, string]> = [
+  ['up', 'keybind_left_thumb_up'],
+  ['down', 'keybind_left_thumb_down'],
+  ['left', 'keybind_left_thumb_left'],
+  ['right', 'keybind_left_thumb_right'],
+];
+
 function configFile(engineDir: string): string {
   return path.join(engineDir, FILE);
 }
@@ -60,7 +72,26 @@ export function applyXeniaControls(
     if (vk === null) continue;
     entries.push([key, `0x${vk.toString(16).toUpperCase().padStart(2, '0')}`]);
   }
+  for (const [action, key] of STICKS) {
+    const code = bindings[action];
+    if (!code) continue;
+    const vk = codeToVk(code);
+    if (vk === null) continue;
+    entries.push([key, `0x${vk.toString(16).toUpperCase().padStart(2, '0')}`]);
+  }
   setSectionEntries(lines, '[HID.Key]', entries, (key, value) => `${key} = "${value}"`);
+  // Xenia ignores [HID.Key] entirely while keyboard input is disabled
+  // (keyboard_mode = 0): every binding parses cleanly but never reaches the
+  // guest. Force it on so the panel actually changes behaviour in-game.
+  setSectionEntries(
+    lines,
+    '[HID]',
+    [
+      ['keyboard_mode', '1'],
+      ['keyboard_user_index', '0'],
+    ],
+    (key, value) => `${key} = ${value}`,
+  );
   writeTextFile(file, lines.join('\n'));
   return { applied: true, files: [file] };
 }

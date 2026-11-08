@@ -18,6 +18,12 @@ describe('Xenia adapter', () => {
       expect(text).toContain('keybind_a = "0x4A"');
       expect(text).toContain('keybind_dpad_up = "0x26"');
       expect(text).toContain('keybind_start = "0x0D"');
+      // Xenia parses [HID.Key] but ignores it while keyboard input is disabled.
+      expect(text).toContain('keyboard_mode = 1');
+      expect(text).toContain('keyboard_user_index = 0');
+      // Direction keys also drive the left thumb stick (3D titles use it).
+      expect(text).toContain('keybind_left_thumb_up = "0x26"');
+      expect(text).toContain('keybind_left_thumb_left = "0x25"');
 
       expect(readXeniaControls(dir)).toMatchObject({
         a: 'KeyJ',
@@ -25,6 +31,20 @@ describe('Xenia adapter', () => {
         up: 'ArrowUp',
         start: 'Enter',
       });
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('enables keyboard input and keeps unrelated [HID] keys', async () => {
+    const dir = await mkdtemp(path.join(os.tmpdir(), 'nest-xenia-'));
+    try {
+      const file = path.join(dir, 'xenia-canary.config.toml');
+      await writeFile(file, '[HID]\nkeyboard_mode = 0\nvibration = false\n\n[HID.Key]\n');
+      applyXeniaControls(dir, { ...DEFAULT_KEYBOARD.xenia }, true);
+      const text = await readFile(file, 'utf8');
+      expect(text).toContain('keyboard_mode = 1');
+      expect(text).toContain('vibration = false');
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
