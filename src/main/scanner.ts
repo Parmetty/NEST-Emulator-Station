@@ -51,10 +51,14 @@ export const EXT_TO_SYSTEM: Record<string, string> = {
   '3dsx': '3ds',
   cia: '3ds',
   xex: 'xbox360',
+  xbe: 'xbox',
 };
 
 /** Disc images whose system must be decided by the header, not the extension. */
 const AMBIGUOUS_DISC_EXT = new Set(['iso', 'rvz', 'gcz', 'ciso']);
+
+/** Xbox XDVDFS volume descriptor, seen at 0 or 0x10000 in XISO images. */
+const XDVDFS_MAGIC = 'MICROSOFT*XBOX*MEDIA';
 
 /** GameCube disc magic at 0x18 (big endian). */
 const GC_MAGIC = 0xc2339f3f;
@@ -124,6 +128,7 @@ async function sniffDiscSystem(file: string, ext: string): Promise<string | null
     const probeRead = await handle.read(probe, 0, probe.length, 0);
     if (probeRead.bytesRead > 0) {
       const text = probe.subarray(0, probeRead.bytesRead).toString('latin1');
+      if (text.includes(XDVDFS_MAGIC)) return 'xbox';
       if (text.includes('PLAYSTATION')) return 'ps2';
       if (text.includes('PSP GAME')) return 'psp';
     }
@@ -236,6 +241,21 @@ async function detectXbox360God(
   return null;
 }
 
+/**
+ * An unpacked Xbox game is a folder with `default.xbe`; xemu can boot that
+ * folder directly, so Nest stores the directory itself as the launch target.
+ */
+async function detectXboxFolder(dir: string): Promise<{ root: string; xbe: string } | null> {
+  const xbe = path.join(dir, 'default.xbe');
+  try {
+    const entry = await stat(xbe);
+    if (!entry.isFile() || entry.size === 0) return null;
+    return { root: dir, xbe };
+  } catch {
+    return null;
+  }
+}
+
 /** Recursively collects ROMs under `root`. Unreadable files are skipped, not fatal. */
 export async function scanFolder(root: string, options: ScanOptions = {}): Promise<ScannedFile[]> {
   // Engines are spawned with `cwd` set to the engine folder, so every stored
@@ -277,6 +297,27 @@ export async function scanFolder(root: string, options: ScanOptions = {}): Promi
               });
             } catch {
               /* unreadable PS3 folder: skip */
+            }
+          }
+          continue;
+        }
+        const xboxFolder = await detectXboxFolder(full);
+        if (xboxFolder) {
+          if (seen >= maxFiles) return;
+          if (!options.systemId || options.systemId === 'xbox') {
+            seen += 1;
+            try {
+              const info = await stat(xboxFolder.xbe);
+              found.push({
+                path: xboxFolder.root,
+                fileName: path.basename(full),
+                size: info.size,
+                sha1: await sha1Of(xboxFolder.xbe),
+                systemId: 'xbox',
+                title: titleFrom(path.basename(full)),
+              });
+            } catch {
+              /* unreadable Xbox folder: skip */
             }
           }
           continue;

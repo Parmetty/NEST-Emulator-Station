@@ -113,6 +113,30 @@ describe('scanner extensions', () => {
     expect(found[0].path).toBe(game);
   });
 
+  it('recognises an Xbox XISO image by its XDVDFS marker', async () => {
+    const dir = await tempDir();
+    const buffer = Buffer.alloc(0x10000 + 64);
+    buffer.write('MICROSOFT*XBOX*MEDIA', 0x10000, 'latin1');
+    const xiso = path.join(dir, 'Halo.iso');
+    await writeFile(xiso, buffer);
+    expect(await systemForFile(xiso)).toBe('xbox');
+  });
+
+  it('maps bare .xbe files to the Xbox family', () => {
+    expect(EXT_TO_SYSTEM.xbe).toBe('xbox');
+  });
+
+  it('recognizes an unpacked Xbox folder with default.xbe', async () => {
+    const root = await tempDir();
+    const game = path.join(root, 'Halo CE');
+    await mkdir(game, { recursive: true });
+    await writeFile(path.join(game, 'default.xbe'), 'xbe');
+    const found = await scanFolder(root);
+    expect(found).toHaveLength(1);
+    expect(found[0].systemId).toBe('xbox');
+    expect(found[0].path).toBe(game);
+  });
+
   it('recognizes an Xbox 360 GOD/STFS install folder', async () => {
     const root = await tempDir();
     const title = path.join(root, '4D530AA4', '00007000');
