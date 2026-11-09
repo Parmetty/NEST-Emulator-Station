@@ -757,6 +757,13 @@ export default function App() {
         'missing-psp-firmware': '缺少 PSP 固件：请在 PPSSPP 里安装 6.61 固件后再启动 XMB',
         'missing-3ds-system-files':
           '3DS HOME Menu 需要 Azahar 系统文件：请先用真机 + Artic Setup Tool 在 Azahar 里执行 Set Up System Files',
+        'missing-xbox-firmware':
+          'xemu 需要自备 Xbox 固件：请到「设置 → Xbox」导入 MCPX（512 B）、BIOS（256 KB）和 HDD 镜像（qcow2）',
+        'bad-size-xbox-mcpx': 'MCPX boot ROM 必须是 512 字节',
+        'bad-size-xbox-bios': 'Xbox BIOS 必须是 256 KB 的 flash dump（1 MB 的四连体镜像会自动取第一段）',
+        'bad-size-xbox-hdd': 'HDD 镜像无效：需要 xemu 的 xbox_hdd.qcow2（qcow2 头 QFI）',
+        'xbox-hdd-io-error': 'HDD 镜像读取失败：检查文件权限',
+        'missing-rom': '没有可启动的游戏文件',
       };
       say(map[result.error ?? ''] ?? `启动失败（${result.error}）`);
       return;
@@ -1652,7 +1659,17 @@ export default function App() {
                           IPL / WAD 需要你自己从主机 dump，Nest 不打包也不下载；导入后会复制到本机数据目录。
                         </p>
 
-                        {firmware.filter((item) => item.kind !== 'ps1-bios' && item.kind !== 'ps2-bios' && item.kind !== 'psp-firmware').map((item) => (
+                        {firmware
+                          .filter(
+                            (item) =>
+                              item.kind !== 'ps1-bios' &&
+                              item.kind !== 'ps2-bios' &&
+                              item.kind !== 'psp-firmware' &&
+                              item.kind !== 'xbox-mcpx' &&
+                              item.kind !== 'xbox-bios' &&
+                              item.kind !== 'xbox-hdd',
+                          )
+                          .map((item) => (
                           <div className="fw-row" key={item.kind}>
                             <span>
                               {item.label}
@@ -1769,14 +1786,46 @@ export default function App() {
               ) : (
                 <div className="settings-cols">
                   <div className="settings-col">
-                    <h2>Xbox</h2>
+                    <h2>系统文件（自备）</h2>
                     <p className="dlg-note">
-                      Xbox 360 已接入 Xenia Canary：支持 GOD / ISO / XEX 直读，无需固件，
-                      没有 Dashboard / 系统菜单。Xbox 初代将使用 xemu（需自备 MCPX、BIOS、HDD 镜像），
-                      仍在接入中（P7.1）。
+                      Xbox 初代走 xemu 直读，需要三样自备文件：MCPX boot ROM（512 B）、256 KB 的 BIOS
+                      flash dump、以及 HDD 镜像（xbox_hdd.qcow2）。Nest 只复制前两个小文件，HDD
+                      仅记录路径、不复制（它是可写镜像）。Xbox 360 走 Xenia，不需要固件。
                     </p>
+
+                    {firmware
+                      .filter(
+                        (item) =>
+                          item.kind === 'xbox-mcpx' ||
+                          item.kind === 'xbox-bios' ||
+                          item.kind === 'xbox-hdd',
+                      )
+                      .map((item) => (
+                        <div className="fw-row" key={item.kind}>
+                          <span>
+                            {item.label}
+                            <small>
+                              {item.status === 'ok'
+                                ? item.kind === 'xbox-hdd'
+                                  ? '已设置'
+                                  : '已导入'
+                                : item.status === 'invalid'
+                                  ? '校验未通过'
+                                  : item.kind === 'xbox-hdd'
+                                    ? '未设置'
+                                    : '未导入'}
+                              {item.detail ? ` · ${item.detail}` : ''}
+                            </small>
+                          </span>
+                          <button className="ghost-btn" onClick={() => void importFirmware(item.kind)}>
+                            选择文件…
+                          </button>
+                        </div>
+                      ))}
+
                     <p className="dlg-note">
-                      键位面板当前对应 Xbox 360（Xenia，[HID.Key]）；Xbox 初代接入后会复用同一入口。
+                      Xbox 360 已接入 Xenia Canary：GOD / ISO / XEX 直读，无需固件，没有 Dashboard；
+                      键位面板见右侧（Xenia [HID.Key]）。xemu 目前只支持 SDL 手柄，暂不提供键盘映射。
                     </p>
                   </div>
                   {renderKeys()}

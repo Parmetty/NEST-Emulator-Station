@@ -40,7 +40,10 @@ export type FirmwareKind =
   | 'ps1-bios'
   | 'ps2-bios'
   | 'psp-firmware'
-  | 'wiiu-mlc';
+  | 'wiiu-mlc'
+  | 'xbox-mcpx'
+  | 'xbox-bios'
+  | 'xbox-hdd';
 
 export type FirmwareState = {
   kind: FirmwareKind;
@@ -96,6 +99,8 @@ export const settingsSchema = z.object({
   ndsModel: z.enum(['ds', 'dsl', 'dsi', 'dsill']).optional(),
   /** Insert the most recently played NDS title into Slot-1 when booting the DS/DSi menu. */
   ndsSystemInsert: z.boolean().optional(),
+  /** Absolute path of the user's Xbox HDD image (qcow2); reference only, never copied. */
+  xboxHdd: z.string().min(1).max(4096).optional(),
   controls: z
     .record(
       z.string().max(32),
@@ -357,6 +362,8 @@ export interface Settings {
   ndsModel?: 'ds' | 'dsl' | 'dsi' | 'dsill';
   /** Insert the most recently played NDS title when booting the DS/DSi menu. */
   ndsSystemInsert?: boolean;
+  /** Absolute path of the user's Xbox HDD image (qcow2). */
+  xboxHdd?: string;
 }
 
 export interface LaunchEvent {

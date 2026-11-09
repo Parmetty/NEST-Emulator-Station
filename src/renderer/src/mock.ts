@@ -123,6 +123,9 @@ export function installMockApi(): void {
     firmwareStatus: async () => [
       { kind: 'gc-ipl', label: 'GameCube IPL（系统菜单）', status: 'missing', path: null },
       { kind: 'wii-menu', label: 'Wii 系统菜单 WAD', status: 'missing', path: null },
+      { kind: 'xbox-mcpx', label: 'Xbox MCPX boot ROM（必需）', status: 'missing', path: null },
+      { kind: 'xbox-bios', label: 'Xbox BIOS（必需）', status: 'missing', path: null },
+      { kind: 'xbox-hdd', label: 'Xbox HDD 镜像（必需）', status: 'missing', path: null },
     ],
     pickFirmware: async () => ({ ok: true, canceled: true }),
     gbaCheats: async () => ({ ok: true, path: '', text: '', managed: false, exists: false }),

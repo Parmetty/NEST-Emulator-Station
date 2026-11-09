@@ -39,6 +39,13 @@ import {
 import { findAzaharHomeMenu } from './azahar-home';
 import { ensurePcsx2Data, pcsx2BiosDir, pcsx2BiosFiles } from './pcsx2';
 import { ensurePpssppPortable, hasPspFirmware, importPspFlash0, pspFlash0Dir } from './ppsspp';
+import {
+  importXboxFirmware,
+  readXboxFirmware,
+  writeXemuConfig,
+  xemuEngineDir,
+  xemuLaunchArgs,
+} from './xemu';
 import { cheatExtraArgs, readCheatFile, saveCheatText } from './cheats';
 import { selectNdsSystemCart } from './nds-cart';
 import { EngineRegistry, buildArgs } from './engines';
@@ -479,6 +486,32 @@ function firmwareStates(services: Services): FirmwareState[] {
     });
   }
 
+  const xboxFirmware = readXboxFirmware(app.getPath('userData'), services.store.getSettings().xboxHdd);
+  const mcpxOk = xboxFirmware.mcpx !== null;
+  states.push({
+    kind: 'xbox-mcpx',
+    label: 'Xbox MCPX boot ROM（必需）',
+    status: mcpxOk ? 'ok' : 'missing',
+    path: xboxFirmware.mcpx,
+    detail: mcpxOk ? '512 字节 · 已导入' : '未导入（512 字节的 mcpx_1.0.bin）',
+  });
+  const biosOk = xboxFirmware.bios !== null;
+  states.push({
+    kind: 'xbox-bios',
+    label: 'Xbox BIOS（必需）',
+    status: biosOk ? 'ok' : 'missing',
+    path: xboxFirmware.bios,
+    detail: biosOk ? '256 KB · 已导入' : '未导入（256 KB 的 flash dump）',
+  });
+  const hddOk = xboxFirmware.hdd !== null;
+  states.push({
+    kind: 'xbox-hdd',
+    label: 'Xbox HDD 镜像（必需）',
+    status: hddOk ? 'ok' : 'missing',
+    path: xboxFirmware.hdd,
+    detail: hddOk ? 'qcow2 已就绪（只记录路径，不复制）' : '未设置（xbox_hdd.qcow2）',
+  });
+
   return states;
 }
 
@@ -503,7 +536,10 @@ async function pickFirmware(services: Services, raw: unknown): Promise<{
     kind !== 'wiiu-mlc' &&
     kind !== 'ps1-bios' &&
     kind !== 'ps2-bios' &&
-    kind !== 'psp-firmware'
+    kind !== 'psp-firmware' &&
+    kind !== 'xbox-mcpx' &&
+    kind !== 'xbox-bios' &&
+    kind !== 'xbox-hdd'
   ) {
     return { ok: false, error: 'bad-request' };
   }
@@ -576,6 +612,28 @@ async function pickFirmware(services: Services, raw: unknown): Promise<{
     mkdirSync(dir, { recursive: true });
     copyFileSync(source, path.join(dir, path.basename(source).toLowerCase()));
     console.log(`[nest] ps2 bios imported: ${source} -> ${dir}`);
+    return { ok: true, state: firmwareStates(services).find((state) => state.kind === kind) };
+  }
+
+  if (kind === 'xbox-mcpx' || kind === 'xbox-bios' || kind === 'xbox-hdd') {
+    const isHdd = kind === 'xbox-hdd';
+    const picked = await dialog.showOpenDialog({
+      title: isHdd
+        ? '选择 Xbox HDD 镜像（xbox_hdd.qcow2）'
+        : kind === 'xbox-mcpx'
+          ? '选择 MCPX boot ROM（mcpx_1.0.bin，512 字节）'
+          : '选择 Xbox BIOS（256 KB flash dump）',
+      properties: ['openFile'],
+      filters: isHdd
+        ? [{ name: 'Xbox HDD', extensions: ['qcow2', 'img', 'vhd'] }]
+        : [{ name: 'Xbox firmware', extensions: ['bin'] }],
+    });
+    if (picked.canceled || picked.filePaths.length === 0) return { ok: true, canceled: true };
+    const source = picked.filePaths[0];
+    const result = importXboxFirmware(kind, source, app.getPath('userData'));
+    if (!result.ok) return { ok: false, error: result.error };
+    if (kind === 'xbox-hdd') await services.store.setSettings({ xboxHdd: result.path });
+    console.log(`[nest] xbox firmware imported: ${kind} ${source} -> ${result.path}`);
     return { ok: true, state: firmwareStates(services).find((state) => state.kind === kind) };
   }
 
@@ -1194,6 +1252,25 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     applyControls(services, 'rpcs3', false);
   }
 
+  let xemuArgs: string[] = [];
+  if (engine.id === 'xemu') {
+    const settings = services.store.getSettings();
+    const config = writeXemuConfig(
+      xemuEngineDir(enginesDir()),
+      app.getPath('userData'),
+      settings.xboxHdd,
+    );
+    if (!config.ok) {
+      console.error(
+        `[nest] xemu 需要自备固件：请在「设置 → Xbox」导入 MCPX（512 B）、BIOS（256 KB）与 HDD 镜像（缺 ${config.missing.join(', ')}）。`,
+      );
+      return { ok: false, error: 'missing-xbox-firmware' };
+    }
+    if (mode === 'game' && !rom) return { ok: false, error: 'missing-rom' };
+    xemuArgs = xemuLaunchArgs(app.getPath('userData'), settings.xboxHdd);
+    console.log(`[nest] xemu config: ${config.path}`);
+  }
+
   if (engine.id === 'ppsspp') {
     ensurePpssppPortable(enginesDir());
     if (mode === 'system' && !hasPspFirmware(enginesDir())) {
@@ -1241,6 +1318,9 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     userData: app.getPath('userData'),
     engines: enginesDir(),
   });
+
+  // xemu only picks up the flash ROM from an explicit -bios argument.
+  if (xemuArgs.length > 0) args = [...xemuArgs, ...args];
 
   if (melondsSystemCart) {
     args = [...args, melondsSystemCart];

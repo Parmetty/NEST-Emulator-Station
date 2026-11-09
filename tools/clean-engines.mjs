@@ -31,6 +31,9 @@ const RUNTIME_FILES = [
   'cemu/portable/settings.xml',
   'cemu/portable/controllerProfiles.xml',
   'cemu/portable/gameProfiles.xml',
+  'xemu/xemu.toml',
+  'xemu/xemu.log',
+  'xemu/eeprom.bin',
 ];
 
 for (const relativePath of RUNTIME_FILES) {
