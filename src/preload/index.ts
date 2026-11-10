@@ -81,6 +81,8 @@ const api = {
 
   openPpsspp: (): Promise<{ ok: boolean; error?: string }> =>
     ipcRenderer.invoke(CH.openPpsspp),
+  openPs3Cache: (): Promise<{ ok: boolean; path?: string; error?: string }> =>
+    ipcRenderer.invoke(CH.openPs3Cache),
 
   onLibraryChanged: (cb: (info: { roots: number; added: number }) => void): (() => void) => {
     const handler = (_e: unknown, info: { roots: number; added: number }) => cb(info);

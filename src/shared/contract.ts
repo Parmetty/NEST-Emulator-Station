@@ -17,6 +17,7 @@ export const CH = {
   favorite: 'nest:favorite',
   openHomepage: 'nest:open-homepage',
   openPpsspp: 'nest:open-ppsspp',
+  openPs3Cache: 'nest:open-ps3-cache',
   launchEvent: 'nest:launch-event',
   libraryChanged: 'nest:library-changed',
   rescan: 'nest:rescan',
@@ -101,6 +102,8 @@ export const settingsSchema = z.object({
   ndsSystemInsert: z.boolean().optional(),
   /** Absolute path of the user's Xbox HDD image (qcow2); reference only, never copied. */
   xboxHdd: z.string().min(1).max(4096).optional(),
+  /** RPCS3 video renderer; switching only rewrites config, never removes caches. */
+  ps3Renderer: z.enum(['vulkan', 'opengl']).optional(),
   controls: z
     .record(
       z.string().max(32),
@@ -364,6 +367,8 @@ export interface Settings {
   ndsSystemInsert?: boolean;
   /** Absolute path of the user's Xbox HDD image (qcow2). */
   xboxHdd?: string;
+  /** RPCS3 video renderer (default OpenGL: Crysis 3 aborts on Vulkan). */
+  ps3Renderer?: 'vulkan' | 'opengl';
 }
 
 export interface LaunchEvent {

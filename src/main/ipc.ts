@@ -39,6 +39,7 @@ import {
 import { findAzaharHomeMenu } from './azahar-home';
 import { ensurePcsx2Data, pcsx2BiosDir, pcsx2BiosFiles } from './pcsx2';
 import { ensurePpssppPortable, hasPspFirmware, importPspFlash0, pspFlash0Dir } from './ppsspp';
+import { applyRpcs3Renderer, rpcs3CacheDir, rpcs3EngineDir } from './rpcs3';
 import {
   importXboxFirmware,
   readXboxFirmware,
@@ -1056,6 +1057,17 @@ export function registerIpc(services: Services): void {
     return error ? { ok: false, error: 'io-error' } : { ok: true };
   });
 
+  ipcMain.handle(CH.openPs3Cache, async () => {
+    const dir = rpcs3CacheDir(rpcs3EngineDir(enginesDir()));
+    try {
+      mkdirSync(dir, { recursive: true });
+    } catch {
+      return { ok: false, path: dir, error: 'io-error' };
+    }
+    const error = await shell.openPath(dir);
+    return error ? { ok: false, path: dir, error } : { ok: true, path: dir };
+  });
+
   ipcMain.handle(CH.openHomepage, async (_event, raw) => {
     const url = String((raw as { url?: unknown })?.url ?? '');
     if (!/^https:\/\//.test(url)) return { ok: false };
@@ -1250,6 +1262,12 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
 
   if (engine.id === 'rpcs3') {
     applyControls(services, 'rpcs3', false);
+    // Renderer is config only: the other renderer's precompiled files stay put.
+    const renderer = services.store.getSettings().ps3Renderer ?? 'opengl';
+    const applied = applyRpcs3Renderer(rpcs3EngineDir(enginesDir()), renderer);
+    console.log(
+      `[nest] rpcs3 renderer: ${renderer}${applied.changed ? ' (config updated)' : ''}${applied.ok ? '' : ' (config missing)'}`,
+    );
   }
 
   let xemuArgs: string[] = [];

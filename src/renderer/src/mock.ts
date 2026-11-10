@@ -215,6 +215,7 @@ export function installMockApi(): void {
     },
     openHomepage: async () => ({ ok: true }),
     openPpsspp: async () => ({ ok: true }),
+    openPs3Cache: async () => ({ ok: true, path: 'C:\\temp\\rpcs3-cache' }),
     onLaunchEvent: (cb) => {
       listener = cb;
       return () => {
