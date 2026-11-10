@@ -1799,12 +1799,12 @@ export default function App() {
                         OpenGL
                       </button>
                     </div>
-                    <p className="dlg-note">
-                      当前：{settings.ps3Renderer === 'vulkan' ? 'Vulkan' : 'OpenGL'}；切换只改配置，不删除另一渲染器已编译的缓存，下次启动 PS3 游戏时生效。
-                    </p>
                     <button className="ghost-btn" onClick={() => void window.nest.openPs3Cache()}>
                       打开 PS3 预编译缓存位置
                     </button>
+                    <p className="dlg-note">
+                      当前：{settings.ps3Renderer === 'vulkan' ? 'Vulkan' : 'OpenGL'}；切换只改配置，不删除另一渲染器已编译的缓存，下次启动 PS3 游戏时生效。
+                    </p>
                   </div>
 
                   {renderKeys()}
