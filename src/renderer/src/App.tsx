@@ -1771,10 +1771,19 @@ export default function App() {
                         </div>
                       ))}
 
-                    <h2>渲染器</h2>
+                    <button className="ghost-btn" onClick={() => void window.nest.openPpsspp()}>
+                      打开 PPSSPP（安装 PSP 固件）
+                    </button>
                     <p className="dlg-note">
-                      Vulkan 性能更好；OpenGL 兼容性更好。Crysis 3 在 Vulkan 下会被游戏自身的超时断言打断，
-                      遇到崩溃先切到 OpenGL 试试。
+                      PSP 固件有两种来源：已解密的 <code>flash0</code> 目录可直接「选择目录…」导入；
+                      如果只有官方 6.61 升级程序 EBOOT.PBP，点上面的按钮打开 PPSSPP，在
+                      设置 → 工具 → PSP 固件里安装一次，Nest 会自动识别同一个 memstick。
+                    </p>
+
+                    <h2>PS3（RPCS3）</h2>
+                    <p className="dlg-note">
+                      PS3 由 RPCS3 直读。渲染器：Vulkan 性能更好，OpenGL 兼容性更好；Crysis 3 在
+                      Vulkan 下会被游戏自身的超时断言打断，遇到崩溃先切 OpenGL 试试。
                     </p>
                     <div className="scan-actions">
                       <button
@@ -1790,20 +1799,11 @@ export default function App() {
                         OpenGL{settings.ps3Renderer !== 'vulkan' ? '（当前）' : ''}
                       </button>
                       <button className="ghost-btn" onClick={() => void window.nest.openPs3Cache()}>
-                        打开预编译缓存位置
+                        打开 PS3 预编译缓存位置
                       </button>
                     </div>
                     <p className="dlg-note">
-                      切换渲染器只改配置，不会删除另一渲染器已编译的缓存；改动在下次启动游戏时生效。
-                    </p>
-
-                    <button className="ghost-btn" onClick={() => void window.nest.openPpsspp()}>
-                      打开 PPSSPP（安装 PSP 固件）
-                    </button>
-                    <p className="dlg-note">
-                      PSP 固件有两种来源：已解密的 <code>flash0</code> 目录可直接「选择目录…」导入；
-                      如果只有官方 6.61 升级程序 EBOOT.PBP，点上面的按钮打开 PPSSPP，在
-                      设置 → 工具 → PSP 固件里安装一次，Nest 会自动识别同一个 memstick。
+                      切换渲染器只改配置，不会删除另一渲染器已编译的缓存；改动在下次启动 PS3 游戏时生效。
                     </p>
                   </div>
 
