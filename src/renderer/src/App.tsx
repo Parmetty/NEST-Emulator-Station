@@ -16,6 +16,11 @@ import type {
 } from '@shared/contract';
 import { PAD_ACTIONS } from '@shared/contract';
 import { engineLabel, ndsModelById, NDS_MODEL_GROUPS, systemById, type SystemId } from '@shared/systems';
+import {
+  isPlaystationEngine,
+  isXboxEngine,
+  keyPanelTargetForTab,
+} from '../../shared/key-panel';
 
 type Row =
   | { kind: 'family'; family: FamilyView }
@@ -426,17 +431,8 @@ export default function App() {
       keySystemPinned.current = false;
       return;
     }
-    const isPlaystationEngine = (engine: string) => engine === 'swanstation' || engine === 'pcsx2' || engine === 'ppsspp' || engine === 'rpcs3';
-    const isXboxEngine = (engine: string) => engine === 'xenia';
-    if (settingsTab === 'playstation' && !isPlaystationEngine(keySystem.engine)) {
-      setKeySystemId('ps1');
-    } else if (settingsTab === 'nintendo' && isPlaystationEngine(keySystem.engine)) {
-      setKeySystemId('gba');
-    } else if (settingsTab === 'xbox' && !isXboxEngine(keySystem.engine)) {
-      setKeySystemId('xbox360');
-    } else if (settingsTab !== 'xbox' && isXboxEngine(keySystem.engine)) {
-      setKeySystemId(settingsTab === 'playstation' ? 'ps1' : 'gba');
-    }
+    const target = keyPanelTargetForTab(settingsTab, keySystem.engine);
+    if (target) setKeySystemId(target);
   }, [settingsTab]);
 
   const keySystemPinned = useRef(false);
@@ -982,11 +978,9 @@ export default function App() {
   };
 
   const keySystemsVisible = KEY_SYSTEMS.filter((system) => {
-    const playstation = system.engine === 'swanstation' || system.engine === 'pcsx2' || system.engine === 'ppsspp' || system.engine === 'rpcs3';
-    const xbox = system.engine === 'xenia' || system.engine === 'xemu';
-    if (settingsTab === 'playstation') return playstation;
-    if (settingsTab === 'xbox') return xbox;
-    return !playstation && !xbox;
+    if (settingsTab === 'playstation') return isPlaystationEngine(system.engine);
+    if (settingsTab === 'xbox') return isXboxEngine(system.engine);
+    return !isPlaystationEngine(system.engine) && !isXboxEngine(system.engine);
   });
 
   const renderKeys = () => (
