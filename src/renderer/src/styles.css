@@ -908,6 +908,12 @@ button {
   cursor: default;
 }
 
+.ghost-btn.is-current {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+}
+
 .scan-root {
   display: flex;
   align-items: center;

@@ -1780,31 +1780,31 @@ export default function App() {
                       设置 → 工具 → PSP 固件里安装一次，Nest 会自动识别同一个 memstick。
                     </p>
 
-                    <h2>PS3（RPCS3）</h2>
+                    <h2>PS3 渲染器</h2>
                     <p className="dlg-note">
-                      PS3 由 RPCS3 直读。渲染器：Vulkan 性能更好，OpenGL 兼容性更好；Crysis 3 在
-                      Vulkan 下会被游戏自身的超时断言打断，遇到崩溃先切 OpenGL 试试。
+                      Vulkan 性能更好，OpenGL 兼容性更好；Crysis 3 在 Vulkan 下会被游戏自身的超时断言打断，
+                      遇到崩溃先切 OpenGL 试试。
                     </p>
                     <div className="scan-actions">
                       <button
-                        className="ghost-btn"
+                        className={`ghost-btn${settings.ps3Renderer === 'vulkan' ? ' is-current' : ''}`}
                         onClick={() => void updateSetting({ ps3Renderer: 'vulkan' })}
                       >
-                        Vulkan{settings.ps3Renderer === 'vulkan' ? '（当前）' : ''}
+                        Vulkan
                       </button>
                       <button
-                        className="ghost-btn"
+                        className={`ghost-btn${settings.ps3Renderer === 'vulkan' ? '' : ' is-current'}`}
                         onClick={() => void updateSetting({ ps3Renderer: 'opengl' })}
                       >
-                        OpenGL{settings.ps3Renderer !== 'vulkan' ? '（当前）' : ''}
-                      </button>
-                      <button className="ghost-btn" onClick={() => void window.nest.openPs3Cache()}>
-                        打开 PS3 预编译缓存位置
+                        OpenGL
                       </button>
                     </div>
                     <p className="dlg-note">
-                      切换渲染器只改配置，不会删除另一渲染器已编译的缓存；改动在下次启动 PS3 游戏时生效。
+                      当前：{settings.ps3Renderer === 'vulkan' ? 'Vulkan' : 'OpenGL'}；切换只改配置，不删除另一渲染器已编译的缓存，下次启动 PS3 游戏时生效。
                     </p>
+                    <button className="ghost-btn" onClick={() => void window.nest.openPs3Cache()}>
+                      打开 PS3 预编译缓存位置
+                    </button>
                   </div>
 
                   {renderKeys()}
