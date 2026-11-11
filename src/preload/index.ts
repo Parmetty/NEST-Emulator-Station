@@ -52,6 +52,12 @@ const api = {
 
   favorite: (systemId: string, favorite: boolean): Promise<{ ok: boolean }> =>
     ipcRenderer.invoke(CH.favorite, { systemId, favorite }),
+  pickCover: (
+    gameId: string,
+  ): Promise<{ ok: boolean; canceled?: boolean; game?: GameRecord; error?: string }> =>
+    ipcRenderer.invoke(CH.pickCover, { gameId }),
+  clearCover: (gameId: string): Promise<{ ok: boolean; game?: GameRecord; error?: string }> =>
+    ipcRenderer.invoke(CH.clearCover, { gameId }),
 
   controls: (): Promise<ControlsPayload> => ipcRenderer.invoke(CH.controls),
 

@@ -178,6 +178,8 @@ export function installMockApi(): void {
       }
       return updated ? { ok: true, game: updated } : { ok: false, error: 'not-found' };
     },
+    pickCover: async () => ({ ok: true, canceled: true }),
+    clearCover: async () => ({ ok: true }),
     removeGame: async (gameId) => {
       for (const key of Object.keys(games)) {
         games[key] = games[key].filter((g) => g.id !== gameId);

@@ -670,6 +670,45 @@ export default function App() {
     void refreshHome();
   }, [rename, shelf, say, refreshHome]);
 
+  const setCustomCover = useCallback(
+    async (game: GameRecord) => {
+      setMenu(null);
+      const result = await window.nest.pickCover(game.id).catch(() => null);
+      if (!result || result.canceled) return;
+      if (!result.ok || !result.game) {
+        say('设置自定义封面失败');
+        return;
+      }
+      say('已设置自定义封面：自动截图不会再覆盖它');
+      if (shelf) {
+        setShelf({
+          ...shelf,
+          games: shelf.games.map((g) => (g.id === result.game!.id ? result.game! : g)),
+        });
+      }
+    },
+    [say, shelf],
+  );
+
+  const restoreAutoCover = useCallback(
+    async (game: GameRecord) => {
+      setMenu(null);
+      const result = await window.nest.clearCover(game.id).catch(() => null);
+      if (!result?.ok || !result.game) {
+        say('恢复自动封面失败');
+        return;
+      }
+      say('已恢复自动截图封面（下次启动游戏时重新截图）');
+      if (shelf) {
+        setShelf({
+          ...shelf,
+          games: shelf.games.map((g) => (g.id === result.game!.id ? result.game! : g)),
+        });
+      }
+    },
+    [say, shelf],
+  );
+
   const moveShelf = useCallback(
     (dx: number, dy: number) => {
       if (!shelf || shelf.games.length === 0) return;
@@ -1375,8 +1414,8 @@ export default function App() {
                 onContextMenu={(e) => {
                   e.preventDefault();
                   const menuWidth = 208;
-                  const menuHeight =
-                    systemById.get(game.systemId as SystemId)?.engine === 'mgba' ? 148 : 92;
+                  const mgba = systemById.get(game.systemId as SystemId)?.engine === 'mgba';
+                  const menuHeight = (mgba ? 148 : 92) + 44 + (game.coverCustom ? 44 : 0);
                   setMenu({
                     x: Math.min(e.clientX, window.innerWidth - menuWidth - 12),
                     y: Math.min(e.clientY, window.innerHeight - menuHeight - 12),
@@ -1395,6 +1434,7 @@ export default function App() {
                 <span className="card-title">{game.title}</span>
                 <span className="card-meta">
                   {formatSize(game.size)} · {relativeTime(game.lastPlayed)}
+                  {game.region ? ` · ${game.region}` : ''}
                 </span>
               </button>
             ))}
@@ -1444,6 +1484,16 @@ export default function App() {
               <span className="ctx-label">重命名…</span>
               <span className="ctx-hint">只改显示名，不改文件名</span>
             </button>
+            <button className="ctx-item" onClick={() => void setCustomCover(menu.game)}>
+              <span className="ctx-label">自定义封面…</span>
+              <span className="ctx-hint">自动截图不再覆盖</span>
+            </button>
+            {menu.game.coverCustom ? (
+              <button className="ctx-item" onClick={() => void restoreAutoCover(menu.game)}>
+                <span className="ctx-label">恢复自动封面</span>
+                <span className="ctx-hint">下次启动时重新截图</span>
+              </button>
+            ) : null}
             <button className="ctx-item" onClick={() => void removeGame(menu.game)}>
               <span className="ctx-label">从库中移除</span>
               <span className="ctx-hint">不删除磁盘上的文件</span>

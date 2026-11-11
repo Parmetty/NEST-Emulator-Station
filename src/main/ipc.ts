@@ -294,6 +294,31 @@ function ensureMelondsConfig(console: MelondsConsole, systemMode: boolean): bool
 
 const ps1BiosDir = (): string => path.join(app.getPath('userData'), 'libretro', 'sys');
 
+/** Best-effort region label from a user-supplied BIOS dump name. */
+function ps1BiosRegionName(name: string): string | null {
+  const value = name.toLowerCase();
+  if (value.includes('5500')) return 'NTSC-J';
+  if (value.includes('5501')) return 'NTSC-U';
+  if (value.includes('5502')) return 'PAL';
+  if (value.includes('5503')) return 'NTSC-Asia';
+  return null;
+}
+
+function ps2BiosRegionName(name: string): string | null {
+  const match = /scph[_-]?(\d{5})/i.exec(name);
+  if (!match) return null;
+  const tail = match[1].slice(-1);
+  const map: Record<string, string> = { '0': 'NTSC-J', '1': 'NTSC-U', '2': 'PAL', '3': 'PAL' };
+  return map[tail] ?? null;
+}
+
+function wiiMenuRegionName(name: string): string | null {
+  const versioned = /\d\.\d\s*([a-z])\b/i.exec(name);
+  const letter = (versioned?.[1] ?? /([ujek])\.wad$/i.exec(name)?.[1] ?? '').toLowerCase();
+  const map: Record<string, string> = { u: 'NTSC-U', j: 'NTSC-J', e: 'PAL', k: 'NTSC-K' };
+  return map[letter] ?? null;
+}
+
 function ps1BiosFiles(): string[] {
   const dir = ps1BiosDir();
   if (!existsSync(dir)) return [];
@@ -337,7 +362,9 @@ function firmwareStates(services: Services): FirmwareState[] {
       label: 'PS1 BIOS（可选）',
       status: 'ok',
       path: ps1BiosDir(),
-      detail: ps1Bios.map((file) => path.basename(file)).join(' / '),
+      detail: [ps1Bios.map((file) => path.basename(file)).join(' / '), ps1BiosRegionName(path.basename(ps1Bios[0]))]
+        .filter(Boolean)
+        .join(' · '),
     });
   } else {
     states.push({
@@ -356,7 +383,9 @@ function firmwareStates(services: Services): FirmwareState[] {
       label: 'PS2 BIOS（必需）',
       status: 'ok',
       path: pcsx2BiosDir(app.getPath('userData')),
-      detail: ps2Bios.map((file) => path.basename(file)).join(' / '),
+      detail: [ps2Bios.map((file) => path.basename(file)).join(' / '), ps2BiosRegionName(path.basename(ps2Bios[0]))]
+        .filter(Boolean)
+        .join(' · '),
     });
   } else {
     states.push({
@@ -396,7 +425,9 @@ function firmwareStates(services: Services): FirmwareState[] {
       label: 'Wii 系统菜单 WAD',
       status: ok ? 'ok' : 'invalid',
       path: wad,
-      detail: ok ? `${(size / 1024 / 1024).toFixed(1)} MB` : '文件过小，可能不完整',
+      detail: ok
+        ? [`${(size / 1024 / 1024).toFixed(1)} MB`, wiiMenuRegionName(path.basename(wad))].filter(Boolean).join(' · ')
+        : '文件过小，可能不完整',
     });
   } else {
     states.push({ kind: 'wii-menu', label: 'Wii 系统菜单 WAD', status: 'missing', path: null });
@@ -994,6 +1025,48 @@ export function registerIpc(services: Services): void {
     const game = await store.updateGame(gameId, { title });
     if (!game) return { ok: false, error: 'not-found' };
     return { ok: true, game: withCover(game) };
+  });
+
+  ipcMain.handle(CH.pickCover, async (_event, raw) => {
+    const gameId = String((raw as { gameId?: unknown })?.gameId ?? '');
+    const game = gameId ? services.store.findGame(gameId) : undefined;
+    if (!game) return { ok: false, error: 'not-found' };
+    const picked = await dialog.showOpenDialog({
+      title: '选择封面图片（PNG / JPG / WebP）',
+      properties: ['openFile'],
+      filters: [{ name: '图片', extensions: ['png', 'jpg', 'jpeg', 'webp'] }],
+    });
+    if (picked.canceled || picked.filePaths.length === 0) return { ok: true, canceled: true };
+    const source = picked.filePaths[0];
+    const ext = path.extname(source).toLowerCase() || '.png';
+    const name = `${gameId}${ext}`;
+    try {
+      mkdirSync(coversDir(), { recursive: true });
+      copyFileSync(source, path.join(coversDir(), name));
+    } catch {
+      return { ok: false, error: 'io-error' };
+    }
+    const updated = await services.store.updateGame(gameId, {
+      cover: name,
+      coverAt: Date.now(),
+      coverCustom: true,
+    });
+    if (!updated) return { ok: false, error: 'not-found' };
+    console.log(`[nest] custom cover set for ${gameId}: ${name}`);
+    return { ok: true, game: withCover(updated) };
+  });
+
+  ipcMain.handle(CH.clearCover, async (_event, raw) => {
+    const gameId = String((raw as { gameId?: unknown })?.gameId ?? '');
+    if (!gameId) return { ok: false, error: 'bad-request' };
+    const updated = await services.store.updateGame(gameId, {
+      cover: null,
+      coverAt: null,
+      coverCustom: false,
+    });
+    if (!updated) return { ok: false, error: 'not-found' };
+    console.log(`[nest] custom cover cleared for ${gameId}`);
+    return { ok: true, game: withCover(updated) };
   });
 
   ipcMain.handle(CH.scan, async (event, raw): Promise<ScanResult> => {

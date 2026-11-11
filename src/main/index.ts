@@ -241,6 +241,11 @@ async function finishCoverCapture(sessionId: string, gameId?: string | null): Pr
     await clearShots();
     return;
   }
+  if (services.store.findGame(gameId)?.coverCustom) {
+    console.log(`[nest] cover capture skipped: ${gameId} has a custom cover`);
+    await clearShots();
+    return;
+  }
 
   try {
     // The emulator writes screenshots asynchronously; give it a moment before
@@ -315,6 +320,11 @@ async function clearHostShots(): Promise<void> {
 
 async function finishHostCoverCapture(gameId?: string | null): Promise<void> {
   if (!gameId || !services) {
+    await clearHostShots();
+    return;
+  }
+  if (services.store.findGame(gameId)?.coverCustom) {
+    console.log(`[nest] libretro cover capture skipped: ${gameId} has a custom cover`);
     await clearHostShots();
     return;
   }
