@@ -15,6 +15,8 @@ export const CH = {
   launch: 'nest:launch',
   stop: 'nest:stop',
   favorite: 'nest:favorite',
+  pickCover: 'nest:cover-pick',
+  clearCover: 'nest:cover-clear',
   openHomepage: 'nest:open-homepage',
   openPpsspp: 'nest:open-ppsspp',
   openPs3Cache: 'nest:open-ps3-cache',
@@ -300,6 +302,10 @@ export interface GameRecord {
   coverAt?: number | null;
   /** data: URL injected by the main process when the cover exists on disk. */
   coverUrl?: string | null;
+  /** Region label parsed from the game header (NTSC-U / NTSC-J / PAL / ...). */
+  region?: string | null;
+  /** True when the player chose this cover by hand; auto-capture must not replace it. */
+  coverCustom?: boolean | null;
 }
 
 export interface ScanResult {

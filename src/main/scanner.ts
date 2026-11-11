@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { gameInfoFor } from './game-info';
 import { createReadStream } from 'node:fs';
 import { open, readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
@@ -72,6 +73,8 @@ export interface ScannedFile {
   sha1: string;
   systemId: string;
   title: string;
+  /** Region label parsed from the container, when known. */
+  region?: string;
 }
 
 export interface ScanOptions {
@@ -287,13 +290,15 @@ export async function scanFolder(root: string, options: ScanOptions = {}): Promi
             seen += 1;
             try {
               const info = await stat(ps3.paramSfo);
+              const meta = gameInfoFor(ps3.root, 'ps3');
               found.push({
                 path: ps3.root,
                 fileName: path.basename(ps3.titleDir),
                 size: info.size,
                 sha1: await sha1Of(ps3.paramSfo),
                 systemId: 'ps3',
-                title: titleFrom(path.basename(ps3.titleDir)),
+                title: meta.title ?? titleFrom(path.basename(ps3.titleDir)),
+                region: meta.region,
               });
             } catch {
               /* unreadable PS3 folder: skip */
@@ -308,13 +313,15 @@ export async function scanFolder(root: string, options: ScanOptions = {}): Promi
             seen += 1;
             try {
               const info = await stat(xboxFolder.xbe);
+              const meta = gameInfoFor(xboxFolder.root, 'xbox');
               found.push({
                 path: xboxFolder.root,
                 fileName: path.basename(full),
                 size: info.size,
                 sha1: await sha1Of(xboxFolder.xbe),
                 systemId: 'xbox',
-                title: titleFrom(path.basename(full)),
+                title: meta.title ?? titleFrom(path.basename(full)),
+                region: meta.region,
               });
             } catch {
               /* unreadable Xbox folder: skip */
@@ -329,13 +336,15 @@ export async function scanFolder(root: string, options: ScanOptions = {}): Promi
             seen += 1;
             try {
               const info = await stat(god.header);
+              const meta = gameInfoFor(god.header, 'xbox360');
               found.push({
                 path: god.header,
                 fileName: path.basename(god.titleDir),
                 size: info.size,
                 sha1: await sha1Of(god.header),
                 systemId: 'xbox360',
-                title: god.title ?? titleFrom(path.basename(god.titleDir)),
+                title: meta.title ?? god.title ?? titleFrom(path.basename(god.titleDir)),
+                region: meta.region,
               });
             } catch {
               /* unreadable GOD package: skip */
@@ -355,13 +364,15 @@ export async function scanFolder(root: string, options: ScanOptions = {}): Promi
         if (options.systemId && systemId !== options.systemId) continue;
         const info = await stat(full);
         const sha1 = await sha1Of(full);
+        const meta = gameInfoFor(full, systemId);
         found.push({
           path: full,
           fileName: entry.name,
           size: info.size,
           sha1,
           systemId,
-          title: titleFrom(entry.name),
+          title: meta.title ?? titleFrom(entry.name),
+          region: meta.region,
         });
       } catch {
         /* unreadable file: skip */

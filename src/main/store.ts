@@ -142,8 +142,13 @@ export class Store {
         // Older GOD scans used the Title ID (e.g. 4D530AA4) as the title. A
         // fresh scan can recover the real title from the STFS header; only
         // replace ID-like placeholders, never a name the user chose.
+        const patch: Partial<GameRecord> = {};
         if (file.title && file.title !== existing.title && /^[0-9A-F]{8}$/i.test(existing.title)) {
-          byId.set(id, { ...existing, title: file.title });
+          patch.title = file.title;
+        }
+        if (file.region && file.region !== existing.region) patch.region = file.region;
+        if (Object.keys(patch).length > 0) {
+          byId.set(id, { ...existing, ...patch });
           titlesChanged = true;
         }
         skipped += 1;
@@ -161,6 +166,7 @@ export class Store {
         lastPlayed: null,
         cover: null,
         coverAt: null,
+        region: file.region ?? null,
       };
       byId.set(id, record);
       added += 1;
