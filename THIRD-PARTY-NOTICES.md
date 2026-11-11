@@ -127,6 +127,19 @@ launches emulators you provide and scans files you already own.
 - The Microsoft Visual C++ 2015-2022 x64 runtime DLLs are copied next to the exe because
   this machine's `System32` has an older `msvcp140.dll` that crashes Xenia at startup.
 
+### xemu 0.8.139 — `resources/engines/xemu/`
+
+- Project: https://xemu.app/ · Source: https://github.com/xemu-project/xemu
+- License: **GPLv2** — upstream license text: https://github.com/xemu-project/xemu/blob/master/LICENSE
+  (xemu is derived from QEMU, which is also GPLv2).
+- Covers the original Xbox: XISO (XDVDFS) images, `.xbe` files and folders containing `default.xbe`
+  (Nest packs those into an XISO with extract-xiso, because xemu only boots disc images).
+  Redistributed unmodified.
+- **No** Xbox MCPX boot ROM, BIOS/flash dump, HDD image (qcow2), EEPROM or game data is included.
+  All of it is user-supplied; Nest stores the HDD **path** only and never copies the image.
+- Runtime files (`xemu.toml`, logs, `eeprom.bin`, shaders) are generated next to the executable and are
+  stripped from the portable package by `tools/clean-engines.mjs`.
+
 ### RPCS3 0.0.43 — `resources/engines/rpcs3/`
 
 - Project: https://github.com/RPCS3/rpcs3
@@ -142,6 +155,15 @@ launches emulators you provide and scans files you already own.
 - Covers PSP (direct boot, `.iso/.cso`, and `--vsh` XMB). Redistributed unmodified.
 - Ships PPSSPP's `assets/` (fonts, shaders, lang, themes). No PSP firmware, update PBP, or game data is included.
 - Firmware is user-supplied: Nest can link a decrypted `flash0` directory or open PPSSPP for the official EBOOT.PBP install.
+
+### extract-xiso — `resources/tools/extract-xiso.exe`
+
+- Project: https://github.com/XboxDev/extract-xiso
+- Xbox disc (XDVDFS / XISO) image tool. Nest runs `extract-xiso -c <game folder> <out.iso>` to pack a
+  folder that contains `default.xbe` into an image xemu can boot.
+- License: see the upstream `LICENSE.TXT` in that repository. Only the prebuilt Windows binary is shipped,
+  unmodified; it operates on the user's own game files only.
+- Ships no Xbox game data, BIOS/MCPX or disc images.
 
 ### SDL3 — `resources/tools/SDL3.dll`
 

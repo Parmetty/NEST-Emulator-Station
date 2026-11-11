@@ -5,24 +5,25 @@
 
 ![Nest 首页](shots/app.png)
 
-> 当前：**0.5.0-beta.1** —— Windows 桌面版 · 九台任天堂主机 · PS1 / PS2 / PSP / **PS3** 直读 · Xbox / Xbox 360 主机墙，**Xbox 360** 直读 · 十一个内置引擎 + 自写 libretro 宿主 · 免安装携带版
+> 当前：**0.6.0-beta.1**（GitHub **pre-release**）—— Windows 桌面版 · 九台任天堂主机 · PS1 / PS2 / PSP / **PS3** 直读 · Xbox 家族两台全通：**Xbox 360**、**初代 Xbox**（xemu）直读 · 十二个内置引擎 + 自写 libretro 宿主 · 免安装携带版
 
 ## 下载
 
 直接下免安装版，解压双击即可用，不需要安装 Node 或任何依赖：
 
-**[Nest-0.5.0-beta.1-portable.zip](https://github.com/Parmetty/NEST-Emulator-Station/releases/download/v0.5.0-beta.1/Nest-0.5.0-beta.1-portable.zip)** · [Release 页面](https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.5.0-beta.1)
+**[Nest-0.6.0-beta.1-portable.zip](https://github.com/Parmetty/NEST-Emulator-Station/releases/download/v0.6.0-beta.1/Nest-0.6.0-beta.1-portable.zip)** · [Release 页面](https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.6.0-beta.1)（pre-release）
 
 ```
-SHA256  BCE9A9B264EAC8BE351CB4EEFF4790DEBA9F5CAD09AA4F4EA53E80FF917B6BD2
-大小    613.1 MB（642,832,700 字节）
-解压    1334.7 MB / 4723 个文件
+SHA256  02101ADA5411EF63F497B8C06D9D5D7ABF03489E9BF4B00153BF8844997FF8B8
+大小    624.5 MB（654,846,078 字节）
+解压    1362.4 MB / 4726 个文件
 ```
 
 1. 解压到任意目录（可放 U 盘）
 2. 双击 **`Nest.exe`** 即可（数据在 `%APPDATA%\Nest`）；想让库/封面/日志/引擎配置留在解压目录，就双击 **`启动 Nest.bat`**（便携数据模式，备用入口）
 3. 点「扫描文件夹」指向你的 ROM 目录（之后每次启动会自动重扫）
-4. 固件在 **设置 → Nintendo →「系统文件（自备）」** 导入；PS3 另需自备 `dev_flash`（放进引擎目录，发布包不含），Xbox 360 不需要固件
+4. 固件在 **设置 → Nintendo →「系统文件（自备）」** 导入；PS3 另需自备 `dev_flash`（放进引擎目录，发布包不含），Xbox 360 不需要固件；
+   初代 Xbox 在 **设置 → Xbox** 导入 MCPX + BIOS + HDD（HDD 只记路径，不复制）
 
 > 无数字签名，首次运行 Windows 可能提示 SmartScreen：选「更多信息 → 仍要运行」。
 
@@ -42,24 +43,27 @@ SHA256  BCE9A9B264EAC8BE351CB4EEFF4790DEBA9F5CAD09AA4F4EA53E80FF917B6BD2
 | PS1 | SwanStation（libretro） | ✅ | ⚠️ BIOS 菜单入口保留但标记「故障」（输入无响应） |
 | PS2 | PCSX2 2.8.2 | ✅ | ✅ PS2 浏览器（`-bios`，需 BIOS） |
 | PSP | PPSSPP master | ✅ | ✅ PSP XMB（`--vsh`，需自备 flash0 固件；可直接导入目录或用内置入口安装） |
-| PS3 | RPCS3 0.0.43 | ✅ 直读（内置引擎，默认 OpenGL） | ❌ 无 XMB / 系统菜单 |
-| Xbox | xemu（待接入 P7.1） | ✖ | —（可选 Dashboard，需 HDD） |
+| PS3 | RPCS3 0.0.43 | ✅ 直读（内置引擎；渲染器 OpenGL / Vulkan 可选，默认 OpenGL） | ❌ 无 XMB / 系统菜单 |
+| Xbox | xemu 0.8.139 | ✅ 直读（XISO；文件夹可右键打包） | ⚠️ 可选 Dashboard（需含 Dashboard 的 HDD 镜像） |
 | Xbox 360 | Xenia Canary | ✅ 直读（GOD 实测，也读 ISO / XEX） | ❌ 无 Dashboard / 系统菜单 |
 
 其它能力：
 
-- **主机墙**：9 台任天堂 + 4 台 PlayStation（PS1/PS2/PSP/PS3 已接入）+ 2 台 Xbox（Xbox 360 已接 Xenia 直读，初代 Xbox 待 xemu）按发售年份排列，全屏照片 + 树状列表 + 信息卡；平台切换时年代标尺跟着换
+- **主机墙**：9 台任天堂 + 4 台 PlayStation（PS1/PS2/PSP/PS3 已接入）+ 2 台 Xbox（Xbox 360 走 Xenia、初代 Xbox 走 xemu，均直读）按发售年份排列，全屏照片 + 树状列表 + 信息卡；平台切换时年代标尺跟着换
 - **游戏库 + 自动扫描**：添加过的文件夹会在启动时自动重扫，新 ROM 自动出现；支持 `.cia` 与磁盘头 magic 判定 GC/Wii
 - **自动封面**：游戏运行期间由独立抓屏工具持续取帧，退出时存为封面（NDS/3DS 只截上屏）
+- **标题与区域自动识别**：NDS / GBA / N64 / NGC / Wii / PS3（`PARAM.SFO`）/ Xbox（XBE 证书，XISO 里也能读）/ Xbox 360（STFS 显示名）直接读文件头拿官方标题，卡片显示「NTSC-U / NTSC-J / PAL / Region-Free」标签；手动重命名永远优先，不被自动识别覆盖
+- **自定义封面**：右键「自定义封面…」选一张图 / 「恢复自动封面」还原；自定义过的游戏不会再被自动截图覆盖
 - **游戏右键重命名**：只改 Nest 库里的显示名，不改磁盘文件名；GOD 游戏的 `4D530AA4` 这类占位标题也可以手动改掉
 - **自写 libretro 宿主**：`resources/tools/nest-libretro.exe`（约 90 KB，C# + SDL3）托管官方 `dolphin_libretro.dll`，**Wii 系统菜单不再依赖 Dolphin Qt GUI 自动化**，直接加载 `wii-menu.wad` 进菜单；键盘 + 鼠标绝对指针（鼠标即 Wiimote 光标，左键 = A）
 - **键位面板**：mGBA / ares / Dolphin / Azahar / melonDS / Cemu / SwanStation / PCSX2 / PPSSPP / Xenia / RPCS3 十一引擎键盘绑定可在 Nest 里改，保存立即生效；首次启动自动写默认布局，不覆盖你已有的自定义
 - **方向键同时驱动左摇杆**：Xbox 360（`keybind_left_thumb_*`）与 PS3（`Left Stick *`）都把方向键同时写进 D-Pad 和左摇杆，赛车 / 射击类游戏才能转向
 - **Xbox 360 档案**：游戏弹 `No Profiles` 时点 `SIGN IN` → `Create Profile` → 输入 Gamertag（一次性设置，之后 Xenia 自己记住）
-- **设置分类**：设置窗口拆成 **Nest / Nintendo / Xbox / PlayStation** 四页；PlayStation 页含 PS1 BIOS、PS2 BIOS、PSP flash0 导入与 PS1/PS2/PSP/PS3 键位
+- **设置分类**：设置窗口拆成 **Nest / Nintendo / Xbox / PlayStation** 四页；PlayStation 页含 PS1 BIOS、PS2 BIOS、PSP flash0 导入、PS1/PS2/PSP/PS3 键位与「打开 PS3 预编译缓存位置」；Xbox 页含 MCPX / BIOS / HDD 导入
+- **关于 Nest**：设置窗口左下角，LOGO + 版本 + 产品定位 + GitHub 地址 + 全部内置引擎鸣谢
 - **NDS 系统菜单插卡**：进 DS/DSi 菜单时自动插入最近玩的 NDS 游戏（设置 → Nintendo 可关）
 - **GBA 金手指**：游戏右键「金手指…」编辑 mGBA `.cheats`，保存后启动自动生效（见 [CHEATS-GBA.md](docs/nintendo/CHEATS-GBA.md)）
-- **固件中心**：GameCube IPL（CRC32 白名单）、Wii 系统菜单 WAD、NDS BIOS+固件、**DSi BIOS+固件+NAND**、**Cemu keys.txt / Wii U NAND（MLC）**，一键导入（MLC 只记路径，不复制）
+- **固件中心**：GameCube IPL（CRC32 白名单）、Wii 系统菜单 WAD、NDS BIOS+固件、**DSi BIOS+固件+NAND**、**Cemu keys.txt / Wii U NAND（MLC）**、**Xbox MCPX / BIOS / HDD**，一键导入（MLC 与 Xbox HDD 只记路径，不复制；固件行按 dump 名标注区域）
 - **便携模式**：库、封面、日志、引擎配置都留在程序目录，删 `data\` 即恢复出厂
 - **运行中高亮 / 进入前确认 / 右键移除**（只删库记录，绝不动磁盘上的 ROM）
 
@@ -127,7 +131,7 @@ npm run pack           # 免安装目录 + NSIS 安装包（默认不用，见 D
 
 ```bash
 npm run typecheck
-npm test               # 118 个用例：扫描/去重/清单/keymap/引擎配置写入/DSi 配置/Wii U 导入/GBA 金手指/NDS 插卡/Xbox 360 GOD 扫描/PS3 目录扫描/进程生命周期
+npm test               # 147 个用例：扫描/去重/清单/keymap/引擎配置写入/DSi 配置/Wii U 导入/GBA 金手指/NDS 插卡/Xbox 360 GOD 扫描/PS3 目录扫描/Xbox 固件与 XISO 打包/标题与区域识别/自定义封面/进程生命周期
 npm run build
 npm run smoke          # 窗口 + IPC + 渲染自检
 ```
@@ -141,16 +145,18 @@ src/
   main/controls/     各引擎的键盘绑定适配器（keymap + mgba/ares/dolphin/azahar/melonds/cemu/swanstation/pcsx2/ppsspp/xenia/rpcs3）
   main/cemu.ts       Cemu keys.txt 导入、MLC 校验、启动参数组装
   main/melonds-config.ts  melonDS TOML 管理（NDS / DSi 切换，纯函数）
-  main/pcsx2.ts / ppsspp.ts / rpcs3.ts / xenia.ts   各引擎的扫描、配置校验与启动参数
+  main/pcsx2.ts / ppsspp.ts / rpcs3.ts / xenia.ts / xemu.ts   各引擎的扫描、配置校验与启动参数
   main/cheats.ts     GBA 金手指文件（mGBA .cheats 读写、回退、启动参数）
   main/nds-cart.ts   NDS 系统菜单插卡选择（显式 ROM / 最近游戏 / 开关）
+  main/game-info.ts  官方标题与区域嗅探（NDS/GBA/N64/GC/Wii/PS3/Xbox/Xbox 360 文件头）
+  main/xbox-iso.ts   Xbox 文件夹 → XISO 打包、无空格启动路径、扫描去重
   preload/           contextBridge 暴露的 window.nest
   renderer/          React：首页 + 游戏库覆盖层 + 设置面板
-resources/engines/   十一个便携引擎 + 清单（加主机 = 加一份 JSON）
-resources/tools/     nest-capture / nest-input / nest-window / nest-menu / nest-pads / **nest-libretro**
+resources/engines/   十二个便携引擎 + 清单（加主机 = 加一份 JSON）
+resources/tools/     nest-capture / nest-input / nest-window / nest-menu / nest-pads / **nest-libretro** / **extract-xiso**
 tools/               C# 助手源码（capture/input/window/menu/pads）、libretro 宿主（C#）、Wii U 安装工具、打包清理脚本、运行器
 docs/                nintendo/（任天堂系：CHANGELOG / STATE / DECISIONS / PROGRESS / KEYS-*）
-                     playstation/（PS 家族计划与 ENGINE-*）· xbox/（Xbox 家族清单）
+                     playstation/（PS 家族计划与 ENGINE-*）· xbox/（Xbox 家族清单与 ENGINE-xemu）
                      archive/（归档）· BUILD-PORTABLE.md（便携包编译手册）· ROADMAP.md（总路线）
 ```
 
@@ -177,6 +183,7 @@ melonds/          NDS BIOS
 azahar/           3DS 配置与 NAND
 libretro/         自写宿主运行时目录（sys/save/日志）
 cemu/             keys.txt、MLC 路径记录
+xbox/             MCPX、BIOS、eeprom、HDD 路径记录（HDD 本体留在你放的地方）
 ```
 
 没有遥测，除引擎官网外不联网。
@@ -193,7 +200,9 @@ cemu/             keys.txt、MLC 路径记录
 - **Dolphin 键位面板**只覆盖 GCPad 主键位，select/Z/C-Stick 等扩展动作暂未映射
 - **PS3 / Crysis 3 随机超时断言**：游戏自身的 RenderThread 等待超时后 `abort()`（`0x0144517c`，预算约 0.8 秒），随机触发；不是固件或兼容性列表问题，调参不可根治，细节见 [ENGINE-rpcs3.md](docs/playstation/ENGINE-rpcs3.md)
 - **Xbox 360 无 Dashboard / 系统菜单**：Xenia 不支持，只做直读（存档由 Xenia 自己管理）
-- **初代 Xbox（xemu）待接入**：主机墙已就位，引擎按 P7.1 接入
+- **xemu 无键盘映射**：xemu 0.8.139 只认 SDL 手柄，键位面板暂不覆盖 Xbox，需要插手柄玩
+- **初代 Xbox 系统菜单需要 Dashboard**：HDD 镜像里没有 Dashboard 就进不了系统菜单（直读不受影响）
+- **xemu 只能读镜像**：不认解包后的文件夹，必须先打包成 XISO（右键「打包为 XISO…」，直接启动文件夹也会自动打包）
 
 ## 路线图
 
@@ -205,14 +214,14 @@ cemu/             keys.txt、MLC 路径记录
 | P4 | Wii U（Cemu 2.6 + keys/MLC 导入） | 引擎完成，系统菜单实验性 |
 | P5 | 封面质量、Cemu 键位适配、自动构建脚本、安装包（按需） | 进行中 |
 | P6 | PlayStation 家族：PS1 / PS2 / PSP / PS3 直读 | ✅（PS3 无系统菜单） |
-| P7 | Xbox 家族：Xbox 360 直读（Xenia）；初代 Xbox 待 xemu | 进行中 |
+| P7 | Xbox 家族：Xbox 360 直读（Xenia）+ 初代 Xbox 直读（xemu，XISO） | ✅（两台均无 Dashboard，只做直读） |
 
-总路线见 [ROADMAP.md](docs/ROADMAP.md)；发布级变化见 [CHANGELOG.md](docs/nintendo/CHANGELOG.md) 与最新发布说明 [RELEASE-0.5.0-beta.1.md](docs/nintendo/RELEASE-0.5.0-beta.1.md)（`STATE.md` / `PROGRESS.md` 是 0.4.2 时期的历史快照）。功能编年史为内部文档，不随仓库发布。
+总路线见 [ROADMAP.md](docs/ROADMAP.md)；发布级变化见 [CHANGELOG.md](docs/nintendo/CHANGELOG.md) 与最新发布说明 [RELEASE-0.6.0-beta.1.md](docs/nintendo/RELEASE-0.6.0-beta.1.md)（`STATE.md` / `PROGRESS.md` 是 0.4.2 时期的历史快照）。功能编年史为内部文档，不随仓库发布。
 
 ## 法律
 
 - 本仓库**不含**任何 ROM、BIOS、NAND 或密钥；只启动你提供的模拟器、扫描你已有的文件。
-- 内置引擎与许可证：mGBA（MPL 2.0）、ares（ISC）、Dolphin（GPLv2+）、Azahar（GPLv3）、melonDS（GPLv3）、Cemu（MPL 2.0）、SwanStation（GPLv3）、PCSX2（GPLv3）、PPSSPP（GPLv2+）、Xenia Canary（BSD-3-Clause）、RPCS3（GPLv2）、dolphin_libretro（GPLv2+）、SDL3（Zlib）。
+- 内置引擎与许可证：mGBA（MPL 2.0）、ares（ISC）、Dolphin（GPLv2+）、Azahar（GPLv3）、melonDS（GPLv3）、Cemu（MPL 2.0）、SwanStation（GPLv3）、PCSX2（GPLv3）、PPSSPP（GPLv2+）、Xenia Canary（BSD-3-Clause）、RPCS3（GPLv2）、xemu（GPLv2）、dolphin_libretro（GPLv2+）、SDL3（Zlib）、extract-xiso（Xbox 镜像打包工具）。
 - 主机照片来自 Wikimedia Commons：多数为公有领域素材（Evan-Amos），已做裁切/去色/模糊处理；
   DSi 与 DSi XL 两张为 **CC BY-SA 3.0**（Evan-Amos），署名与许可证见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。
 - 各主机商标归各自权利人所有，本项目与任天堂、微软、索尼无关联。

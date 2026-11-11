@@ -1,10 +1,10 @@
 # Nest 开发进度与待办
 
-> **历史进度记录（截至 0.4.2-beta.1；文末附 2026-11-09 的 0.5.0-beta.1 发布记录）。** 逐日记录保留用于追溯，不代表当前状态；当前进度见根目录 `README.md` 与 `docs/ROADMAP.md`。
+> **历史进度记录（截至 0.4.2-beta.1；文末附 2026-11-09 的 0.5.0-beta.1 与 2026-11-12 的 0.6.0-beta.1 发布记录）。** 逐日记录保留用于追溯，不代表当前状态；当前进度见根目录 `README.md` 与 `docs/ROADMAP.md`。
 
 > 项目里程碑与各版本主线见内部功能编年史（不随仓库发布）；本文件只记逐日进度与待办。
 
-> 更新于 2026-11-06（Asia/Shanghai）｜版本 `0.4.2-beta.1`，最新 tag `v0.4.2-beta.1`（本文件是快照，0.5.0-beta.1 见文末）
+> 更新于 2026-11-06（Asia/Shanghai）｜版本 `0.4.2-beta.1`（本文件是快照；0.5.0 / 0.6.0 的发布记录见文末）
 > 依据：`git log/tag`、内部功能编年史、`docs/nintendo/STATE.md`、`docs/nintendo/DECISIONS.md`、`README.md`、`resources/engines/*.json`、`src/shared/systems.ts`、`src/main/*`
 >
 > 说明：顶部 §1–§2 是**当前快照**；§3 起是逐日进度与历史记录（2026-10-28 的旧分析保留备查）。
@@ -362,3 +362,26 @@ est-pads.exe（SDL3）检测后切 SDL 绑定。
 - 编码事故：2026-11-08 PowerShell 5.1 批量改 docs 损坏 6 份不可恢复文件，已删除（记录见 `docs/archive/README.md`）
 - 回归：typecheck 通过，单测 **118 条全绿**
 - 便携包 `Nest-0.5.0-beta.1-portable.zip`：613.1 MB（642,832,700 字节），解压 1334.7 MB / 4723 个文件，SHA256 `BCE9A9B264EAC8BE351CB4EEFF4790DEBA9F5CAD09AA4F4EA53E80FF917B6BD2`
+---
+
+## 2026-11-12 · 0.6.0-beta.1 发布
+
+- 版本 0.5.0-beta.1 → 0.6.0-beta.1（**GitHub pre-release**，tag `v0.6.0-beta.1`）；README / ROADMAP / CHANGELOG / RELEASE / HISTORY 同步
+- **初代 Xbox（xemu 0.8.139）接入**：主机墙 Xbox 状态 ready；固件三件套（MCPX 512 B / BIOS 256 KB，1 MB 四连体自动取第一段 /
+  HDD qcow2 只记路径不复制）；扫描 XISO（XDVDFS 魔数）、`.xbe`、含 `default.xbe` 的文件夹；
+  启动自动写便携 `xemu.toml` 并显式补 `-bios`（0.8.139 不自己读 `flashrom_path`）
+- **文件夹 → XISO**：右键「打包为 XISO…」弹保存对话框（默认输出在游戏文件夹同级、同名 `.iso`），内置 `extract-xiso`；
+  直接启动文件夹也会自动打包；启动前硬链接到无空格路径（xemu 的 QEMU 参数会截断带空格路径）；扫描器去重，打包后不出现两条记录
+- **PS3 渲染器可选** Vulkan / OpenGL（默认 OpenGL，Crysis 3 兜底），启动写入 `[Video] Renderer`；
+  切换只改配置、不删另一渲染器缓存；设置 → PlayStation 新增「打开 PS3 预编译缓存位置」
+- **游戏库标题 + 区域自动识别**：NDS / GBA / N64 / NGC / Wii / PS3（`PARAM.SFO`）/ Xbox（XBE 证书，含 XISO 内）/
+  Xbox 360（STFS 显示名）；卡片显示区域标签；修掉 `4D530AA4` 占位名；手动重命名不被覆盖
+- **自定义封面**：右键「自定义封面…」/「恢复自动封面」；设置后自动截图不再覆盖
+- 固件区域标签：PS1（`scph55xx`）、PS2（`SCPH-xxxxx`）、Wii WAD 按 dump 名标注
+- 修复：键位面板在 Xbox 菜单切换不刷新（xemu 之前未被算作 Xbox 家族）；便携包清理新增剔除 xemu 运行时（toml/log/eeprom/shaders）
+- 设置窗口左下角新增「关于 Nest」（LOGO + 版本 + 产品定位 + GitHub 地址 + 全部引擎鸣谢）
+- 实机验证：Halo 2（美版中文）经 xemu 进入标题画面并通过 Nest 启动；Steins;Gate 0 在 RPCS3 正常
+- 文档：新增 `docs/xbox/ENGINE-xemu.md`、`docs/nintendo/RELEASE-0.6.0-beta.1.md`；更新 README / ROADMAP / CHANGELOG / HISTORY / HANDOFF / Xbox 下载清单
+- 回归：单测 **147 条全绿**（0.5.0 为 118 条）
+- 便携包 `Nest-0.6.0-beta.1-portable.zip`：624.5 MB（654,846,078 字节），解压 1362.4 MB / 4726 个文件，SHA256 `02101ADA5411EF63F497B8C06D9D5D7ABF03489E9BF4B00153BF8844997FF8B8`
+

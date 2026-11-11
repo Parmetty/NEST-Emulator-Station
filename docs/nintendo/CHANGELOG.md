@@ -2,6 +2,49 @@
 
 本文件记录每次发布的可见变化。技术细节在 `docs/nintendo/STATE.md`，决策理由在 `docs/nintendo/DECISIONS.md`，待办在 `docs/nintendo/PROGRESS.md`。
 
+## 0.6.0-beta.1 — 2026-11-12 · Xbox 初代接入 + 库增强
+
+便携包：Nest-0.6.0-beta.1-portable.zip 624.5 MB（654,846,078 字节）（解压 1362.4 MB / 4726 个文件，SHA256 `02101ADA5411EF63F497B8C06D9D5D7ABF03489E9BF4B00153BF8844997FF8B8`）
+
+本版补齐 Xbox 家族最后一台主机：**初代 Xbox（xemu 0.8.139）直读**，文件夹游戏可一键打包成 XISO；
+同时把游戏库从「文件名」升级到「官方标题 + 区域」自动识别，新增自定义封面，PS3 渲染器可选。
+
+### 新增
+
+- **Xbox 初代接入（xemu 0.8.139）**：内置 `resources/engines/xemu/`（GPLv2），主机墙 Xbox 状态 ready
+- 扫描：XISO（XDVDFS 魔数 `MICROSOFT*XBOX*MEDIA`）、`.xbe`、含 `default.xbe` 的文件夹
+- 设置 → Xbox 导入三件套：MCPX（512 B）、BIOS（256 KB；1 MB 四连体 dump 自动取第一段）、
+  HDD（qcow2，`QFI` 头校验，只记路径不复制）
+- 启动：自动写便携 `xemu.toml`，并显式补 `-bios`（xemu 0.8.139 不自己读 `flashrom_path`）
+- **文件夹游戏 → XISO**：右键「打包为 XISO…」弹保存对话框（默认输出在游戏文件夹同级、同名 `.iso`），
+  内置 `extract-xiso`；直接启动文件夹游戏也会自动打包；启动前硬链接到无空格路径
+  （xemu 的 QEMU 参数会把带空格路径截断）
+- 扫描器去重：打包后不会同时出现「文件夹 + ISO」两条记录
+- PS3 渲染器可选 **Vulkan / OpenGL**（默认 OpenGL，Crysis 3 兜底）：启动写入 `[Video] Renderer`；
+  切换渲染器只改配置，不删另一渲染器的预编译缓存
+- 设置 → PlayStation 新增「打开 PS3 预编译缓存位置」
+- **游戏库标题 + 区域自动识别**：NDS / GBA / N64 / NGC / Wii / PS3（`PARAM.SFO`）/
+  Xbox（XBE 证书，XISO 内也能读）/ Xbox 360（STFS 显示名）；卡片显示区域标签；手动重命名不被覆盖
+- **自定义封面**：右键「自定义封面…」/「恢复自动封面」；设置后自动截图不再覆盖
+- 固件区域标签：PS1（`scph55xx`）、PS2（`SCPH-xxxxx`）、Wii WAD 按 dump 名标注
+- 设置窗口左下角新增 **「关于 Nest」**：LOGO + 版本 + 产品定位 + GitHub 地址 + 全部引擎鸣谢
+- 文档：新增 `docs/xbox/ENGINE-xemu.md` 与 `docs/nintendo/RELEASE-0.6.0-beta.1.md`；
+  README / ROADMAP / HISTORY / Xbox 下载清单同步
+
+### 修复
+
+- **键位面板切换菜单不刷新**：xemu 之前没被算作 Xbox 家族，进 Xbox 菜单后键位面板仍显示上一台主机的键位
+- **Xbox 360 占位标题**：`4D530AA4` 这类 GOD 目录名不再冒充游戏名，优先读 STFS 显示名
+- **便携包清理**：新增剔除 xemu 运行时（`xemu.toml` / 日志 / `eeprom.bin` / shaders），zip 不带本机路径
+
+### 已知问题
+
+- **xemu 无键盘映射**：xemu 0.8.139 只认 SDL 手柄，键位面板暂不覆盖 Xbox，需插手柄
+- **系统菜单需要 Dashboard**：HDD 镜像里没有 Dashboard 就进不了初代 Xbox 系统菜单（直读不受影响）
+- **xemu 只能读镜像**：不认解包文件夹，必须打包成 XISO（Nest 已内置手动打包与自动打包）
+- 沿用 0.5.0 的限制：PS3 / Crysis 3 随机超时断言、PS3 无 XMB、Xbox 360 无 Dashboard、Wii U Menu 实验性
+- 测试基线：**147 条单测全绿**（0.5.0 为 118 条；新增 Xbox 固件/打包、游戏标题区域、自定义封面等用例）
+- 实机验证：Halo 2（美版中文）经 xemu 进入标题画面并通过 Nest 启动；Steins;Gate 0 在 RPCS3 正常运行
 ## 0.5.0-beta.1 — 2026-11-09 · Xbox 360 + PS3 接入
 
 便携包：Nest-0.5.0-beta.1-portable.zip 613.1 MB（解压 1334.7 MB / 4723 文件，SHA256 `BCE9A9B264EAC8BE351CB4EEFF4790DEBA9F5CAD09AA4F4EA53E80FF917B6BD2`）
@@ -298,12 +341,12 @@ ca89d72 feat: merge 10.28 branch - 3DS/Azahar, NGC+Wii system modes, keypad defa
 
 ---
 
-## 0.5.0-beta.1 便携包信息
+## 0.6.0-beta.1 便携包信息
 
 | 项 | 值 |
 |---|---|
-| 文件 | `Nest-0.5.0-beta.1-portable.zip` |
-| 大小 | 613.1 MB（642,832,700 字节） |
-| 解压 | 1334.7 MB / 4723 个文件 |
-| SHA256 | `BCE9A9B264EAC8BE351CB4EEFF4790DEBA9F5CAD09AA4F4EA53E80FF917B6BD2` |
-| Release | <https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.5.0-beta.1> |
+| 文件 | `Nest-0.6.0-beta.1-portable.zip` |
+| 大小 | 624.5 MB（654,846,078 字节） |
+| 解压 | 1362.4 MB / 4726 个文件 |
+| SHA256 | `02101ADA5411EF63F497B8C06D9D5D7ABF03489E9BF4B00153BF8844997FF8B8` |
+| Release | <https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.6.0-beta.1>（**pre-release**） |
