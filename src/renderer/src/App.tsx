@@ -148,6 +148,14 @@ export default function App() {
   const [runningGames, setRunningGames] = useState<Record<string, number>>({});
   const [menu, setMenu] = useState<{ x: number; y: number; game: GameRecord } | null>(null);
   const [rename, setRename] = useState<{ game: GameRecord; text: string } | null>(null);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [aboutInfo, setAboutInfo] = useState<{ version: string; electron: string; node: string } | null>(
+    null,
+  );
+  const openAbout = useCallback(() => {
+    setAboutOpen(true);
+    if (!aboutInfo) void window.nest.info().then(setAboutInfo).catch(() => undefined);
+  }, [aboutInfo]);
   const [cheat, setCheat] = useState<{
     game: GameRecord;
     text: string;
@@ -1946,13 +1954,60 @@ export default function App() {
             </div>
           </div>
 
-          <div className="dlg-actions">
+          <div className="dlg-actions settings-footer">
+            <button className="ghost-btn" onClick={openAbout}>
+              关于 Nest
+            </button>
             <button className="dlg-btn primary" onClick={() => setSettingsOpen(false)}>
               <kbd>B</kbd>完成
             </button>
           </div>
         </div>
       </div>
+
+      {aboutOpen ? (
+        <div className="dialog open" role="dialog" aria-modal="true" onClick={() => setAboutOpen(false)}>
+          <div className="dialog-card about-card" onClick={(event) => event.stopPropagation()}>
+            <div className="dlg-tag">
+              <i />关于
+            </div>
+            <div className="about-head">
+              <img className="about-logo" src="./nest.ico" alt="Nest" />
+              <div>
+                <h2>Nest</h2>
+                <p className="about-version">版本 {aboutInfo?.version ?? '…'}</p>
+                <p className="dlg-note">
+                  Electron {aboutInfo?.electron ?? '—'} · Node {aboutInfo?.node ?? '—'}
+                </p>
+              </div>
+            </div>
+            <p className="about-pitch">
+              Windows 免安装携带版游戏库启动器：Nintendo / PlayStation / Xbox 全家族，
+              一处管理 ROM、固件与键位，库与数据可随身携带。
+            </p>
+            <button
+              className="ghost-btn about-link"
+              onClick={() => void window.nest.openHomepage('https://github.com/Parmetty/NEST-Emulator-Station')}
+            >
+              github.com/Parmetty/NEST-Emulator-Station
+            </button>
+            <h3 className="about-title">鸣谢</h3>
+            <p className="dlg-note">所有引擎版权归各自作者，Nest 只做整合、配置与启动。</p>
+            <ul className="about-credits">
+              <li>mGBA（MPL-2.0）· ares（ISC）· Dolphin（GPLv2+）· Azahar（GPLv3）</li>
+              <li>melonDS（GPLv3）· Cemu（MPL-2.0）· PCSX2（GPLv3）· SwanStation（GPLv3）</li>
+              <li>PPSSPP（GPLv2+）· RPCS3（GPLv2）· xemu（GPLv2）· Xenia Canary（BSD-3-Clause）</li>
+              <li>libretro API（宿主为 Nest 自写）· extract-xiso（Xbox 镜像工具）</li>
+              <li>Nunito 字体（SIL OFL 1.1）· 主机照片（Wikimedia Commons，CC BY-SA 3.0）</li>
+            </ul>
+            <div className="dlg-actions">
+              <button className="dlg-btn primary" onClick={() => setAboutOpen(false)}>
+                关闭
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <div className={`dialog${dialog ? ' open' : ''}`} role="dialog" aria-modal="true">
         <div className="dialog-card">
