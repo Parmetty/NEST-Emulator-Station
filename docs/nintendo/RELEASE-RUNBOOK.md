@@ -93,6 +93,14 @@ Get-ChildItem $out -Recurse -File -Include '*.ini','*.toml','*.json','*.bml' |
 
 ---
 
+## 4.5 泄漏校验（必做，MLC 事故后新增）
+
+```powershell
+node tools\verify-package.mjs "dist\portable\Nest-$ver"
+```
+
+固件/NAND/存档/本机路径任一命中都会 exit 1，修好再打 zip。
+
 ## 5. 打 zip（路径必须是绝对的）
 
 ```powershell

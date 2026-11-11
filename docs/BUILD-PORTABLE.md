@@ -128,6 +128,18 @@ npx electron-builder --win --x64 --dir
 - 不要用 `npm run pack`：那是 NSIS `Setup.exe`
 - `npm run pack:dir` 会先 build+clean 再 `--dir`，但不会帮你组装 portable，仍要执行后面的步骤
 
+### 3.2.1 组装后必须跑泄漏校验（MLC 事故教训）
+
+2026-11-12 的 0.6.0/v0.5.0 曾把 `resources/engines/cemu/portable/mlc01`（开发机 Wii U NAND）
+打进便携包。打包前必须：
+
+```powershell
+node tools\verify-package.mjs "dist\portable\Nest-$ver"
+# 期望输出：package verify ok: no user data, no local paths
+```
+
+`tools/clean-engines.mjs` 也会做同样的目录扫描，发现固件/NAND 会以非零码退出。
+
 ### 3.3 验证 `win-unpacked`
 
 ```powershell
