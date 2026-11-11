@@ -17,6 +17,7 @@ export const CH = {
   favorite: 'nest:favorite',
   pickCover: 'nest:cover-pick',
   packXboxIso: 'nest:xbox-pack-iso',
+  pickXboxIsoPath: 'nest:xbox-iso-path',
   clearCover: 'nest:cover-clear',
   openHomepage: 'nest:open-homepage',
   openPpsspp: 'nest:open-ppsspp',

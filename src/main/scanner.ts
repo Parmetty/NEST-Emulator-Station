@@ -362,6 +362,24 @@ export async function scanFolder(root: string, options: ScanOptions = {}): Promi
         const systemId = await systemForFile(full);
         if (!systemId) continue;
         if (options.systemId && systemId !== options.systemId) continue;
+        // A folder game that was packed into a sibling ISO stays one library
+        // entry: keep the folder (stable default.xbe hash), skip the image.
+        if (systemId === 'xbox' && full.toLowerCase().endsWith('.iso')) {
+          const folder = full.slice(0, -4);
+          try {
+            const statFolder = await stat(folder);
+            if (statFolder.isDirectory()) {
+              try {
+                const xbe = await stat(path.join(folder, 'default.xbe'));
+                if (xbe.isFile()) continue;
+              } catch {
+                /* sibling has no default.xbe: keep the ISO */
+              }
+            }
+          } catch {
+            /* no sibling folder */
+          }
+        }
         const info = await stat(full);
         const sha1 = await sha1Of(full);
         const meta = gameInfoFor(full, systemId);

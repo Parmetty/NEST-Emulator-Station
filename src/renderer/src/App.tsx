@@ -712,8 +712,33 @@ export default function App() {
   const packXboxIso = useCallback(
     async (game: GameRecord) => {
       setMenu(null);
-      say('正在打包 XISO…（4 GB 级，约 1-2 分钟，别关 Nest）');
+      say('正在打包 XISO…（默认放在游戏文件夹旁边，4 GB 级约 1-2 分钟）');
       const result = await window.nest.packXboxIso(game.id).catch(() => null);
+      if (!result?.ok || !result.game) {
+        say(`打包失败：${result?.error ?? '未知错误'}`);
+        return;
+      }
+      say('已打包为 XISO，现在可以启动');
+      if (shelf) {
+        setShelf({
+          ...shelf,
+          games: shelf.games.map((g) => (g.id === result.game!.id ? result.game! : g)),
+        });
+      }
+    },
+    [say, shelf],
+  );
+
+  const packXboxIsoTo = useCallback(
+    async (game: GameRecord) => {
+      setMenu(null);
+      const picked = await window.nest.pickXboxIsoPath(game.id).catch(() => null);
+      if (!picked?.ok || !picked.path) {
+        if (picked && !picked.canceled) say('选择打包位置失败');
+        return;
+      }
+      say('正在打包 XISO…（4 GB 级约 1-2 分钟）');
+      const result = await window.nest.packXboxIso(game.id, picked.path).catch(() => null);
       if (!result?.ok || !result.game) {
         say(`打包失败：${result?.error ?? '未知错误'}`);
         return;
@@ -1443,7 +1468,10 @@ export default function App() {
                   const mgba = systemById.get(game.systemId as SystemId)?.engine === 'mgba';
                   const xboxFolder = game.systemId === 'xbox' && !/\.(iso|xiso)$/i.test(game.path);
                   const menuHeight =
-                    (mgba ? 148 : 92) + 44 + (game.coverCustom ? 44 : 0) + (xboxFolder ? 44 : 0);
+                    (mgba ? 148 : 92) +
+                    44 +
+                    (game.coverCustom ? 44 : 0) +
+                    (xboxFolder ? 88 : 0);
                   setMenu({
                     x: Math.min(e.clientX, window.innerWidth - menuWidth - 12),
                     y: Math.min(e.clientY, window.innerHeight - menuHeight - 12),
@@ -1509,10 +1537,16 @@ export default function App() {
               </button>
             ) : null}
             {menu.game.systemId === 'xbox' && !/\.(iso|xiso)$/i.test(menu.game.path) ? (
-              <button className="ctx-item" onClick={() => void packXboxIso(menu.game)}>
-                <span className="ctx-label">打包为 XISO…</span>
-                <span className="ctx-hint">xemu 只能读光盘镜像</span>
-              </button>
+              <>
+                <button className="ctx-item" onClick={() => void packXboxIso(menu.game)}>
+                  <span className="ctx-label">打包为 XISO…</span>
+                  <span className="ctx-hint">放到游戏文件夹旁边</span>
+                </button>
+                <button className="ctx-item" onClick={() => void packXboxIsoTo(menu.game)}>
+                  <span className="ctx-label">打包为 XISO（选择位置）…</span>
+                  <span className="ctx-hint">自定义输出目录</span>
+                </button>
+              </>
             ) : null}
             <button className="ctx-item" onClick={() => openRename(menu.game)}>
               <span className="ctx-label">重命名…</span>

@@ -126,6 +126,21 @@ describe('scanner extensions', () => {
     expect(EXT_TO_SYSTEM.xbe).toBe('xbox');
   });
 
+  it('keeps a packed Xbox folder as one entry by skipping its sibling ISO', async () => {
+    const root = await tempDir();
+    const folder = path.join(root, 'Halo 2');
+    await mkdir(folder, { recursive: true });
+    await writeFile(path.join(folder, 'default.xbe'), 'xbe');
+    const image = Buffer.alloc(0x10000 + 32);
+    image.write('MICROSOFT*XBOX*MEDIA', 0x10000, 'latin1');
+    await writeFile(path.join(root, 'Halo 2.iso'), image);
+
+    const found = await scanFolder(root);
+    const xbox = found.filter((file) => file.systemId === 'xbox');
+    expect(xbox).toHaveLength(1);
+    expect(xbox[0].path).toBe(folder);
+  });
+
   it('recognizes an unpacked Xbox folder with default.xbe', async () => {
     const root = await tempDir();
     const game = path.join(root, 'Halo CE');

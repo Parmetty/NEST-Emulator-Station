@@ -58,8 +58,15 @@ const api = {
     ipcRenderer.invoke(CH.pickCover, { gameId }),
   clearCover: (gameId: string): Promise<{ ok: boolean; game?: GameRecord; error?: string }> =>
     ipcRenderer.invoke(CH.clearCover, { gameId }),
-  packXboxIso: (gameId: string): Promise<{ ok: boolean; game?: GameRecord; error?: string }> =>
-    ipcRenderer.invoke(CH.packXboxIso, { gameId }),
+  packXboxIso: (
+    gameId: string,
+    target?: string,
+  ): Promise<{ ok: boolean; game?: GameRecord; error?: string }> =>
+    ipcRenderer.invoke(CH.packXboxIso, { gameId, target }),
+  pickXboxIsoPath: (
+    gameId: string,
+  ): Promise<{ ok: boolean; path?: string; canceled?: boolean; error?: string }> =>
+    ipcRenderer.invoke(CH.pickXboxIsoPath, { gameId }),
 
   controls: (): Promise<ControlsPayload> => ipcRenderer.invoke(CH.controls),
 

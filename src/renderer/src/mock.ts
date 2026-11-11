@@ -181,6 +181,7 @@ export function installMockApi(): void {
     pickCover: async () => ({ ok: true, canceled: true }),
     clearCover: async () => ({ ok: true }),
     packXboxIso: async () => ({ ok: true }),
+    pickXboxIsoPath: async () => ({ ok: true, canceled: true }),
     removeGame: async (gameId) => {
       for (const key of Object.keys(games)) {
         games[key] = games[key].filter((g) => g.id !== gameId);

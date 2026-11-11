@@ -40,7 +40,7 @@ import { findAzaharHomeMenu } from './azahar-home';
 import { ensurePcsx2Data, pcsx2BiosDir, pcsx2BiosFiles } from './pcsx2';
 import { ensurePpssppPortable, hasPspFirmware, importPspFlash0, pspFlash0Dir } from './ppsspp';
 import { applyRpcs3Renderer, rpcs3CacheDir, rpcs3EngineDir } from './rpcs3';
-import { packXboxFolder, prepareXboxRom, xboxIsoDir } from './xbox-iso';
+import { defaultXboxIsoPath, packXboxFolder, prepareXboxRom, xboxIsoDir } from './xbox-iso';
 import {
   importXboxFirmware,
   readXboxFirmware,
@@ -1076,12 +1076,40 @@ export function registerIpc(services: Services): void {
     return { ok: true, game: withCover(updated) };
   });
 
-  ipcMain.handle(CH.packXboxIso, async (_event, raw) => {
+  ipcMain.handle(CH.pickXboxIsoPath, async (event, raw) => {
     const gameId = String((raw as { gameId?: unknown })?.gameId ?? '');
     const game = gameId ? services.store.findGame(gameId) : undefined;
     if (!game) return { ok: false, error: 'not-found' };
     if (game.systemId !== 'xbox') return { ok: false, error: 'not-xbox' };
-    const result = await packXboxFolder(toolsDir(), game.path, path.join(xboxIsoDir(app.getPath('userData')), `${gameId}.iso`));
+    const suggested = defaultXboxIsoPath(game.path);
+    const win = BrowserWindow.fromWebContents(event.sender);
+    const picked = win
+      ? await dialog.showSaveDialog(win, {
+          title: 'XISO 打包位置',
+          defaultPath: suggested,
+          filters: [{ name: 'Xbox 光盘镜像', extensions: ['iso'] }],
+        })
+      : await dialog.showSaveDialog({
+          title: 'XISO 打包位置',
+          defaultPath: suggested,
+          filters: [{ name: 'Xbox 光盘镜像', extensions: ['iso'] }],
+        });
+    if (picked.canceled || !picked.filePath) return { ok: true, canceled: true };
+    return { ok: true, path: picked.filePath };
+  });
+
+  ipcMain.handle(CH.packXboxIso, async (_event, raw) => {
+    const body = (raw ?? {}) as { gameId?: unknown; target?: unknown };
+    const gameId = String(body.gameId ?? '');
+    const game = gameId ? services.store.findGame(gameId) : undefined;
+    if (!game) return { ok: false, error: 'not-found' };
+    if (game.systemId !== 'xbox') return { ok: false, error: 'not-xbox' };
+    // Default: next to the game folder. The caller may pass an explicit .iso path.
+    const target = typeof body.target === 'string' && body.target.trim()
+      ? path.resolve(body.target.trim())
+      : defaultXboxIsoPath(game.path);
+    if (!/\.iso$/i.test(target)) return { ok: false, error: 'bad-target' };
+    const result = await packXboxFolder(toolsDir(), game.path, target);
     if (!result.ok) {
       console.error(`[nest] xbox pack failed: ${result.error} ${result.log ?? ''}`);
       return { ok: false, error: result.error ?? 'pack-failed' };

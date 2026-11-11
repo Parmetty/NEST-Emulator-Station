@@ -29,7 +29,10 @@ export interface NestApi {
   favorite(systemId: string, favorite: boolean): Promise<{ ok: boolean }>;
   pickCover(gameId: string): Promise<{ ok: boolean; canceled?: boolean; game?: GameRecord; error?: string }>;
   clearCover(gameId: string): Promise<{ ok: boolean; game?: GameRecord; error?: string }>;
-  packXboxIso(gameId: string): Promise<{ ok: boolean; game?: GameRecord; error?: string }>;
+  packXboxIso(gameId: string, target?: string): Promise<{ ok: boolean; game?: GameRecord; error?: string }>;
+  pickXboxIsoPath(
+    gameId: string,
+  ): Promise<{ ok: boolean; path?: string; canceled?: boolean; error?: string }>;
   controls(): Promise<ControlsPayload>;
   saveControls(
     engineId: string,

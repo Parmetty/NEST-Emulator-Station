@@ -4,6 +4,7 @@ import { existsSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {
+  defaultXboxIsoPath,
   isXboxFolder,
   packXboxFolder,
   prepareXboxRom,
@@ -21,6 +22,11 @@ describe('xbox disc packaging helpers', () => {
     await writeFile(path.join(dir, 'default.xbe'), 'xbe');
     expect(isXboxFolder(dir)).toBe(true);
     await rm(dir, { recursive: true, force: true });
+  });
+
+  it('defaults the image to a sibling file named after the game folder', () => {
+    const folder = path.join('D:\\Games', 'Halo 2 (USA)(Zh)');
+    expect(defaultXboxIsoPath(folder)).toBe(path.join('D:\\Games', 'Halo 2 (USA)(Zh).iso'));
   });
 
   it('refuses to boot a folder when packing is not allowed', async () => {

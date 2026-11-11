@@ -26,6 +26,16 @@ export function xboxRomLinkDir(userData: string): string {
     : path.join(userData, 'xbox-roms');
 }
 
+/**
+ * Default packing location: the ISO sits next to the game folder, i.e. one
+ * level up, named after the folder. Players keep their library self-contained
+ * instead of Nest hiding a 4 GB file in its own data directory.
+ */
+export function defaultXboxIsoPath(folder: string): string {
+  const resolved = path.resolve(folder);
+  return path.join(path.dirname(resolved), `${path.basename(resolved)}.iso`);
+}
+
 export function isXboxFolder(target: string): boolean {
   try {
     return statSync(target).isDirectory() && existsSync(path.join(target, 'default.xbe'));
@@ -113,12 +123,27 @@ export async function prepareXboxRom(
   let packed = false;
 
   if (isXboxFolder(rom)) {
-    iso = path.join(xboxIsoDir(userData), `${gameId}.iso`);
-    if (!existsSync(iso) || statSync(iso).size === 0) {
+    // Prefer the sibling image the player can see; fall back to Nest's own
+    // data folder when the game directory is not writable (read-only drive).
+    const sibling = defaultXboxIsoPath(rom);
+    const fallback = path.join(xboxIsoDir(userData), `${gameId}.iso`);
+    const usable = (candidate: string) => existsSync(candidate) && statSync(candidate).size > 0;
+    if (usable(sibling)) {
+      iso = sibling;
+    } else if (usable(fallback)) {
+      iso = fallback;
+    } else {
       if (!allowPack) return { ok: false, error: 'xbox-needs-iso' };
-      const result = await packXboxFolder(toolsDir, rom, iso);
-      if (!result.ok) return { ok: false, error: result.error ?? 'pack-failed' };
-      packed = true;
+      const result = await packXboxFolder(toolsDir, rom, sibling);
+      if (result.ok) {
+        iso = sibling;
+        packed = true;
+      } else {
+        const retry = await packXboxFolder(toolsDir, rom, fallback);
+        if (!retry.ok) return { ok: false, error: retry.error ?? result.error ?? 'pack-failed' };
+        iso = fallback;
+        packed = true;
+      }
     }
   } else if (isXboxIso(rom)) {
     iso = rom;
