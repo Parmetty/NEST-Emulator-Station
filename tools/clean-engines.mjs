@@ -10,7 +10,7 @@
 // Run:  node tools/clean-engines.mjs [--check]
 //   --check  only report problems, exit 1 if anything would change.
 
-import { readFileSync, writeFileSync, existsSync, rmSync, readdirSync, statSync, lstatSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, rmSync, readdirSync, statSync, lstatSync, unlinkSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -21,6 +21,20 @@ const checkOnly = process.argv.includes('--check');
 const removed = [];
 const scrubbed = [];
 const problems = [];
+
+/**
+ * Junctions (used by the developer to link user firmware into the engine dir)
+ * must be unlinked, never traversed: rmSync(recursive) on a junction would
+ * delete the linked firmware inside nest-assets.
+ */
+function removeEntry(full) {
+  try {
+    if (lstatSync(full).isSymbolicLink()) unlinkSync(full);
+    else rmSync(full, { recursive: true, force: true });
+  } catch {
+    /* ignore: already gone or locked */
+  }
+}
 
 /** Files the engines recreate on first launch — never ship them. */
 const RUNTIME_FILES = [
@@ -183,13 +197,13 @@ function scrubRpcs3Runtime() {
     const full = join(engineDir, name);
     if (!existsSync(full)) continue;
     removed.push(relative(root, full));
-    if (!checkOnly) rmSync(full, { recursive: true, force: true });
+    if (!checkOnly) removeEntry(full);
   }
   for (const name of ['config']) {
     const full = join(engineDir, name);
     if (!existsSync(full)) continue;
     removed.push(relative(root, full));
-    if (!checkOnly) rmSync(full, { recursive: true, force: true });
+    if (!checkOnly) removeEntry(full);
   }
 }
 
@@ -200,7 +214,7 @@ function scrubXemuRuntime() {
   const dir = join(enginesDir, 'xemu', 'shaders');
   if (!existsSync(dir)) return;
   removed.push(relative(root, dir));
-  if (!checkOnly) rmSync(dir, { recursive: true, force: true });
+  if (!checkOnly) removeEntry(dir);
 }
 
 scrubXemuRuntime();

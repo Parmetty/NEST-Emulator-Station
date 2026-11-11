@@ -581,6 +581,12 @@ async function boot(): Promise<void> {
               );
             }
           }
+          if (process.argv.includes('--about')) {
+            await mainWindow!.webContents.executeJavaScript(
+              "document.querySelector('.settings-footer .ghost-btn')?.click(); true",
+            );
+            await new Promise((resolve) => setTimeout(resolve, 250));
+          }
           if (process.argv.includes('--cheat')) {
             await mainWindow!.webContents.executeJavaScript(
               'window.__NEST_OPEN_CHEAT__ && window.__NEST_OPEN_CHEAT__(); true',

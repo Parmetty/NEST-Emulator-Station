@@ -1664,9 +1664,15 @@ kbd {
   color: rgba(255, 255, 255, 0.34) !important;
 }
 
-.settings-footer {
+.dlg-actions.settings-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
   justify-content: space-between;
   align-items: center;
+  padding-top: 10px;
+  padding-bottom: 2px;
+  background: linear-gradient(180deg, rgba(8, 8, 10, 0) 0%, rgba(8, 8, 10, 0.92) 45%);
 }
 
 .about-card {
