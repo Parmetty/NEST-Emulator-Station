@@ -383,5 +383,5 @@ est-pads.exe（SDL3）检测后切 SDL 绑定。
 - 实机验证：Halo 2（美版中文）经 xemu 进入标题画面并通过 Nest 启动；Steins;Gate 0 在 RPCS3 正常
 - 文档：新增 `docs/xbox/ENGINE-xemu.md`、`docs/nintendo/RELEASE-0.6.0-beta.1.md`；更新 README / ROADMAP / CHANGELOG / HISTORY / HANDOFF / Xbox 下载清单
 - 回归：单测 **147 条全绿**（0.5.0 为 118 条）
-- 便携包 `Nest-0.6.0-beta.1-portable.zip`：624.5 MB（654,846,078 字节），解压 1362.4 MB / 4726 个文件，SHA256 `02101ADA5411EF63F497B8C06D9D5D7ABF03489E9BF4B00153BF8844997FF8B8`
+- 便携包 `Nest-0.6.0-beta.1-portable.zip`：402.4 MB（421,930,148 字节），解压 992.2 MB / 3864 个文件，SHA256 `7613E1F5F46F2092337C5F853F4532CB645EE591B4DD700B101ED952B72EC00E`
 

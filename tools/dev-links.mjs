@@ -13,6 +13,11 @@ import { fileURLToPath } from 'node:url';
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const links = [
   {
+    label: 'cemu mlc01 (Wii U NAND)',
+    link: path.join(repoRoot, 'resources', 'engines', 'cemu', 'portable', 'mlc01'),
+    target: path.join(repoRoot, '..', 'nest-assets', 'firmware', 'wiiu', 'mlc01'),
+  },
+  {
     label: 'rpcs3 dev_flash',
     link: path.join(repoRoot, 'resources', 'engines', 'rpcs3', 'dev_flash'),
     target: path.join(repoRoot, '..', 'nest-assets', 'firmware', 'ps3', 'dev_flash'),

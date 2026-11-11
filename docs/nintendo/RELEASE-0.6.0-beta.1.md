@@ -42,12 +42,15 @@
 
 ## 下载信息
 
+> **安全更正（2026-11-12）**：首次上传的包误带开发机的 Wii U NAND（`cemu/portable/mlc01`），
+> 已删除并重新打包（402.4 MB）。请以下方信息为准，重新下载。
+
 | 项 | 值 |
 |---|---|
 | 文件 | `Nest-0.6.0-beta.1-portable.zip` |
-| 大小 | 624.5 MB（654,846,078 字节） |
-| 解压 | 1362.4 MB / 4726 个文件 |
-| SHA256 | `02101ADA5411EF63F497B8C06D9D5D7ABF03489E9BF4B00153BF8844997FF8B8` |
+| 大小 | 402.4 MB（421,930,148 字节） |
+| 解压 | 992.2 MB / 3864 个文件 |
+| SHA256 | `7613E1F5F46F2092337C5F853F4532CB645EE591B4DD700B101ED952B72EC00E` |
 
 Release 页面（**最新版**）：<https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.6.0-beta.1>
 

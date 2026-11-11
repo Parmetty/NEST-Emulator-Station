@@ -4,7 +4,10 @@
 
 ## 0.6.0-beta.1 — 2026-11-12 · Xbox 初代接入 + 库增强
 
-便携包：Nest-0.6.0-beta.1-portable.zip 624.5 MB（654,846,078 字节）（解压 1362.4 MB / 4726 个文件，SHA256 `02101ADA5411EF63F497B8C06D9D5D7ABF03489E9BF4B00153BF8844997FF8B8`）
+> **安全更正（2026-11-12）**：本版本首次上传的便携包误带开发机的 Wii U NAND（`cemu/portable/mlc01`），
+> 该资产已删除并用清理后的包重新上传（402.4 MB）。打包流程已加入整目录清理与泄漏校验。请重新下载。
+
+便携包：Nest-0.6.0-beta.1-portable.zip 402.4 MB（421,930,148 字节）（解压 992.2 MB / 3864 个文件，SHA256 `7613E1F5F46F2092337C5F853F4532CB645EE591B4DD700B101ED952B72EC00E`）
 
 本版补齐 Xbox 家族最后一台主机：**初代 Xbox（xemu 0.8.139）直读**，文件夹游戏可一键打包成 XISO；
 同时把游戏库从「文件名」升级到「官方标题 + 区域」自动识别，新增自定义封面，PS3 渲染器可选。
@@ -346,7 +349,7 @@ ca89d72 feat: merge 10.28 branch - 3DS/Azahar, NGC+Wii system modes, keypad defa
 | 项 | 值 |
 |---|---|
 | 文件 | `Nest-0.6.0-beta.1-portable.zip` |
-| 大小 | 624.5 MB（654,846,078 字节） |
-| 解压 | 1362.4 MB / 4726 个文件 |
-| SHA256 | `02101ADA5411EF63F497B8C06D9D5D7ABF03489E9BF4B00153BF8844997FF8B8` |
+| 大小 | 402.4 MB（421,930,148 字节） |
+| 解压 | 992.2 MB / 3864 个文件 |
+| SHA256 | `7613E1F5F46F2092337C5F853F4532CB645EE591B4DD700B101ED952B72EC00E` |
 | Release | <https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.6.0-beta.1> |

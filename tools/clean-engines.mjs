@@ -10,7 +10,7 @@
 // Run:  node tools/clean-engines.mjs [--check]
 //   --check  only report problems, exit 1 if anything would change.
 
-import { readFileSync, writeFileSync, existsSync, rmSync, readdirSync, statSync, lstatSync, unlinkSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, rmSync, readdirSync, statSync, lstatSync, unlinkSync, rmdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -29,8 +29,17 @@ const problems = [];
  */
 function removeEntry(full) {
   try {
-    if (lstatSync(full).isSymbolicLink()) unlinkSync(full);
-    else rmSync(full, { recursive: true, force: true });
+    if (lstatSync(full).isSymbolicLink()) {
+      // Junction/symlink: unlinkSync fails with EPERM on directory junctions,
+      // rmdirSync removes the link without touching its target.
+      try {
+        unlinkSync(full);
+      } catch {
+        rmdirSync(full);
+      }
+      return;
+    }
+    rmSync(full, { recursive: true, force: true });
   } catch {
     /* ignore: already gone or locked */
   }
@@ -41,10 +50,9 @@ const RUNTIME_FILES = [
   'melonds/melonDS.toml',
   'melonds/melonDS.ini',
   'melonds/wfcsettings.bin',
-  'cemu/portable/keys.txt',
-  'cemu/portable/settings.xml',
-  'cemu/portable/controllerProfiles.xml',
-  'cemu/portable/gameProfiles.xml',
+  // cemu/portable is handled as a whole directory below (it can hold the
+  // user's Wii U NAND junction).
+
   'xemu/xemu.toml',
   'xemu/xemu.log',
   'xemu/eeprom.bin',
@@ -102,24 +110,26 @@ function scrubNestedRuntimeState() {
 
 scrubNestedRuntimeState();
 
-/** Cemu portable/ holds the imported NAND, keys and user settings — never ship. */
+/**
+ * Cemu portable/ holds the imported NAND (mlc01 junction), keys and user
+ * settings — never ship any of it. The empty folder must stay: Cemu enables
+ * portable mode when a `portable` directory exists next to the exe, so keep it
+ * alive with a marker file that carries no user data.
+ */
 function scrubCemuPortable() {
   const portableDir = join(enginesDir, 'cemu', 'portable');
   if (!existsSync(portableDir)) return;
   for (const entry of readdirSync(portableDir, { withFileTypes: true })) {
     const full = join(portableDir, entry.name);
-    const rel = relative(root, full);
-    // keep the folder itself (Cemu needs it for portable mode)
+    if (entry.name === '.nest-portable') continue;
     if (entry.name === 'keys.txt' || entry.name === 'settings.xml') continue; // handled by RUNTIME_FILES
-    if (entry.isDirectory() && entry.name === 'mlc01') {
-      removed.push(rel);
-      if (!checkOnly) rmSync(full, { recursive: true, force: true });
-      continue;
-    }
-    if (entry.name.endsWith('.bin') || entry.name.endsWith('.xml')) {
-      removed.push(rel);
-      if (!checkOnly) rmSync(full, { force: true });
-    }
+    removed.push(relative(root, full));
+    if (!checkOnly) removeEntry(full);
+  }
+  if (!checkOnly) {
+    mkdirSync(portableDir, { recursive: true });
+    const marker = join(portableDir, '.nest-portable');
+    if (!existsSync(marker)) writeFileSync(marker, '');
   }
 }
 
@@ -247,6 +257,50 @@ if (scrubbed.length) console.log(`scrubbed: ${scrubbed.join(', ')}`);
 if (problems.length) {
   console.error('local paths still present in:');
   for (const rel of problems) console.error(`  ${rel}`);
+}
+
+/**
+ * Leak guard: user firmware/NAND/saves must never reach a portable package.
+ * Names are checked after cleaning, so a missed scrub fails the release build.
+ */
+const FORBIDDEN_NAMES = [
+  'mlc01',
+  'dev_flash',
+  'dev_flash2',
+  'dev_flash3',
+  'dev_hdd0',
+  'dev_hdd1',
+  'dev_bdvd',
+  'dev_usb000',
+  'keys.txt',
+  'prod.keys',
+  'title.keys',
+  'eeprom.bin',
+  'xemu.toml',
+];
+const FORBIDDEN_SUFFIXES = ['.qcow2', '.nand', '.wud', '.wux', '.wua', '.pup'];
+const leaks = [];
+if (existsSync(enginesDir)) {
+  (function walk(dir) {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      const rel = relative(root, full);
+      if (entry.isDirectory()) {
+        if (FORBIDDEN_NAMES.includes(entry.name)) leaks.push(rel);
+        walk(full);
+        continue;
+      }
+      const lower = entry.name.toLowerCase();
+      if (FORBIDDEN_NAMES.includes(entry.name) || FORBIDDEN_SUFFIXES.some((s) => lower.endsWith(s))) {
+        leaks.push(rel);
+      }
+    }
+  })(enginesDir);
+}
+if (leaks.length > 0) {
+  console.error('USER DATA LEAK: engine folder still contains firmware/NAND/saves:');
+  for (const rel of leaks.slice(0, 40)) console.error(`  ${rel}`);
+  problems.push('user-data-leak');
 }
 
 if (!checkOnly && !removed.length && !scrubbed.length) console.log('engines already clean');

@@ -17,7 +17,8 @@
     "build:capture": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/build-capture.ps1",
     "pack": "npm run build && node tools/clean-engines.mjs && electron-builder --win --x64",
     "pack:dir": "npm run build && node tools/clean-engines.mjs && electron-builder --win --x64 --dir",
-    "dev:links": "node tools/dev-links.mjs"
+    "dev:links": "node tools/dev-links.mjs",
+    "check:package": "node tools/verify-package.mjs"
   },
   "dependencies": {
     "react": "^19.0.0",
