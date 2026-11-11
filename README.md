@@ -5,13 +5,13 @@
 
 ![Nest 首页](shots/app.png)
 
-> 当前：**0.6.0-beta.1**（GitHub **pre-release**）—— Windows 桌面版 · 九台任天堂主机 · PS1 / PS2 / PSP / **PS3** 直读 · Xbox 家族两台全通：**Xbox 360**、**初代 Xbox**（xemu）直读 · 十二个内置引擎 + 自写 libretro 宿主 · 免安装携带版
+> 当前：**0.6.0-beta.1**（GitHub **最新版**）—— Windows 桌面版 · 九台任天堂主机 · PS1 / PS2 / PSP / **PS3** 直读 · Xbox 家族两台全通：**Xbox 360**、**初代 Xbox**（xemu）直读 · 十二个内置引擎 + 自写 libretro 宿主 · 免安装携带版
 
 ## 下载
 
 直接下免安装版，解压双击即可用，不需要安装 Node 或任何依赖：
 
-**[Nest-0.6.0-beta.1-portable.zip](https://github.com/Parmetty/NEST-Emulator-Station/releases/download/v0.6.0-beta.1/Nest-0.6.0-beta.1-portable.zip)** · [Release 页面](https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.6.0-beta.1)（pre-release）
+**[Nest-0.6.0-beta.1-portable.zip](https://github.com/Parmetty/NEST-Emulator-Station/releases/download/v0.6.0-beta.1/Nest-0.6.0-beta.1-portable.zip)** · [Release 页面](https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.6.0-beta.1)
 
 ```
 SHA256  02101ADA5411EF63F497B8C06D9D5D7ABF03489E9BF4B00153BF8844997FF8B8

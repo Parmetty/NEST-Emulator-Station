@@ -1,6 +1,6 @@
 # Nest 总路线图（跨家族）
 
-> 最后更新：2026-11-12 · 当前版本 `0.6.0-beta.1`（Xbox 初代接入 + 库增强，GitHub pre-release）
+> 最后更新：2026-11-12 · 当前版本 `0.6.0-beta.1`（Xbox 初代接入 + 库增强，GitHub 最新版）
 > 原始计划（2026-10-25，只覆盖任天堂）保留在 [nintendo/PLAN.md](nintendo/PLAN.md)，作为历史对照；
 > 本文是**现在生效的路线图**：任天堂系收尾 + PlayStation 系主线 + Xbox 预留。
 

@@ -1,6 +1,6 @@
 # Nest 文档索引
 
-> 当前版本 **0.6.0-beta.1**（2026-11-12，GitHub pre-release）。本目录是开发/内部文档；只想用 Nest 的话看根目录 [README.md](../README.md)。
+> 当前版本 **0.6.0-beta.1**（2026-11-12，GitHub 最新版）。本目录是开发/内部文档；只想用 Nest 的话看根目录 [README.md](../README.md)。
 
 ## 当前状态看哪里
 

@@ -366,7 +366,7 @@ est-pads.exe（SDL3）检测后切 SDL 绑定。
 
 ## 2026-11-12 · 0.6.0-beta.1 发布
 
-- 版本 0.5.0-beta.1 → 0.6.0-beta.1（**GitHub pre-release**，tag `v0.6.0-beta.1`）；README / ROADMAP / CHANGELOG / RELEASE / HISTORY 同步
+- 版本 0.5.0-beta.1 → 0.6.0-beta.1（**GitHub 最新版**，tag `v0.6.0-beta.1`）；README / ROADMAP / CHANGELOG / RELEASE / HISTORY 同步
 - **初代 Xbox（xemu 0.8.139）接入**：主机墙 Xbox 状态 ready；固件三件套（MCPX 512 B / BIOS 256 KB，1 MB 四连体自动取第一段 /
   HDD qcow2 只记路径不复制）；扫描 XISO（XDVDFS 魔数）、`.xbe`、含 `default.xbe` 的文件夹；
   启动自动写便携 `xemu.toml` 并显式补 `-bios`（0.8.139 不自己读 `flashrom_path`）

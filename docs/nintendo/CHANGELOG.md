@@ -349,4 +349,4 @@ ca89d72 feat: merge 10.28 branch - 3DS/Azahar, NGC+Wii system modes, keypad defa
 | 大小 | 624.5 MB（654,846,078 字节） |
 | 解压 | 1362.4 MB / 4726 个文件 |
 | SHA256 | `02101ADA5411EF63F497B8C06D9D5D7ABF03489E9BF4B00153BF8844997FF8B8` |
-| Release | <https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.6.0-beta.1>（**pre-release**） |
+| Release | <https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.6.0-beta.1> |

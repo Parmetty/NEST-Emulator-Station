@@ -1,6 +1,6 @@
 # Nest 0.6.0 Beta · Xbox 初代接入 + 库增强
 
-> Windows 免安装携带版，**GitHub pre-release**。下载 `Nest-0.6.0-beta.1-portable.zip`，解压后双击 **`Nest.exe`** 即可；
+> Windows 免安装携带版，**GitHub 最新版（Latest）**。下载 `Nest-0.6.0-beta.1-portable.zip`，解压后双击 **`Nest.exe`** 即可；
 > 想让数据留在程序目录就双击 **`启动 Nest.bat`**。
 
 ## 这个版本有什么
@@ -49,7 +49,7 @@
 | 解压 | 1362.4 MB / 4726 个文件 |
 | SHA256 | `02101ADA5411EF63F497B8C06D9D5D7ABF03489E9BF4B00153BF8844997FF8B8` |
 
-Release 页面（**pre-release**）：<https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.6.0-beta.1>
+Release 页面（**最新版**）：<https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.6.0-beta.1>
 
 ## 首次使用
 
