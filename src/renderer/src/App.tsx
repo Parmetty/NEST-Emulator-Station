@@ -709,6 +709,26 @@ export default function App() {
     [say, shelf],
   );
 
+  const packXboxIso = useCallback(
+    async (game: GameRecord) => {
+      setMenu(null);
+      say('正在打包 XISO…（4 GB 级，约 1-2 分钟，别关 Nest）');
+      const result = await window.nest.packXboxIso(game.id).catch(() => null);
+      if (!result?.ok || !result.game) {
+        say(`打包失败：${result?.error ?? '未知错误'}`);
+        return;
+      }
+      say('已打包为 XISO，现在可以启动');
+      if (shelf) {
+        setShelf({
+          ...shelf,
+          games: shelf.games.map((g) => (g.id === result.game!.id ? result.game! : g)),
+        });
+      }
+    },
+    [say, shelf],
+  );
+
   const moveShelf = useCallback(
     (dx: number, dy: number) => {
       if (!shelf || shelf.games.length === 0) return;
@@ -799,6 +819,12 @@ export default function App() {
         'bad-size-xbox-hdd': 'HDD 镜像无效：需要 xemu 的 xbox_hdd.qcow2（qcow2 头 QFI）',
         'xbox-hdd-io-error': 'HDD 镜像读取失败：检查文件权限',
         'missing-rom': '没有可启动的游戏文件',
+        'xbox-needs-iso': 'xemu 只能启动 XISO 镜像：右键这个游戏 →「打包为 XISO…」',
+        'missing-tool': '缺少 extract-xiso.exe（resources/tools），无法打包 Xbox 文件夹',
+        'pack-failed': 'Xbox 文件夹打包失败，查看日志',
+        'timeout': 'Xbox 文件夹打包超时（文件太大或磁盘太慢）',
+        'bad-folder': '这个目录里没有 default.xbe，不是 Xbox 游戏文件夹',
+        'xbox-rom-link-failed': '无法为 xemu 准备无空格路径（检查磁盘权限）',
       };
       say(map[result.error ?? ''] ?? `启动失败（${result.error}）`);
       return;
@@ -1415,7 +1441,9 @@ export default function App() {
                   e.preventDefault();
                   const menuWidth = 208;
                   const mgba = systemById.get(game.systemId as SystemId)?.engine === 'mgba';
-                  const menuHeight = (mgba ? 148 : 92) + 44 + (game.coverCustom ? 44 : 0);
+                  const xboxFolder = game.systemId === 'xbox' && !/\.(iso|xiso)$/i.test(game.path);
+                  const menuHeight =
+                    (mgba ? 148 : 92) + 44 + (game.coverCustom ? 44 : 0) + (xboxFolder ? 44 : 0);
                   setMenu({
                     x: Math.min(e.clientX, window.innerWidth - menuWidth - 12),
                     y: Math.min(e.clientY, window.innerHeight - menuHeight - 12),
@@ -1478,6 +1506,12 @@ export default function App() {
               <button className="ctx-item" onClick={() => void openCheats(menu.game)}>
                 <span className="ctx-label">金手指…</span>
                 <span className="ctx-hint">mGBA .cheats 文件</span>
+              </button>
+            ) : null}
+            {menu.game.systemId === 'xbox' && !/\.(iso|xiso)$/i.test(menu.game.path) ? (
+              <button className="ctx-item" onClick={() => void packXboxIso(menu.game)}>
+                <span className="ctx-label">打包为 XISO…</span>
+                <span className="ctx-hint">xemu 只能读光盘镜像</span>
               </button>
             ) : null}
             <button className="ctx-item" onClick={() => openRename(menu.game)}>

@@ -16,6 +16,7 @@ export const CH = {
   stop: 'nest:stop',
   favorite: 'nest:favorite',
   pickCover: 'nest:cover-pick',
+  packXboxIso: 'nest:xbox-pack-iso',
   clearCover: 'nest:cover-clear',
   openHomepage: 'nest:open-homepage',
   openPpsspp: 'nest:open-ppsspp',

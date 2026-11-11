@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
 import { copyFileSync, mkdirSync, existsSync, readFileSync, readdirSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
@@ -40,6 +40,7 @@ import { findAzaharHomeMenu } from './azahar-home';
 import { ensurePcsx2Data, pcsx2BiosDir, pcsx2BiosFiles } from './pcsx2';
 import { ensurePpssppPortable, hasPspFirmware, importPspFlash0, pspFlash0Dir } from './ppsspp';
 import { applyRpcs3Renderer, rpcs3CacheDir, rpcs3EngineDir } from './rpcs3';
+import { packXboxFolder, prepareXboxRom, xboxIsoDir } from './xbox-iso';
 import {
   importXboxFirmware,
   readXboxFirmware,
@@ -904,6 +905,12 @@ function applyControls(
 }
 
 /** How many controllers SDL can see right now (0 = none, -1 = probe failed). */
+/** Bundled helper binaries (capture, dialog, extract-xiso, ...). */
+function toolsDir(): string {
+  const base = app.isPackaged ? process.resourcesPath : app.getAppPath();
+  return path.join(base, 'resources', 'tools');
+}
+
 function countGamepads(): number {
   const base = app.isPackaged ? process.resourcesPath : app.getAppPath();
   const exe = path.join(base, 'resources', 'tools', 'nest-pads.exe');
@@ -1069,6 +1076,22 @@ export function registerIpc(services: Services): void {
     return { ok: true, game: withCover(updated) };
   });
 
+  ipcMain.handle(CH.packXboxIso, async (_event, raw) => {
+    const gameId = String((raw as { gameId?: unknown })?.gameId ?? '');
+    const game = gameId ? services.store.findGame(gameId) : undefined;
+    if (!game) return { ok: false, error: 'not-found' };
+    if (game.systemId !== 'xbox') return { ok: false, error: 'not-xbox' };
+    const result = await packXboxFolder(toolsDir(), game.path, path.join(xboxIsoDir(app.getPath('userData')), `${gameId}.iso`));
+    if (!result.ok) {
+      console.error(`[nest] xbox pack failed: ${result.error} ${result.log ?? ''}`);
+      return { ok: false, error: result.error ?? 'pack-failed' };
+    }
+    const iso = result.iso!;
+    const updated = await services.store.updateGame(gameId, { path: iso, size: statSync(iso).size });
+    console.log(`[nest] xbox folder packed: ${game.path} -> ${iso}`);
+    return updated ? { ok: true, game: withCover(updated) } : { ok: false, error: 'not-found' };
+  });
+
   ipcMain.handle(CH.scan, async (event, raw): Promise<ScanResult> => {
     const parsed = scanRequestSchema.safeParse(raw ?? {});
     if (!parsed.success) return { ok: false, error: 'bad-request' };
@@ -1228,6 +1251,8 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   const parsed = launchRequestSchema.safeParse(raw);
   if (!parsed.success) return { ok: false, error: 'bad-request' };
   const { systemId, mode, rom } = parsed.data;
+  // xemu needs a space-free disc image; other engines use the path as-is.
+  let bootRom = rom;
 
   const system = systemById.get(systemId as SystemId);
   if (!system) return { ok: false, error: 'unknown-system' };
@@ -1360,6 +1385,20 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     if (mode === 'game' && !rom) return { ok: false, error: 'missing-rom' };
     xemuArgs = xemuLaunchArgs(app.getPath('userData'), settings.xboxHdd);
     console.log(`[nest] xemu config: ${config.path}`);
+    if (mode === 'game' && rom) {
+      const gameKey = createHash('sha1').update(path.resolve(rom)).digest('hex').slice(0, 16);
+      const prepared = await prepareXboxRom(app.getPath('userData'), toolsDir(), gameKey, rom);
+      if (!prepared.ok || !prepared.rom) {
+        console.error(`[nest] xbox rom not bootable: ${prepared.error}`);
+        return { ok: false, error: prepared.error ?? 'xbox-needs-iso' };
+      }
+      if (prepared.packed) {
+        console.log(`[nest] xbox folder packed for launch: ${prepared.rom}`);
+        const record = services.store.games('xbox').find((item) => item.path === rom);
+        if (record) await services.store.updateGame(record.id, { path: prepared.rom });
+      }
+      bootRom = prepared.rom;
+    }
   }
 
   if (engine.id === 'ppsspp') {
@@ -1404,7 +1443,7 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   }
 
   args = buildArgs(args, {
-    rom: rom ?? '',
+    rom: bootRom ?? '',
     system: systemId,
     userData: app.getPath('userData'),
     engines: enginesDir(),

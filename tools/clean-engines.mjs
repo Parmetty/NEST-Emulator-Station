@@ -34,6 +34,7 @@ const RUNTIME_FILES = [
   'xemu/xemu.toml',
   'xemu/xemu.log',
   'xemu/eeprom.bin',
+  'xemu/shader_cache_list',
 ];
 
 for (const relativePath of RUNTIME_FILES) {
@@ -193,6 +194,16 @@ function scrubRpcs3Runtime() {
 }
 
 scrubRpcs3Runtime();
+
+/** xemu compiles shaders into <engine>/shaders; keep the released engine clean. */
+function scrubXemuRuntime() {
+  const dir = join(enginesDir, 'xemu', 'shaders');
+  if (!existsSync(dir)) return;
+  removed.push(relative(root, dir));
+  if (!checkOnly) rmSync(dir, { recursive: true, force: true });
+}
+
+scrubXemuRuntime();
 
 /** Anything still pointing at the build machine is a packaging bug. */
 const LOCAL_PATH_PATTERNS = [/[A-Za-z]:\\\\workstop/i, /[A-Za-z]:\/workstop/i, /[A-Za-z]:\\\\Users\\\\/i];
