@@ -25,8 +25,11 @@ describe('xbox disc packaging helpers', () => {
   });
 
   it('defaults the image to a sibling file named after the game folder', () => {
-    const folder = path.join('D:\\Games', 'Halo 2 (USA)(Zh)');
-    expect(defaultXboxIsoPath(folder)).toBe(path.join('D:\\Games', 'Halo 2 (USA)(Zh).iso'));
+    // Must be an absolute path on every OS: defaultXboxIsoPath() resolves it,
+    // and a "D:\\Games" literal is relative on the Linux CI runner.
+    const parent = path.join(os.tmpdir(), 'Games');
+    const folder = path.join(parent, 'Halo 2 (USA)(Zh)');
+    expect(defaultXboxIsoPath(folder)).toBe(path.join(parent, 'Halo 2 (USA)(Zh).iso'));
   });
 
   it('refuses to boot a folder when packing is not allowed', async () => {
