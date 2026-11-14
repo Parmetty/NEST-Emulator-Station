@@ -314,6 +314,14 @@ export default function App() {
   /* ---------------------------------------------------------- firmware */
   /* -------------------------------------------------------- scan roots */
   const [rescanning, setRescanning] = useState(false);
+  const [hiddenGames, setHiddenGames] = useState<string[]>([]);
+
+  useEffect(() => {
+    void window.nest
+      .hiddenGames()
+      .then(setHiddenGames)
+      .catch(() => undefined);
+  }, []);
 
   const rescanAll = useCallback(async () => {
     setRescanning(true);
@@ -332,6 +340,17 @@ export default function App() {
       setRescanning(false);
     }
   }, [refreshHome, say]);
+
+  const restoreHidden = useCallback(async () => {
+    const result = await window.nest.clearHidden().catch(() => null);
+    if (!result?.ok) {
+      say('恢复失败');
+      return;
+    }
+    setHiddenGames([]);
+    say('已恢复被移除的游戏，重新扫描中…');
+    await rescanAll();
+  }, [rescanAll, say]);
 
   const removeRoot = useCallback(
     async (root: string) => {
@@ -645,7 +664,11 @@ export default function App() {
         say('移除失败');
         return;
       }
-      say(`已从库中移除 ${game.title}`);
+      say(`已从库中移除 ${game.title}（自动扫描不会再加回）`);
+      void window.nest
+        .hiddenGames()
+        .then(setHiddenGames)
+        .catch(() => undefined);
       if (shelf) {
         const games = await window.nest.games(shelf.system.id);
         setShelf({ ...shelf, games });
@@ -1744,6 +1767,15 @@ export default function App() {
                             {rescanning ? '扫描中…' : '立即扫描'}
                           </button>
                         </div>
+
+                        {hiddenGames.length > 0 ? (
+                          <div className="scan-root">
+                            <span>{hiddenGames.length} 个游戏已从库中移除（自动扫描不会加回）</span>
+                            <button className="ghost-btn" onClick={() => void restoreHidden()}>
+                              全部恢复
+                            </button>
+                          </div>
+                        ) : null}
                 </div>
               ) : settingsTab === 'nintendo' ? (
                 <div className="settings-cols">

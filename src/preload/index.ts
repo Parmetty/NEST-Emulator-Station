@@ -29,6 +29,10 @@ const api = {
   removeGame: (gameId: string): Promise<{ ok: boolean; error?: string }> =>
     ipcRenderer.invoke(CH.removeGame, { gameId }),
 
+  hiddenGames: (): Promise<string[]> => ipcRenderer.invoke(CH.hiddenGames),
+
+  clearHidden: (): Promise<{ ok: boolean; removed?: number }> => ipcRenderer.invoke(CH.clearHidden),
+
   renameGame: (
     gameId: string,
     title: string,

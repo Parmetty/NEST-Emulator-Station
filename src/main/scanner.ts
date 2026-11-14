@@ -82,6 +82,46 @@ export interface ScanOptions {
   systemId?: string;
   maxDepth?: number;
   maxFiles?: number;
+  /** Path → {size, sha1} of games already in the library, so rescans skip hashing. */
+  known?: Map<string, KnownEntry>;
+}
+
+export interface KnownEntry {
+  size: number;
+  sha1: string;
+}
+
+/** Bigger files are fingerprinted from head + tail + size instead of fully read. */
+const FULL_HASH_LIMIT = 64 * 1024 * 1024;
+const SAMPLE_BYTES = 4 * 1024 * 1024;
+
+export function normalizePathKey(file: string): string {
+  return file.replace(/\\/g, '/').toLowerCase();
+}
+
+/** Stable identity of a ROM: full SHA-1 when small, cheap head/tail sample when huge. */
+export async function fingerprintOf(file: string, size: number): Promise<string> {
+  if (size <= FULL_HASH_LIMIT) return sha1Of(file);
+  const hash = createHash('sha1');
+  hash.update(`size:${size}`);
+  const handle = await open(file, 'r');
+  try {
+    const head = Buffer.alloc(SAMPLE_BYTES);
+    const headRead = await handle.read(head, 0, SAMPLE_BYTES, 0);
+    hash.update(head.subarray(0, headRead.bytesRead));
+    const tail = Buffer.alloc(SAMPLE_BYTES);
+    const tailRead = await handle.read(tail, 0, SAMPLE_BYTES, Math.max(0, size - SAMPLE_BYTES));
+    hash.update(tail.subarray(0, tailRead.bytesRead));
+  } finally {
+    await handle.close();
+  }
+  return hash.digest('hex');
+}
+
+async function fileId(file: string, size: number, known?: Map<string, KnownEntry>): Promise<string> {
+  const hit = known?.get(normalizePathKey(file));
+  if (hit && hit.size === size) return hit.sha1;
+  return fingerprintOf(file, size);
 }
 
 const DEFAULT_DEPTH = 8;
@@ -326,7 +366,7 @@ export async function scanFolder(root: string, options: ScanOptions = {}): Promi
                 path: ps3.root,
                 fileName: path.basename(ps3.titleDir),
                 size: info.size,
-                sha1: await sha1Of(ps3.paramSfo),
+                sha1: await fileId(ps3.paramSfo, info.size, options.known),
                 systemId: 'ps3',
                 title: meta.title ?? titleFrom(path.basename(ps3.titleDir)),
                 region: meta.region,
@@ -349,7 +389,7 @@ export async function scanFolder(root: string, options: ScanOptions = {}): Promi
                 path: xboxFolder.root,
                 fileName: path.basename(full),
                 size: info.size,
-                sha1: await sha1Of(xboxFolder.xbe),
+                sha1: await fileId(xboxFolder.xbe, info.size, options.known),
                 systemId: 'xbox',
                 title: meta.title ?? titleFrom(path.basename(full)),
                 region: meta.region,
@@ -376,7 +416,7 @@ export async function scanFolder(root: string, options: ScanOptions = {}): Promi
                 path: psp.target,
                 fileName: path.basename(psp.titleDir),
                 size: info.size,
-                sha1: await sha1Of(hashTarget),
+                sha1: await fileId(hashTarget, info.size, options.known),
                 systemId: 'psp',
                 title: meta.title ?? titleFrom(path.basename(psp.titleDir)),
                 region: meta.region,
@@ -399,7 +439,7 @@ export async function scanFolder(root: string, options: ScanOptions = {}): Promi
                 path: god.header,
                 fileName: path.basename(god.titleDir),
                 size: info.size,
-                sha1: await sha1Of(god.header),
+                sha1: await fileId(god.header, info.size, options.known),
                 systemId: 'xbox360',
                 title: meta.title ?? god.title ?? titleFrom(path.basename(god.titleDir)),
                 region: meta.region,
@@ -439,7 +479,7 @@ export async function scanFolder(root: string, options: ScanOptions = {}): Promi
           }
         }
         const info = await stat(full);
-        const sha1 = await sha1Of(full);
+        const sha1 = await fileId(full, info.size, options.known);
         const meta = gameInfoFor(full, systemId);
         found.push({
           path: full,
