@@ -126,6 +126,75 @@ describe('scanner extensions', () => {
     expect(EXT_TO_SYSTEM.xbe).toBe('xbox');
   });
 
+  it('recognizes PSP UMD images even when the volume label is empty', async () => {
+    const root = await tempDir();
+    const image = Buffer.alloc(0x10020);
+    image.write('PSP_GAME', 0x9000, 'latin1');
+    await writeFile(path.join(root, 'Crisis Core.ISO'), image);
+
+    const found = await scanFolder(root);
+    expect(found).toHaveLength(1);
+    expect(found[0].systemId).toBe('psp');
+    expect(await scanFolder(root, { systemId: 'psp' })).toHaveLength(1);
+  });
+
+  it('recognizes an extracted PSP UMD folder as one game', async () => {
+    const root = await tempDir();
+    const game = path.join(root, 'sub', 'Crisis Core');
+    await mkdir(path.join(game, 'PSP_GAME', 'SYSDIR'), { recursive: true });
+    
+    await writeFile(path.join(game, 'PSP_GAME', 'PARAM.SFO'), sfoBuffer('Crisis Core -Final Fantasy VII-', 'ULJM-05221'));
+    await writeFile(path.join(game, 'PSP_GAME', 'SYSDIR', 'EBOOT.BIN'), 'decrypted');
+    await writeFile(path.join(game, 'UMD_DATA.BIN'), 'ULJM-05221');
+
+    const found = await scanFolder(root);
+    expect(found).toHaveLength(1);
+    expect(found[0].systemId).toBe('psp');
+    expect(found[0].path).toBe(game);
+    expect(found[0].title).toBe('Crisis Core -Final Fantasy VII-');
+    expect(found[0].region).toBe('NTSC-J');
+  });
+
+  it('recognizes a PSN/homebrew PSP folder and boots its EBOOT.PBP', async () => {
+    const root = await tempDir();
+    const game = path.join(root, 'PSP', 'GAME', 'NPJH50311');
+    await mkdir(game, { recursive: true });
+    const sfo = sfoBuffer('Crisis Core PSN', 'NPJH-50311');
+    const header = Buffer.alloc(0x28);
+    header.write('\0PBP', 0, 'latin1');
+    header.writeUInt32LE(0x00010000, 4);
+    header.writeUInt32LE(0x28, 0x08);
+    await writeFile(path.join(game, 'EBOOT.PBP'), Buffer.concat([header, sfo]));
+
+    const found = await scanFolder(root, { systemId: 'psp' });
+    expect(found).toHaveLength(1);
+    expect(found[0].path).toBe(path.join(game, 'EBOOT.PBP'));
+    expect(found[0].title).toBe('Crisis Core PSN');
+  });
+
+function sfoBuffer(title: string, discId: string): Buffer {
+  const keys = Buffer.from('TITLE\0DISC_ID\0', 'latin1');
+  const titleValue = Buffer.from(title + '\0', 'utf8');
+  const discValue = Buffer.from(discId + '\0', 'latin1');
+  const values = Buffer.concat([titleValue, discValue]);
+  const header = Buffer.alloc(0x14 + 2 * 16);
+  header.write('\0PSF', 0, 'latin1');
+  header.writeUInt32LE(0x101, 4);
+  header.writeUInt32LE(header.length, 8);
+  header.writeUInt32LE(header.length + keys.length, 12);
+  header.writeUInt32LE(2, 16);
+  header.writeUInt16LE(0, 0x14);
+  header.writeUInt16LE(0x0204, 0x16);
+  header.writeUInt32LE(titleValue.length, 0x18);
+  header.writeUInt32LE(titleValue.length, 0x1c);
+  header.writeUInt32LE(0, 0x20);
+  header.writeUInt16LE(6, 0x24);
+  header.writeUInt16LE(0x0204, 0x26);
+  header.writeUInt32LE(discValue.length, 0x28);
+  header.writeUInt32LE(discValue.length, 0x2c);
+  header.writeUInt32LE(titleValue.length, 0x30);
+  return Buffer.concat([header, keys, values]);
+}
   it('keeps a packed Xbox folder as one entry by skipping its sibling ISO', async () => {
     const root = await tempDir();
     const folder = path.join(root, 'Halo 2');

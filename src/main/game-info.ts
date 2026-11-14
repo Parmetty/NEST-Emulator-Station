@@ -114,13 +114,7 @@ function discInfo(file: string): GameInfo {
 
 /* ------------------------------------------------------------------ PS3 SFO */
 
-function sfoInfo(file: string): GameInfo {
-  let raw: Buffer;
-  try {
-    raw = readFileSync(file);
-  } catch {
-    return {};
-  }
+function sfoBufferInfo(raw: Buffer): GameInfo {
   if (raw.length < 0x14 || raw.toString('latin1', 0, 4) !== '\0PSF') return {};
   const keyTable = raw.readUInt32LE(0x08);
   const dataTable = raw.readUInt32LE(0x0c);
@@ -143,17 +137,47 @@ function sfoInfo(file: string): GameInfo {
     }
   }
   const title = cleanTitle(values.get('TITLE') ?? '');
-  const titleId = (values.get('TITLE_ID') ?? '').toUpperCase();
-  const region = ps3Region(titleId);
+  // PS3 discs use TITLE_ID, PSP discs use DISC_ID (ULUS-10563, ULES-01513...).
+  const titleId = (values.get('TITLE_ID') ?? values.get('DISC_ID') ?? '').toUpperCase();
+  const region = discRegion(titleId);
   return { title, region };
 }
 
-function ps3Region(titleId: string): string | undefined {
+function sfoInfo(file: string): GameInfo {
+  let raw: Buffer;
+  try {
+    raw = readFileSync(file);
+  } catch {
+    return {};
+  }
+  return sfoBufferInfo(raw);
+}
+
+/** PSP PSN / homebrew titles: EBOOT.PBP embeds PARAM.SFO right after the 0x28 header. */
+function pbpInfo(file: string): GameInfo {
+  let raw: Buffer;
+  try {
+    raw = readFileSync(file);
+  } catch {
+    return {};
+  }
+  if (raw.length < 0x28 || raw.toString('latin1', 0, 4) !== '\0PBP') return {};
+  const sfoStart = raw.readUInt32LE(0x08);
+  if (sfoStart <= 0 || sfoStart >= raw.length) return {};
+  return sfoBufferInfo(raw.subarray(sfoStart));
+}
+
+/**
+ * Disc title IDs carry the region:
+ *   PS3: BLUS/SLUS/NPUB, BLES/SLES/NPEB, BLJM/SLPS/NPJB, BLAS/SLAS/NPKH
+ *   PSP: ULUS/NPUH, ULES/NPEH, ULJM/ULJS/NPJH, ULAS/ULKS/NPKH
+ */
+function discRegion(titleId: string): string | undefined {
   if (!titleId) return undefined;
-  if (/^(BLUS|SLUS|SCUS|NPUB|NPEB?U)/.test(titleId)) return 'NTSC-U';
-  if (/^(BLES|SLES|SCES|NPEB)/.test(titleId)) return 'PAL';
-  if (/^(BLJM|BLJS|BLPS|SLPS|SLPM|SCPS|NPJB)/.test(titleId)) return 'NTSC-J';
-  if (/^(BLAS|SLAS|BLKS|SLKA|NPKH|NPKA)/.test(titleId)) return 'NTSC-Asia';
+  if (/^(BLUS|SLUS|SCUS|NPUB|ULUS|NPUH)/.test(titleId)) return 'NTSC-U';
+  if (/^(BLES|SLES|SCES|NPEB|NPEH|ULES)/.test(titleId)) return 'PAL';
+  if (/^(BLJM|BLJS|BLPS|SLPS|SLPM|SCPS|NPJB|NPJH|ULJM|ULJS)/.test(titleId)) return 'NTSC-J';
+  if (/^(BLAS|SLAS|BLKS|SLKA|NPKH|NPKA|ULAS|ULKS)/.test(titleId)) return 'NTSC-Asia';
   if (titleId.startsWith('NP')) return 'PSN';
   return undefined;
 }
@@ -286,6 +310,18 @@ const INFO_READERS: Record<string, (file: string) => GameInfo> = {
   ps3: (file) => (statSafeIsFile(path.join(file, 'PARAM.SFO')) ? sfoInfo(path.join(file, 'PARAM.SFO')) : sfoInfo(file)),
   xbox: xboxInfo,
   xbox360: stfsInfo,
+  psp: (file) => {
+    // EBOOT.PBP (PSN/homebrew) stores its PARAM.SFO inside the PBP container.
+    if (statSafeIsFile(file)) return pbpInfo(file);
+    const umd = path.join(file, 'PSP_GAME', 'PARAM.SFO');
+    if (statSafeIsFile(umd)) return sfoInfo(umd);
+    // PSN / homebrew folder: <title>/EBOOT.PBP carries the SFO inside the PBP.
+    const eboot = path.join(file, 'EBOOT.PBP');
+    if (statSafeIsFile(eboot)) return pbpInfo(eboot);
+    const sfo = path.join(file, 'PARAM.SFO');
+    if (statSafeIsFile(sfo)) return sfoInfo(sfo);
+    return {};
+  },
 };
 
 function statSafeIsFile(file: string): boolean {

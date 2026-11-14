@@ -133,7 +133,9 @@ async function sniffDiscSystem(file: string, ext: string): Promise<string | null
       const text = probe.subarray(0, probeRead.bytesRead).toString('latin1');
       if (text.includes(XDVDFS_MAGIC)) return 'xbox';
       if (text.includes('PLAYSTATION')) return 'ps2';
-      if (text.includes('PSP GAME')) return 'psp';
+      // PSP UMD images are ISO9660 too, but many repacks have an empty volume
+      // label; the game directory / UMD marker is the reliable signal.
+      if (/PSP[ _]GAME|UMD_DATA\.BIN/.test(text)) return 'psp';
     }
     return null;
   } catch {
@@ -245,6 +247,35 @@ async function detectXbox360God(
 }
 
 /**
+ * PSP games live in two folder shapes:
+ *
+ *   <title>/PSP_GAME/PARAM.SFO            <- extracted UMD dump (picked from PSP/GAME)
+ *   <title>/EBOOT.PBP + PARAM.SFO         <- PSN / homebrew download
+ *
+ * PPSSPP boots an EBOOT.PBP directly, so the stored path is that file while the
+ * display name comes from the folder.
+ */
+async function detectPspGame(
+  dir: string,
+): Promise<{ root: string; target: string; titleDir: string } | null> {
+  const umdSfo = path.join(dir, 'PSP_GAME', 'PARAM.SFO');
+  try {
+    const sfo = await stat(umdSfo);
+    if (sfo.isFile()) return { root: dir, target: dir, titleDir: dir };
+  } catch {
+    /* not an extracted UMD dump */
+  }
+  const eboot = path.join(dir, 'EBOOT.PBP');
+  try {
+    const file = await stat(eboot);
+    if (file.isFile() && file.size > 0) return { root: dir, target: eboot, titleDir: dir };
+  } catch {
+    /* not a PSN/homebrew folder */
+  }
+  return null;
+}
+
+/**
  * An unpacked Xbox game is a folder with `default.xbe`; xemu can boot that
  * folder directly, so Nest stores the directory itself as the launch target.
  */
@@ -325,6 +356,33 @@ export async function scanFolder(root: string, options: ScanOptions = {}): Promi
               });
             } catch {
               /* unreadable Xbox folder: skip */
+            }
+          }
+          continue;
+        }
+        const psp = await detectPspGame(full);
+        if (psp) {
+          if (seen >= maxFiles) return;
+          if (!options.systemId || options.systemId === 'psp') {
+            seen += 1;
+            try {
+              // Hash the disc metadata (PARAM.SFO) for UMD dumps, the bootable
+              // EBOOT.PBP for PSN/homebrew folders.
+              const hashTarget =
+                psp.target === psp.root ? path.join(psp.root, 'PSP_GAME', 'PARAM.SFO') : psp.target;
+              const info = await stat(hashTarget);
+              const meta = gameInfoFor(psp.root, 'psp');
+              found.push({
+                path: psp.target,
+                fileName: path.basename(psp.titleDir),
+                size: info.size,
+                sha1: await sha1Of(hashTarget),
+                systemId: 'psp',
+                title: meta.title ?? titleFrom(path.basename(psp.titleDir)),
+                region: meta.region,
+              });
+            } catch {
+              /* unreadable PSP folder: skip */
             }
           }
           continue;

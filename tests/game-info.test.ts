@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { gameInfoFor } from '../src/main/game-info';
@@ -79,6 +79,54 @@ describe('game metadata sniffing', () => {
     await rm(path.dirname(file), { recursive: true, force: true });
   });
 
+  it('reads a PSP extracted-UMD PARAM.SFO and its DISC_ID region', async () => {
+    const dir = await mkdtemp(path.join(os.tmpdir(), 'nest-psp-sfo-'));
+    await mkdir(path.join(dir, 'PSP_GAME'), { recursive: true });
+    await writeFile(path.join(dir, 'PSP_GAME', 'PARAM.SFO'), sfoBuffer('Crisis Core', 'ULES-01513'));
+    const info = gameInfoFor(dir, 'psp');
+    expect(info.title).toBe('Crisis Core');
+    expect(info.region).toBe('PAL');
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  it('reads title and region from a PSP EBOOT.PBP container', async () => {
+    const dir = await mkdtemp(path.join(os.tmpdir(), 'nest-psp-pbp-'));
+    const sfo = sfoBuffer('Crisis Core PSN', 'NPUH-10118');
+    const header = Buffer.alloc(0x28);
+    header.write('\0PBP', 0, 'latin1');
+    header.writeUInt32LE(0x00010000, 4);
+    header.writeUInt32LE(0x28, 0x08);
+    const file = path.join(dir, 'EBOOT.PBP');
+    await writeFile(file, Buffer.concat([header, sfo]));
+    const info = gameInfoFor(file, 'psp');
+    expect(info.title).toBe('Crisis Core PSN');
+    expect(info.region).toBe('NTSC-U');
+    await rm(dir, { recursive: true, force: true });
+  });
+
+function sfoBuffer(title: string, discId: string): Buffer {
+  const keys = Buffer.from('TITLE\0DISC_ID\0', 'latin1');
+  const titleValue = Buffer.from(title + '\0', 'utf8');
+  const discValue = Buffer.from(discId + '\0', 'latin1');
+  const values = Buffer.concat([titleValue, discValue]);
+  const header = Buffer.alloc(0x14 + 2 * 16);
+  header.write('\0PSF', 0, 'latin1');
+  header.writeUInt32LE(0x101, 4);
+  header.writeUInt32LE(header.length, 8);
+  header.writeUInt32LE(header.length + keys.length, 12);
+  header.writeUInt32LE(2, 16);
+  header.writeUInt16LE(0, 0x14);
+  header.writeUInt16LE(0x0204, 0x16);
+  header.writeUInt32LE(titleValue.length, 0x18);
+  header.writeUInt32LE(titleValue.length, 0x1c);
+  header.writeUInt32LE(0, 0x20);
+  header.writeUInt16LE(6, 0x24);
+  header.writeUInt16LE(0x0204, 0x26);
+  header.writeUInt32LE(discValue.length, 0x28);
+  header.writeUInt32LE(discValue.length, 0x2c);
+  header.writeUInt32LE(titleValue.length, 0x30);
+  return Buffer.concat([header, keys, values]);
+}
   it('reads title and region from an Xbox XBE certificate', async () => {
     const buffer = Buffer.alloc(0x2000);
     buffer.write('XBEH', 0, 'latin1');
