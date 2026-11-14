@@ -824,7 +824,7 @@ export async function rescanRoots(
   let total = 0;
   for (const root of roots) {
     try {
-      const files = await scanFolder(root);
+      const files = await scanFolder(root, { known: store.knownIds() });
       const result = await store.upsertGames(files);
       added += result.added;
       skipped += result.skipped;
@@ -1017,6 +1017,13 @@ export function registerIpc(services: Services): void {
     return store.games(parsed.data.systemId).map(withCover);
   });
 
+  ipcMain.handle(CH.hiddenGames, () => store.hiddenGames());
+
+  ipcMain.handle(CH.clearHidden, async () => {
+    const removed = await store.clearHidden();
+    return { ok: true, removed };
+  });
+
   ipcMain.handle(CH.removeGame, async (_event, raw) => {
     const gameId = String((raw as { gameId?: unknown })?.gameId ?? '');
     if (!gameId) return { ok: false, error: 'bad-request' };
@@ -1138,7 +1145,7 @@ export function registerIpc(services: Services): void {
     }
 
     try {
-      const files = await scanFolder(root, { systemId: parsed.data.systemId });
+      const files = await scanFolder(root, { systemId: parsed.data.systemId, known: store.knownIds() });
       const { added, skipped } = await store.upsertGames(files);
       // Remember the folder so the next launch can re-scan it without asking.
       await rememberScanRoot(store, root);
