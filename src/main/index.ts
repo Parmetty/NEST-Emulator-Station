@@ -725,8 +725,17 @@ async function boot(): Promise<void> {
     mainWindow.webContents.once('did-finish-load', () => {
       const systemId = trySystemFlag.split('=')[1];
       setTimeout(async () => {
-        const result = await startLaunch(services!, { systemId, mode: 'system' });
+        const insertFlag = process.argv.find((arg) => arg.startsWith('--insert-umd='));
+        // The env fallback survives shell quoting when the dev runner wraps argv.
+        const insertRom = insertFlag?.slice('--insert-umd='.length) ?? process.env.NEST_INSERT_UMD;
+        console.log(`[nest] trysystem insert rom: ${insertRom ?? '(none)'}`);
+        const result = await startLaunch(services!, {
+          systemId,
+          mode: 'system',
+          ...(insertRom ? { rom: insertRom, insertDisc: true } : {}),
+        });
         console.log(`[nest] trysystem ${result.ok ? 'ok' : 'failed'}: ${result.ok ? systemId : result.error}`);
+        if (result.warning) console.error(`[nest] trysystem warning: ${result.warning}`);
         if (!result.ok) {
           app.exit(3);
           return;

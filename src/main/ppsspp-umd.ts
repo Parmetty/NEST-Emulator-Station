@@ -57,23 +57,46 @@ export function waitForPort(port: number, timeoutMs = 30_000): Promise<void> {
   });
 }
 
-/** Insert a disc image (ISO/CSO) or an extracted UMD folder into the XMB. */
-export async function insertUmd(port: number, romPath: string, timeoutMs = 45_000): Promise<UmdResult> {
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Insert a disc image (ISO/CSO) or an extracted UMD folder into the XMB.
+ *
+ * The debugger port starts accepting connections before the VSH has booted;
+ * inserting then fails with "Game not running" and the shell would boot with an
+ * empty drive. Poll game.status until the VSH reports itself, give the drive
+ * callback a moment, then insert. The same loop covers a slow first boot.
+ */
+export async function insertUmd(port: number, romPath: string, timeoutMs = 60_000): Promise<UmdResult> {
   try {
     await waitForPort(port, timeoutMs);
   } catch (error) {
     return { ok: false, error: (error as Error).message };
   }
-  let client;
-  try {
-    client = await connectDebugger(port, '127.0.0.1', 10_000);
-    await client.request('game.umd.insert', { path: romPath }, 20_000);
-    return { ok: true };
-  } catch (error) {
-    return { ok: false, error: (error as Error).message };
-  } finally {
-    client?.close();
+  const deadline = Date.now() + timeoutMs;
+  let lastError = 'game-not-running';
+  while (Date.now() < deadline) {
+    let client;
+    try {
+      client = await connectDebugger(port, '127.0.0.1', 8000);
+      const status: any = await client.request('game.status', {}, 8000);
+      if (!status?.game?.id) {
+        lastError = 'game-not-running';
+        await sleep(500);
+        continue;
+      }
+      // The VSH just reached its main loop; let the drive callback register.
+      await sleep(1200);
+      await client.request('game.umd.insert', { path: romPath }, 15_000);
+      return { ok: true };
+    } catch (error) {
+      lastError = (error as Error).message;
+      await sleep(800);
+    } finally {
+      client?.close();
+    }
   }
+  return { ok: false, error: lastError };
 }
 
 /** Take the disc back out (used when the player closes the session from Nest). */
