@@ -39,8 +39,12 @@ const api = {
   ): Promise<{ ok: boolean; error?: string; game?: GameRecord }> =>
     ipcRenderer.invoke(CH.renameGame, { gameId, title }),
 
-  launch: (systemId: string, mode: LaunchMode = 'game', rom?: string): Promise<LaunchResult> =>
-    ipcRenderer.invoke(CH.launch, { systemId, mode, rom }),
+  launch: (
+    systemId: string,
+    mode: LaunchMode = 'game',
+    rom?: string,
+    insertDisc?: boolean,
+  ): Promise<LaunchResult> => ipcRenderer.invoke(CH.launch, { systemId, mode, rom, insertDisc }),
 
   stop: (sessionId: string): Promise<{ ok: boolean }> => ipcRenderer.invoke(CH.stop, { sessionId }),
 

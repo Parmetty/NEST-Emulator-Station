@@ -846,6 +846,9 @@ export default function App() {
         'missing-ppsspp': '找不到内置 PPSSPP 引擎',
         'missing-ps2-bios': '缺少 PS2 BIOS：请到「设置 → PlayStation」导入自备的 PS2 BIOS',
         'missing-psp-firmware': '缺少 PSP 固件：请在 PPSSPP 里安装 6.61 固件后再启动 XMB',
+        'cia-encrypted':
+          '这个 CIA 是加密的：Azahar 不支持安装加密 CIA，请先用自己主机的 boot9/keys 解密后再试',
+        'umd-port-unavailable': '没有可用的调试端口，请稍后重试',
         'missing-3ds-system-files':
           '3DS HOME Menu 需要 Azahar 系统文件：请先用真机 + Artic Setup Tool 在 Azahar 里执行 Set Up System Files',
         'missing-xbox-firmware':
@@ -867,6 +870,27 @@ export default function App() {
     }
     window.setTimeout(() => setOverlay(null), 1800);
   }, [dialog, say]);
+
+  const launchPspUmd = useCallback(
+    async (game: GameRecord) => {
+      setMenu(null);
+      setOverlay({ name: game.title, meta: '正在开机 · 插入 UMD…' });
+      const result = await window.nest.launch('psp', 'system', game.path, true);
+      if (!result.ok) {
+        setOverlay(null);
+        const map: Record<string, string> = {
+          'missing-psp-firmware': '缺少 PSP 固件：请先在 PPSSPP 设置 → 工具 → PSP 固件 里安装 6.61 固件',
+          'umd-port-unavailable': '没有可用的调试端口，请稍后重试',
+          'engine-not-installed': '找不到内置 PPSSPP 引擎',
+        };
+        say(map[result.error ?? ''] ?? `启动失败（${result.error ?? '未知错误'}）`);
+        return;
+      }
+      if (result.warning) say(result.warning);
+      window.setTimeout(() => setOverlay(null), 1800);
+    },
+    [say],
+  );
 
   const toggleFav = useCallback(async () => {
     if (!selectedSystem) return;
@@ -1545,6 +1569,12 @@ export default function App() {
               <button className="ctx-item" onClick={() => void openCheats(menu.game)}>
                 <span className="ctx-label">金手指…</span>
                 <span className="ctx-hint">mGBA .cheats 文件</span>
+              </button>
+            ) : null}
+            {menu.game.systemId === 'psp' ? (
+              <button className="ctx-item" onClick={() => void launchPspUmd(menu.game)}>
+                <span className="ctx-label">在系统里启动（插入 UMD）</span>
+                <span className="ctx-hint">开 XMB 并把这张盘插进去</span>
               </button>
             ) : null}
             {menu.game.systemId === 'xbox' && !/\.(iso|xiso)$/i.test(menu.game.path) ? (

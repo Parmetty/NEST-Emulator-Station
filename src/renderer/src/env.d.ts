@@ -22,7 +22,7 @@ export interface NestApi {
   hiddenGames(): Promise<string[]>;
   clearHidden(): Promise<{ ok: boolean; removed?: number }>;
   renameGame(gameId: string, title: string): Promise<{ ok: boolean; error?: string; game?: GameRecord }>;
-  launch(systemId: string, mode?: LaunchMode, rom?: string): Promise<LaunchResult>;
+  launch(systemId: string, mode?: LaunchMode, rom?: string, insertDisc?: boolean): Promise<LaunchResult>;
   stop(sessionId: string): Promise<{ ok: boolean }>;
   rescan(): Promise<ScanResult>;
   removeScanRoot(root: string): Promise<{ ok: boolean; error?: string }>;

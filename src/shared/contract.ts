@@ -71,6 +71,8 @@ export const launchRequestSchema = z.object({
   mode: launchModeSchema.default('game'),
   /** Absolute path of the ROM to boot. Empty means "boot the engine as-is". */
   rom: z.string().max(4096).optional(),
+  /** PSP system mode: insert the ROM as a UMD into the running XMB. */
+  insertDisc: z.boolean().optional(),
 });
 
 export const scanRequestSchema = z.object({
@@ -286,6 +288,8 @@ export interface LaunchResult {
   ok: boolean;
   sessionId?: string;
   error?: string;
+  /** Non-fatal problem after a successful launch (e.g. UMD insert failed). */
+  warning?: string;
 }
 
 export type LaunchState = 'starting' | 'running' | 'exited' | 'crashed' | 'refused';

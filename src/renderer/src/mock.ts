@@ -155,7 +155,7 @@ export function installMockApi(): void {
       });
       return { ok: true, root: 'C:\\ROMs', added: 1, skipped: 0, total: 1 };
     },
-    launch: async (systemId: string, _mode: LaunchMode = 'game', rom?: string) => {
+    launch: async (systemId: string, _mode: LaunchMode = 'game', rom?: string, _insertDisc?: boolean) => {
       const emit = (state: LaunchEvent['state'], code: number | null = null) =>
         listener?.({ sessionId: 'mock', systemId, state, code, at: Date.now() });
       emit('starting');

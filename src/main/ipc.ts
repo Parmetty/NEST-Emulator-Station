@@ -80,6 +80,8 @@ import {
 import { scanFolder } from './scanner';
 import { Store } from './store';
 import { Supervisor } from './supervisor';
+import { inspectCia } from './cia';
+import { freeTcpPort, insertUmd } from './ppsspp-umd';
 
 export interface Services {
   store: Store;
@@ -1285,13 +1287,25 @@ export function registerIpc(services: Services): void {
 export async function startLaunch(services: Services, raw: unknown): Promise<LaunchResult> {
   const parsed = launchRequestSchema.safeParse(raw);
   if (!parsed.success) return { ok: false, error: 'bad-request' };
-  const { systemId, mode, rom } = parsed.data;
+  const { systemId, mode, rom, insertDisc } = parsed.data;
   // xemu needs a space-free disc image; other engines use the path as-is.
   let bootRom = rom;
 
   const system = systemById.get(systemId as SystemId);
   if (!system) return { ok: false, error: 'unknown-system' };
   if (system.state === 'locked') return { ok: false, error: 'not-supported' };
+
+  // Azahar blocks encrypted CIAs at install time; fail early with a message the
+  // UI can explain instead of letting the emulator surface d8a08004.
+  if (systemId === '3ds' && rom && /\.cia$/i.test(rom)) {
+    const cia = inspectCia(rom);
+    if (cia.ok && cia.encrypted) {
+      console.error(
+        `[nest] CIA 是加密的（title ${cia.titleId ?? '?'}）：Azahar 拒绝安装加密 CIA，请先用 boot9/keys 解密。`,
+      );
+      return { ok: false, error: 'cia-encrypted' };
+    }
+  }
 
   const preferred = services.engines.get(
     process.env.NEST_FAKE_ENGINE === '1' ? 'fake' : system.engine,
@@ -1622,6 +1636,20 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     resetLibretroShots(libretroShotDir(app.getPath('userData')));
   }
 
+  // PSP "insert disc": the XMB is started with PPSSPP's WebSocket debugger
+  // enabled, then game.umd.insert makes the disc appear in the Game column.
+  let umdInsert: { port: number; rom: string } | null = null;
+  if (engine.id === 'ppsspp' && mode === 'system' && insertDisc && rom) {
+    try {
+      const port = await freeTcpPort();
+      args = [...args, `--debugger=${port}`];
+      umdInsert = { port, rom };
+    } catch (error) {
+      console.error('[nest] psp umd: cannot reserve debugger port', error);
+      return { ok: false, error: 'umd-port-unavailable' };
+    }
+  }
+
   const sessionId = randomUUID();
   const game = rom ? services.store.games().find((g) => g.path === rom) : undefined;
   const started = services.supervisor.start({
@@ -1638,6 +1666,15 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   sessionEngines.set(sessionId, engine.id);
 
   await services.store.recordSession(systemId, Date.now(), game?.id);
+
+  if (umdInsert) {
+    const inserted = await insertUmd(umdInsert.port, umdInsert.rom);
+    if (!inserted.ok) {
+      console.error(`[nest] psp umd insert failed: ${inserted.error}`);
+      return { ok: true, sessionId, warning: `UMD 插入失败：${inserted.error}` };
+    }
+    console.log(`[nest] psp umd inserted: ${umdInsert.rom}`);
+  }
 
   // Some engines expose "system mode" only through their GUI (Dolphin: Tools →
   // Load GameCube Main Menu). The manifest describes how to get there; a helper
