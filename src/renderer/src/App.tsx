@@ -408,6 +408,7 @@ export default function App() {
           'missing-cemu-keys': 'keys.txt 里没有有效的 32 位十六进制密钥行',
           'invalid-wiiu-mlc': '这个目录不是 Wii U NAND（缺少 sys/title/00050010/10040000 或 usr/）',
           'keys-io-error': '读取 / 写入 keys.txt 失败',
+          'bad-size-boot9': 'boot9.bin 大小不对（应为 64 KB，或 32 KB 的 protected 区）',
         };
         say(messages[result.error ?? ''] ?? '导入失败');
         return;
@@ -853,6 +854,11 @@ export default function App() {
         'cia-uses-seed':
           '这个游戏使用 seed 加密：需要从你自己的 3DS 提取 seeddb.bin 后才能解密',
         'cia-malformed': '这个 CIA 结构不完整（内容不是标准 NCCH），可能是坏包，请换一份',
+        'missing-3ds-boot9':
+          '解密 3DS CIA 需要 boot9.bin：请到「设置 → 系统文件（自备）」导入你自己主机的 boot9',
+        'bad-3ds-boot9': 'boot9.bin 大小不对：应为 64 KB（或 32 KB 的 protected 区）',
+        '3ds-decrypt-failed': '3DS 解密失败：文件可能不是完整的 CIA，请换一份',
+        '3ds-install-failed': 'Azahar 安装失败：请查看 Azahar 的失败提示，或确认磁盘空间充足',
         'umd-port-unavailable': '没有可用的调试端口，请稍后重试',
         'missing-3ds-system-files':
           '3DS HOME Menu 需要 Azahar 系统文件：请先用真机 + Artic Setup Tool 在 Azahar 里执行 Set Up System Files',

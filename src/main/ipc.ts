@@ -81,6 +81,7 @@ import { scanFolder } from './scanner';
 import { Store } from './store';
 import { Supervisor } from './supervisor';
 import { inspectCia } from './cia';
+import { prepareInstallableCia } from './three-ds-cia';
 import { freeTcpPort, insertUmd } from './ppsspp-umd';
 
 export interface Services {
@@ -334,6 +335,52 @@ function ps1BiosFiles(): string[] {
   }
 }
 
+/* ---------------------------------------------------------- 3ds boot9 */
+function threeDsBoot9Path(): string {
+  return path.join(app.getPath('userData'), '3ds', 'boot9.bin');
+}
+
+function azaharProfileEnv(): NodeJS.ProcessEnv {
+  const root = path.join(app.getPath('userData'), 'azahar');
+  const roaming = path.join(root, 'AppData', 'Roaming');
+  const local = path.join(root, 'AppData', 'Local');
+  mkdirSync(roaming, { recursive: true });
+  mkdirSync(local, { recursive: true });
+  return { USERPROFILE: root, APPDATA: roaming, LOCALAPPDATA: local };
+}
+
+function autoDismissAzaharDialog(pid: number): void {
+  const exe = path.join(toolsDir(), 'nest-dialog.exe');
+  if (!existsSync(exe)) return;
+  for (const title of ['Success', 'Failure']) {
+    const helper = spawn(
+      exe,
+      ['--pid', String(pid), '--title', title, '--button', 'OK', '--timeout', '900000', '--log', path.join(app.getPath('userData'), 'shots', 'azahar-install-dialog.log')],
+      { windowsHide: true, stdio: 'ignore' },
+    );
+    helper.once('exit', (code) => console.log('[nest] azahar install dialog (' + title + ') helper exit ' + code));
+  }
+}
+
+function installCiaWithAzahar(exe: string, cia: string, env: NodeJS.ProcessEnv): Promise<boolean> {
+  return new Promise((resolve) => {
+    const child = spawn(exe, ['--install', cia], { env, cwd: path.dirname(exe), windowsHide: false, stdio: 'ignore' });
+    if (child.pid) autoDismissAzaharDialog(child.pid);
+    let settled = false;
+    const finish = (ok: boolean) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(ok);
+    };
+    const timer = setTimeout(() => {
+      try { child.kill(); } catch { /* ignore */ }
+      finish(false);
+    }, 15 * 60 * 1000);
+    child.once('error', () => finish(false));
+    child.once('exit', (code) => finish(code === 0));
+  });
+}
 function firmwareStates(services: Services): FirmwareState[] {
   const states: FirmwareState[] = [];
 
@@ -419,6 +466,26 @@ function firmwareStates(services: Services): FirmwareState[] {
     });
   }
 
+  const boot9 = threeDsBoot9Path();
+  if (existsSync(boot9)) {
+    const boot9Size = statSync(boot9).size;
+    const ok = boot9Size === 0x10000 || boot9Size === 0x8000;
+    states.push({
+      kind: '3ds-boot9',
+      label: '3DS 解密密钥（boot9.bin）',
+      status: ok ? 'ok' : 'invalid',
+      path: boot9,
+      detail: ok ? '用于解密 3DS CIA（自备）' : '大小应为 64 KB 或 32 KB',
+    });
+  } else {
+    states.push({
+      kind: '3ds-boot9',
+      label: '3DS 解密密钥（boot9.bin）',
+      status: 'missing',
+      path: null,
+      detail: '解密 3DS CIA 用；从你自己的 3DS 提取',
+    });
+  }
   const wad = wiiMenuWadPath();
   if (existsSync(wad)) {
     const size = statSync(wad).size;
@@ -572,6 +639,7 @@ async function pickFirmware(services: Services, raw: unknown): Promise<{
     kind !== 'ps1-bios' &&
     kind !== 'ps2-bios' &&
     kind !== 'psp-firmware' &&
+    kind !== '3ds-boot9' &&
     kind !== 'xbox-mcpx' &&
     kind !== 'xbox-bios' &&
     kind !== 'xbox-hdd'
@@ -594,6 +662,24 @@ async function pickFirmware(services: Services, raw: unknown): Promise<{
     return { ok: true, state: firmwareStates(services).find((state) => state.kind === kind) };
   }
 
+  if (kind === '3ds-boot9') {
+    const picked = await dialog.showOpenDialog({
+      title: '选择 3DS boot9.bin（64 KB，自备）',
+      properties: ['openFile'],
+      filters: [{ name: 'boot9', extensions: ['bin'] }],
+    });
+    if (picked.canceled || picked.filePaths.length === 0) return { ok: true, canceled: true };
+    const source = picked.filePaths[0];
+    const buffer = readFileSync(source);
+    if (buffer.length !== 0x10000 && buffer.length !== 0x8000) {
+      return { ok: false, error: 'bad-size-boot9' };
+    }
+    const target = threeDsBoot9Path();
+    mkdirSync(path.dirname(target), { recursive: true });
+    writeFileSync(target, buffer);
+    console.log('[nest] 3ds boot9 imported: ' + source + ' -> ' + target);
+    return { ok: true, state: firmwareStates(services).find((state) => state.kind === kind) };
+  }
   if (kind === 'wiiu-mlc') {
     const picked = await dialog.showOpenDialog({
       title: '选择 Wii U NAND / MLC 目录',
@@ -1295,19 +1381,53 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   if (!system) return { ok: false, error: 'unknown-system' };
   if (system.state === 'locked') return { ok: false, error: 'not-supported' };
 
-  // Azahar refuses encrypted CIAs and cannot load a .cia directly at all: the
-  // content has to be decrypted to a plaintext NCCH first. Inspect the container
-  // up front so the UI can explain the exact blocker instead of showing a
-  // generic "invalid application format" dialog.
+  // Azahar cannot load .cia files directly: they have to be installed. Chinese
+  // repacks are often titlekey-decrypted but still have encrypted NCCH content, so
+  // Nest decrypts the container, installs it through Azahar's own CLI, then opens
+  // Azahar's game list. A marker prevents re-installing on every launch.
   if (systemId === '3ds' && rom && /\.cia$/i.test(rom)) {
     const cia = inspectCia(rom);
-    if (!cia.ok) {
-      console.error(`[nest] CIA 检查失败（${rom}）：${cia.issues.join(', ')}`);
-      if (cia.issues.includes('content-encrypted')) return { ok: false, error: 'cia-encrypted' };
-      if (cia.issues.includes('uses-seed')) return { ok: false, error: 'cia-uses-seed' };
-      if (cia.issues.includes('ncch-encrypted')) return { ok: false, error: 'cia-needs-decrypt' };
+    if (!cia.ok && cia.issues.includes('uses-seed')) return { ok: false, error: 'cia-uses-seed' };
+    if (!cia.ok && !cia.ncch?.present && !cia.contentEncrypted) {
       return { ok: false, error: 'cia-malformed' };
     }
+    const azahar = services.engines.get('azahar');
+    const exe = azahar ? services.engines.detect(azahar) : null;
+    if (!exe) return { ok: false, error: 'engine-not-installed' };
+    const env = azaharProfileEnv();
+    const markerPath = path.join(app.getPath('userData'), '3ds-installed.json');
+    let installed: Record<string, { source: string; size: number; mtime: number }> = {};
+    try {
+      installed = JSON.parse(readFileSync(markerPath, 'utf8')) as typeof installed;
+    } catch {
+      installed = {};
+    }
+    const id = cia.titleId ?? path.basename(rom);
+    const stat = statSync(rom);
+    const known = installed[id];
+    const upToDate = known && known.source === rom && known.size === stat.size && known.mtime === stat.mtimeMs;
+    if (!upToDate) {
+      const prepared = prepareInstallableCia({
+        source: rom,
+        boot9: threeDsBoot9Path(),
+        cacheDir: path.join(app.getPath('userData'), '3ds-cache'),
+      });
+      if (!prepared.ok || !prepared.path) {
+        console.error('[nest] 3ds CIA 解密失败：' + (prepared.error ?? 'unknown'));
+        return { ok: false, error: prepared.error ?? '3ds-decrypt-failed' };
+      }
+      console.log('[nest] 3ds installing ' + prepared.path);
+      const ok = await installCiaWithAzahar(exe, prepared.path, env);
+      if (!ok) return { ok: false, error: '3ds-install-failed' };
+      installed[id] = { source: rom, size: stat.size, mtime: stat.mtimeMs };
+      mkdirSync(path.dirname(markerPath), { recursive: true });
+      writeFileSync(markerPath, JSON.stringify(installed, null, 2));
+      if (prepared.decrypted) {
+        try { unlinkSync(prepared.path); } catch { /* keep cache on failure */ }
+      }
+    }
+    spawn(exe, [], { env, cwd: path.dirname(exe), detached: true, stdio: 'ignore' }).unref();
+    return { ok: true, warning: '已安装到 Azahar，正在打开游戏列表' };
   }
 
   const preferred = services.engines.get(
@@ -1481,17 +1601,12 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   // Redirecting USERPROFILE for the child process keeps 3DS config / NAND inside
   // Nest's data directory instead of leaving a second copy in %APPDATA%.
   if (engine.id === 'azahar') {
-    const root = path.join(app.getPath('userData'), 'azahar');
-    const roaming = path.join(root, 'AppData', 'Roaming');
-    const local = path.join(root, 'AppData', 'Local');
-    mkdirSync(roaming, { recursive: true });
-    mkdirSync(local, { recursive: true });
     applyControls(services, 'azahar', false, {
       gamepads: countGamepads(),
       mode: services.store.getSettings().controls?.azahar?.mode,
     });
-    env = { USERPROFILE: root, APPDATA: roaming, LOCALAPPDATA: local };
-    console.log(`[nest] azahar user dir: ${root}`);
+    env = azaharProfileEnv();
+    console.log('[nest] azahar user dir: ' + path.join(app.getPath('userData'), 'azahar'));
   }
 
   args = buildArgs(args, {

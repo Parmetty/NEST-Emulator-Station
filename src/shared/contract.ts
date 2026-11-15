@@ -47,6 +47,7 @@ export type FirmwareKind =
   | 'ps1-bios'
   | 'ps2-bios'
   | 'psp-firmware'
+  | '3ds-boot9'
   | 'wiiu-mlc'
   | 'xbox-mcpx'
   | 'xbox-bios'
