@@ -848,6 +848,11 @@ export default function App() {
         'missing-psp-firmware': '缺少 PSP 固件：请在 PPSSPP 里安装 6.61 固件后再启动 XMB',
         'cia-encrypted':
           '这个 CIA 是加密的：Azahar 不支持安装加密 CIA，请先用自己主机的 boot9/keys 解密后再试',
+        'cia-needs-decrypt':
+          '这个 CIA 的内容已是明文，但内部 NCCH 仍处于加密状态（crypto_method=1）：Azahar 直读前需要完全解密，Nest 的解密流程正在接入',
+        'cia-uses-seed':
+          '这个游戏使用 seed 加密：需要从你自己的 3DS 提取 seeddb.bin 后才能解密',
+        'cia-malformed': '这个 CIA 结构不完整（内容不是标准 NCCH），可能是坏包，请换一份',
         'umd-port-unavailable': '没有可用的调试端口，请稍后重试',
         'missing-3ds-system-files':
           '3DS HOME Menu 需要 Azahar 系统文件：请先用真机 + Artic Setup Tool 在 Azahar 里执行 Set Up System Files',

@@ -1295,15 +1295,18 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   if (!system) return { ok: false, error: 'unknown-system' };
   if (system.state === 'locked') return { ok: false, error: 'not-supported' };
 
-  // Azahar blocks encrypted CIAs at install time; fail early with a message the
-  // UI can explain instead of letting the emulator surface d8a08004.
+  // Azahar refuses encrypted CIAs and cannot load a .cia directly at all: the
+  // content has to be decrypted to a plaintext NCCH first. Inspect the container
+  // up front so the UI can explain the exact blocker instead of showing a
+  // generic "invalid application format" dialog.
   if (systemId === '3ds' && rom && /\.cia$/i.test(rom)) {
     const cia = inspectCia(rom);
-    if (cia.ok && cia.encrypted) {
-      console.error(
-        `[nest] CIA 是加密的（title ${cia.titleId ?? '?'}）：Azahar 拒绝安装加密 CIA，请先用 boot9/keys 解密。`,
-      );
-      return { ok: false, error: 'cia-encrypted' };
+    if (!cia.ok) {
+      console.error(`[nest] CIA 检查失败（${rom}）：${cia.issues.join(', ')}`);
+      if (cia.issues.includes('content-encrypted')) return { ok: false, error: 'cia-encrypted' };
+      if (cia.issues.includes('uses-seed')) return { ok: false, error: 'cia-uses-seed' };
+      if (cia.issues.includes('ncch-encrypted')) return { ok: false, error: 'cia-needs-decrypt' };
+      return { ok: false, error: 'cia-malformed' };
     }
   }
 
