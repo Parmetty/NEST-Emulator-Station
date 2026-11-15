@@ -1125,6 +1125,22 @@ export function registerIpc(services: Services): void {
     return { ok: true, removed };
   });
 
+  ipcMain.handle(CH.unhideGame, async (_event, raw) => {
+    const file = typeof raw === 'string' ? raw : '';
+    if (!file || !path.isAbsolute(file)) return { ok: false, error: 'bad-request' };
+    const removed = await store.unhide(file);
+    if (!removed) return { ok: false, error: 'not-hidden' };
+    if (!existsSync(file)) return { ok: true, added: 0, fileExists: false };
+    try {
+      const files = await scanFolder(path.dirname(file), { known: store.knownIds(), only: file });
+      const result = await store.upsertGames(files);
+      return { ok: true, added: result.added, fileExists: true };
+    } catch (error) {
+      console.error('[nest] unhide rescan failed', error);
+      return { ok: true, added: 0, fileExists: true };
+    }
+  });
+
   ipcMain.handle(CH.removeGame, async (_event, raw) => {
     const gameId = String((raw as { gameId?: unknown })?.gameId ?? '');
     if (!gameId) return { ok: false, error: 'bad-request' };

@@ -32,6 +32,10 @@ const api = {
   hiddenGames: (): Promise<string[]> => ipcRenderer.invoke(CH.hiddenGames),
 
   clearHidden: (): Promise<{ ok: boolean; removed?: number }> => ipcRenderer.invoke(CH.clearHidden),
+  unhideGame: (
+    file: string,
+  ): Promise<{ ok: boolean; added?: number; fileExists?: boolean; error?: string }> =>
+    ipcRenderer.invoke(CH.unhideGame, file),
 
   renameGame: (
     gameId: string,

@@ -352,6 +352,24 @@ export default function App() {
     await rescanAll();
   }, [rescanAll, say]);
 
+  const restoreOne = useCallback(
+    async (file: string) => {
+      const result = await window.nest.unhideGame(file).catch(() => null);
+      if (!result?.ok) {
+        say('恢复失败');
+        return;
+      }
+      setHiddenGames(await window.nest.hiddenGames().catch(() => []));
+      if (result.fileExists === false) {
+        say('这个文件已经不在磁盘上，只清除了移除记录');
+        return;
+      }
+      await rescanAll();
+      say(result.added ? '已恢复 1 个游戏' : '已清除移除记录，重新扫描后加入');
+    },
+    [rescanAll, say],
+  );
+
   const removeRoot = useCallback(
     async (root: string) => {
       await window.nest.removeScanRoot(root).catch(() => undefined);
@@ -1810,11 +1828,26 @@ export default function App() {
                         </div>
 
                         {hiddenGames.length > 0 ? (
-                          <div className="scan-root">
-                            <span>{hiddenGames.length} 个游戏已从库中移除（自动扫描不会加回）</span>
-                            <button className="ghost-btn" onClick={() => void restoreHidden()}>
-                              全部恢复
-                            </button>
+                          <div>
+                            <div className="scan-root">
+                              <span>{hiddenGames.length} 个游戏已从库中移除（自动扫描不会加回）</span>
+                              <button className="ghost-btn" onClick={() => void restoreHidden()}>
+                                全部恢复
+                              </button>
+                            </div>
+                            {hiddenGames.map((file) => {
+                              const name = file.split(/[\\/]/).filter(Boolean).pop() ?? file;
+                              return (
+                                <div className="scan-root" key={file}>
+                                  <span className="muted" title={file}>
+                                    {name}
+                                  </span>
+                                  <button className="ghost-btn" onClick={() => void restoreOne(file)}>
+                                    恢复
+                                  </button>
+                                </div>
+                              );
+                            })}
                           </div>
                         ) : null}
                 </div>

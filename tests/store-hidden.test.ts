@@ -53,6 +53,28 @@ describe('removed games stay removed', () => {
     await rm(dir, { recursive: true, force: true });
   });
 
+  it('restores a single removed game without clearing the others', async () => {
+    const { store, dir } = await tempStore();
+    const zelda = {
+      ...rom,
+      path: 'C:/roms/Zelda.gba',
+      fileName: 'Zelda.gba',
+      sha1: 'c'.repeat(40),
+      title: 'Zelda',
+    };
+    await store.upsertGames([rom, zelda]);
+    for (const game of store.games('gba')) await store.removeGame(game.id);
+    expect(store.hiddenGames()).toHaveLength(2);
+
+    expect(await store.unhide('C:/roms/Pokemon.gba')).toBe(true);
+    expect(store.hiddenGames()).toHaveLength(1);
+
+    const rescan = await store.upsertGames([rom, zelda]);
+    expect(rescan.added).toBe(1);
+    expect(store.games('gba').map((game) => game.fileName)).toEqual(['Pokemon.gba']);
+    await rm(dir, { recursive: true, force: true });
+  });
+
   it('persists the hidden list across reloads', async () => {
     const { store, dir } = await tempStore();
     await store.upsertGames([rom]);

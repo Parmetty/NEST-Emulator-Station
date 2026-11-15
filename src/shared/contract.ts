@@ -11,6 +11,7 @@ export const CH = {
   removeGame: 'nest:remove-game',
   hiddenGames: 'nest:hidden-games',
   clearHidden: 'nest:clear-hidden',
+  unhideGame: 'nest:unhide-game',
   renameGame: 'nest:rename-game',
   settings: 'nest:settings',
   saveSettings: 'nest:settings-save',

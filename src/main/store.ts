@@ -137,6 +137,16 @@ export class Store {
     return [...this.data.hidden];
   }
 
+  /** Restores one path so the next scan may add it back. */
+  async unhide(file: string): Promise<boolean> {
+    const key = Store.pathKey(file);
+    const before = this.data.hidden.length;
+    this.data.hidden = this.data.hidden.filter((entry) => entry !== key);
+    if (this.data.hidden.length === before) return false;
+    await this.save();
+    return true;
+  }
+
   async clearHidden(): Promise<number> {
     const count = this.data.hidden.length;
     if (count === 0) return 0;

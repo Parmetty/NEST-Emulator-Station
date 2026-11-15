@@ -21,6 +21,7 @@ export interface NestApi {
   removeGame(gameId: string): Promise<{ ok: boolean; error?: string }>;
   hiddenGames(): Promise<string[]>;
   clearHidden(): Promise<{ ok: boolean; removed?: number }>;
+  unhideGame(file: string): Promise<{ ok: boolean; added?: number; fileExists?: boolean; error?: string }>;
   renameGame(gameId: string, title: string): Promise<{ ok: boolean; error?: string; game?: GameRecord }>;
   launch(systemId: string, mode?: LaunchMode, rom?: string, insertDisc?: boolean): Promise<LaunchResult>;
   stop(sessionId: string): Promise<{ ok: boolean }>;

@@ -190,6 +190,7 @@ export function installMockApi(): void {
     },
     hiddenGames: async () => [],
     clearHidden: async () => ({ ok: true, removed: 0 }),
+  unhideGame: async () => ({ ok: true, added: 0, fileExists: true }),
     stop: async () => ({ ok: true }),
     rescan: async () => ({ ok: true, root: '', added: 0, skipped: 0, total: 0 }),
     removeScanRoot: async (root) => {

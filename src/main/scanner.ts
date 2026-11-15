@@ -78,6 +78,8 @@ export interface ScannedFile {
 }
 
 export interface ScanOptions {
+  /** Restrict the scan to this single path (used when restoring one hidden game). */
+  only?: string;
   /** Only keep files that belong to this system. */
   systemId?: string;
   maxDepth?: number;
@@ -353,6 +355,9 @@ export async function scanFolder(root: string, options: ScanOptions = {}): Promi
       if (seen >= maxFiles) return;
       if (entry.name.startsWith('.')) continue;
       const full = path.join(dir, entry.name);
+      if (options.only && normalizePathKey(full) !== normalizePathKey(path.resolve(options.only))) {
+        continue;
+      }
       if (entry.isDirectory()) {
         const ps3 = await detectPs3Game(full);
         if (ps3) {
