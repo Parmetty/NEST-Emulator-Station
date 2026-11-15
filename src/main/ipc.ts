@@ -336,8 +336,19 @@ function ps1BiosFiles(): string[] {
 }
 
 /* ---------------------------------------------------------- 3ds boot9 */
-function threeDsBoot9Path(): string {
-  return path.join(app.getPath('userData'), '3ds', 'boot9.bin');
+function threeDsBoot9Path(rom?: string): string {
+  const stored = path.join(app.getPath('userData'), '3ds', 'boot9.bin');
+  if (existsSync(stored) || !rom) return stored;
+  // Friendlier fallback for portable/test layouts: a ROM under
+  // <assets>/roms/3ds can find <assets>/firmware/3ds/boot9.bin on its own.
+  const dir = path.dirname(rom);
+  for (const candidate of [
+    path.join(dir, '..', '..', 'firmware', '3ds', 'boot9.bin'),
+    path.join(dir, '..', 'firmware', '3ds', 'boot9.bin'),
+  ]) {
+    if (existsSync(candidate)) return candidate;
+  }
+  return stored;
 }
 
 function azaharProfileEnv(): NodeJS.ProcessEnv {
@@ -1409,16 +1420,34 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     if (!upToDate) {
       const prepared = prepareInstallableCia({
         source: rom,
-        boot9: threeDsBoot9Path(),
+        boot9: threeDsBoot9Path(rom),
         cacheDir: path.join(app.getPath('userData'), '3ds-cache'),
       });
       if (!prepared.ok || !prepared.path) {
         console.error('[nest] 3ds CIA 解密失败：' + (prepared.error ?? 'unknown'));
+        if (prepared.error === 'missing-3ds-boot9' || prepared.error === 'bad-3ds-boot9') {
+          await dialog.showMessageBox({
+            type: 'warning',
+            title: '3DS 解密需要 boot9.bin',
+            message: 'Nest 找不到可用的 3DS boot9.bin',
+            detail:
+              '请到「设置 → 系统文件（自备）」导入你自己主机的 boot9.bin（64 KB）。' +
+              '如果游戏在 nest-assets/roms/3ds 下，也可以把 boot9 放到 nest-assets/firmware/3ds/。',
+          });
+        }
         return { ok: false, error: prepared.error ?? '3ds-decrypt-failed' };
       }
       console.log('[nest] 3ds installing ' + prepared.path);
       const ok = await installCiaWithAzahar(exe, prepared.path, env);
-      if (!ok) return { ok: false, error: '3ds-install-failed' };
+      if (!ok) {
+        await dialog.showMessageBox({
+          type: 'error',
+          title: '3DS 安装失败',
+          message: 'Azahar 没有完成安装',
+          detail: '请查看 Azahar 的日志/弹窗；常见原因是磁盘空间不足或 CIA 不完整。',
+        });
+        return { ok: false, error: '3ds-install-failed' };
+      }
       installed[id] = { source: rom, size: stat.size, mtime: stat.mtimeMs };
       mkdirSync(path.dirname(markerPath), { recursive: true });
       writeFileSync(markerPath, JSON.stringify(installed, null, 2));
