@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, existsSync, readFileSync, readdirSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
+import { copyFileSync, cpSync, mkdirSync, existsSync, readFileSync, readdirSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain, nativeImage, shell } from 'electron';
@@ -81,6 +81,7 @@ import { scanFolder } from './scanner';
 import { Store } from './store';
 import { Supervisor } from './supervisor';
 import { inspectCia } from './cia';
+import { readVitaTitleId } from './game-info';
 import { prepareInstallableCia } from './three-ds-cia';
 import { freeTcpPort, insertUmd } from './ppsspp-umd';
 
@@ -375,6 +376,39 @@ function autoDismissAzaharDialog(pid: number): void {
   }
 }
 
+function ensureVita3kStaged(): void {
+  const target = path.join(process.env.LOCALAPPDATA ?? app.getPath('appData'), 'nest', 'engines', 'vita3k');
+  if (existsSync(path.join(target, 'Vita3K.exe'))) return;
+  const bundled = path.join(enginesDir(), 'vita3k');
+  if (!existsSync(path.join(bundled, 'Vita3K.exe'))) return;
+  try {
+    mkdirSync(target, { recursive: true });
+    cpSync(bundled, target, { recursive: true });
+    console.log('[nest] vita3k staged to ' + target);
+  } catch (error) {
+    console.error('[nest] vita3k staging failed', error);
+  }
+}
+
+function runVitaCli(exe: string, args: string[], cwd: string, timeoutMs: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const child = spawn(exe, args, { cwd, windowsHide: false, stdio: 'ignore' });
+    let done = false;
+    const finish = (ok: boolean) => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      resolve(ok);
+    };
+    const timer = setTimeout(() => {
+      try { child.kill(); } catch { /* ignore */ }
+      finish(false);
+    }, timeoutMs);
+    child.once('error', () => finish(false));
+    child.once('exit', (code) => finish(code === 0));
+  });
+}
+
 function installCiaWithAzahar(exe: string, cia: string, env: NodeJS.ProcessEnv): Promise<boolean> {
   return new Promise((resolve) => {
     const child = spawn(exe, ['--install', cia], { env, cwd: path.dirname(exe), windowsHide: false, stdio: 'ignore' });
@@ -499,6 +533,26 @@ function firmwareStates(services: Services): FirmwareState[] {
       detail: '解密 3DS CIA 用；从你自己的 3DS 提取',
     });
   }
+  const psvPup = path.join(app.getPath('userData'), 'psv', 'PSVUPDAT.PUP');
+  if (existsSync(psvPup)) {
+    const pupSize = statSync(psvPup).size;
+    states.push({
+      kind: 'psv-firmware',
+      label: 'PS Vita 固件（PUP）',
+      status: pupSize > 50 * 1024 * 1024 ? 'ok' : 'invalid',
+      path: psvPup,
+      detail: pupSize > 50 * 1024 * 1024 ? '用于 Vita3K 安装固件' : 'PUP 文件过小，可能不是完整固件',
+    });
+  } else {
+    states.push({
+      kind: 'psv-firmware',
+      label: 'PS Vita 固件（PUP）',
+      status: 'missing',
+      path: null,
+      detail: 'Vita3K 需要 PSVUPDAT.PUP（3.60/3.73 等）',
+    });
+  }
+
   const wad = wiiMenuWadPath();
   if (existsSync(wad)) {
     const size = statSync(wad).size;
@@ -653,6 +707,7 @@ async function pickFirmware(services: Services, raw: unknown): Promise<{
     kind !== 'ps2-bios' &&
     kind !== 'psp-firmware' &&
     kind !== '3ds-boot9' &&
+    kind !== 'psv-firmware' &&
     kind !== 'xbox-mcpx' &&
     kind !== 'xbox-bios' &&
     kind !== 'xbox-hdd'
@@ -693,6 +748,23 @@ async function pickFirmware(services: Services, raw: unknown): Promise<{
     console.log('[nest] 3ds boot9 imported: ' + source + ' -> ' + target);
     return { ok: true, state: firmwareStates(services).find((state) => state.kind === kind) };
   }
+  if (kind === 'psv-firmware') {
+    const picked = await dialog.showOpenDialog({
+      title: '选择 PS Vita 固件（PSVUPDAT.PUP）',
+      properties: ['openFile'],
+      filters: [{ name: 'PS Vita 固件', extensions: ['pup'] }],
+    });
+    if (picked.canceled || picked.filePaths.length === 0) return { ok: true, canceled: true };
+    const source = picked.filePaths[0];
+    const buffer = readFileSync(source);
+    if (buffer.length < 50 * 1024 * 1024) return { ok: false, error: 'bad-size-psv-pup' };
+    const target = path.join(app.getPath('userData'), 'psv', 'PSVUPDAT.PUP');
+    mkdirSync(path.dirname(target), { recursive: true });
+    writeFileSync(target, buffer);
+    console.log('[nest] psv firmware imported: ' + source + ' -> ' + target);
+    return { ok: true, state: firmwareStates(services).find((state) => state.kind === kind) };
+  }
+
   if (kind === 'wiiu-mlc') {
     const picked = await dialog.showOpenDialog({
       title: '选择 Wii U NAND / MLC 目录',
@@ -1539,6 +1611,7 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     env = { ELECTRON_RUN_AS_NODE: '1' };
     args = [script, ...(mode === 'system' ? engine.launch.systemArgs : engine.launch.args)];
   } else {
+    if (engine.id === 'vita3k') ensureVita3kStaged();
     const detected = services.engines.detect(engine);
     if (!detected) return { ok: false, error: 'engine-not-installed' };
     command = detected;
@@ -1546,6 +1619,26 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   }
 
   if (azaharHomeMenu) args = [azaharHomeMenu];
+
+  if (engine.id === 'vita3k' && mode === 'game' && rom) {
+    const engineDir = path.dirname(command);
+    const dataRoot = path.join(engineDir, 'data');
+    const firmwarePup = path.join(app.getPath('userData'), 'psv', 'PSVUPDAT.PUP');
+    if (!existsSync(path.join(dataRoot, 'ux0')) && existsSync(firmwarePup)) {
+      console.log('[nest] vita3k: installing firmware ' + firmwarePup);
+      const ok = await runVitaCli(command, ['--firmware', firmwarePup], engineDir, 10 * 60 * 1000);
+      console.log('[nest] vita3k firmware install ' + (ok ? 'done' : 'failed'));
+    }
+    const titleId = readVitaTitleId(rom);
+    const appPath = titleId ? path.join(dataRoot, 'ux0', 'app', titleId) : '';
+    if (titleId && existsSync(appPath)) {
+      args = ['--frontend', 'sdl', '-r', appPath];
+      console.log('[nest] vita3k run installed ' + titleId);
+    } else {
+      args = ['--content-path', rom];
+      console.log('[nest] vita3k install+boot ' + (titleId ?? 'unknown') + ' from ' + rom);
+    }
+  }
 
   if (engine.id === 'xenia') {
     applyControls(services, 'xenia', false);

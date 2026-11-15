@@ -1,0 +1,30 @@
+{
+  "id": "vita3k",
+  "name": "Vita3K",
+  "systems": [
+    "psv"
+  ],
+  "kind": "native",
+  "detect": {
+    "paths": [
+      "%LOCALAPPDATA%/nest/engines/vita3k/Vita3K.exe",
+      "{engines}/vita3k/Vita3K.exe"
+    ]
+  },
+  "download": {
+    "homepage": "https://vita3k.org/"
+  },
+  "launch": {
+    "args": [
+      "--content-path",
+      "{rom}"
+    ],
+    "systemArgs": [],
+    "cwd": "engineDir"
+  },
+  "captureAspect": 1.777777,
+  "capabilities": {
+    "saveStates": true,
+    "systemMode": null
+  }
+}

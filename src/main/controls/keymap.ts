@@ -7,7 +7,7 @@
  */
 import { PAD_ACTIONS, type KeyboardBindings, type PadAction } from '../../shared/contract';
 
-export const CONTROL_ENGINE_IDS = ['mgba', 'ares', 'dolphin', 'azahar', 'melonds', 'cemu', 'swanstation', 'pcsx2', 'ppsspp', 'xenia', 'xemu', 'rpcs3'] as const;
+export const CONTROL_ENGINE_IDS = ['mgba', 'ares', 'dolphin', 'azahar', 'melonds', 'cemu', 'swanstation', 'pcsx2', 'ppsspp', 'xenia', 'xemu', 'rpcs3', 'vita3k'] as const;
 
 export const WRITABLE_ENGINE_IDS = ['mgba', 'ares', 'dolphin', 'azahar', 'melonds', 'cemu', 'swanstation', 'pcsx2', 'ppsspp', 'xenia', 'rpcs3'] as const;
 export type ControlEngineId = (typeof CONTROL_ENGINE_IDS)[number];
@@ -473,6 +473,20 @@ export const DEFAULT_KEYBOARD: Record<ControlEngineId, KeyboardBindings> = {
     b: 'KeyK',
     x: 'KeyU',
     y: 'KeyI',
+    l: 'KeyQ',
+    r: 'KeyE',
+    start: 'Enter',
+    select: 'Backspace',
+  },
+  vita3k: {
+    up: 'ArrowUp',
+    down: 'ArrowDown',
+    left: 'ArrowLeft',
+    right: 'ArrowRight',
+    a: 'Space',
+    b: 'KeyJ',
+    x: 'KeyK',
+    y: 'KeyL',
     l: 'KeyQ',
     r: 'KeyE',
     start: 'Enter',

@@ -11,7 +11,7 @@ export type EngineFamily = 'playstation' | 'xbox' | 'nintendo';
 export type KeyPanelTab = 'nest' | 'nintendo' | 'playstation' | 'xbox';
 
 export function isPlaystationEngine(engine: string): boolean {
-  return engine === 'swanstation' || engine === 'pcsx2' || engine === 'ppsspp' || engine === 'rpcs3';
+  return engine === 'swanstation' || engine === 'pcsx2' || engine === 'ppsspp' || engine === 'rpcs3' || engine === 'vita3k';
 }
 
 export function isXboxEngine(engine: string): boolean {

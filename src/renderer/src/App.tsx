@@ -31,7 +31,7 @@ type Selection = { type: 'family' | 'system'; id: string };
 const SHELF_COLUMNS = 5;
 
 /** Consoles with editable keyboard bindings, in the order the chips are shown. */
-const KEY_SYSTEMS = (['gba', 'fc', 'sfc', 'n64', 'nds', 'ngc', 'wii', '3ds', 'wiiu', 'ps1', 'ps2', 'psp', 'ps3', 'xbox', 'xbox360'] as const).flatMap((id) => {
+const KEY_SYSTEMS = (['gba', 'fc', 'sfc', 'n64', 'nds', 'ngc', 'wii', '3ds', 'wiiu', 'ps1', 'ps2', 'psp', 'ps3', 'psv', 'xbox', 'xbox360'] as const).flatMap((id) => {
   const system = systemById.get(id);
   return system ? [system] : [];
 });
@@ -427,6 +427,7 @@ export default function App() {
           'invalid-wiiu-mlc': '这个目录不是 Wii U NAND（缺少 sys/title/00050010/10040000 或 usr/）',
           'keys-io-error': '读取 / 写入 keys.txt 失败',
           'bad-size-boot9': 'boot9.bin 大小不对（应为 64 KB，或 32 KB 的 protected 区）',
+          'bad-size-psv-pup': 'PS Vita 固件 PUP 文件不完整（应大于 50 MB）',
         };
         say(messages[result.error ?? ''] ?? '导入失败');
         return;

@@ -51,6 +51,7 @@ export const EXT_TO_SYSTEM: Record<string, string> = {
   cxi: '3ds',
   '3dsx': '3ds',
   cia: '3ds',
+  vpk: 'psv',
   xex: 'xbox360',
   xbe: 'xbox',
 };
@@ -321,6 +322,17 @@ async function detectPspGame(
  * An unpacked Xbox game is a folder with `default.xbe`; xemu can boot that
  * folder directly, so Nest stores the directory itself as the launch target.
  */
+async function detectVitaGame(dir: string): Promise<{ root: string; paramSfo: string } | null> {
+  const paramSfo = path.join(dir, 'sce_sys', 'param.sfo');
+  try {
+    if (!(await stat(paramSfo)).isFile()) return null;
+    if (!(await stat(path.join(dir, 'eboot.bin'))).isFile()) return null;
+  } catch {
+    return null;
+  }
+  return { root: dir, paramSfo };
+}
+
 async function detectXboxFolder(dir: string): Promise<{ root: string; xbe: string } | null> {
   const xbe = path.join(dir, 'default.xbe');
   try {
@@ -405,6 +417,30 @@ export async function scanFolder(root: string, options: ScanOptions = {}): Promi
           }
           continue;
         }
+        const vita = await detectVitaGame(full);
+        if (vita) {
+          if (seen >= maxFiles) return;
+          if (!options.systemId || options.systemId === 'psv') {
+            seen += 1;
+            try {
+              const info = await stat(vita.paramSfo);
+              const meta = gameInfoFor(vita.root, 'psv');
+              found.push({
+                path: vita.root,
+                fileName: path.basename(full),
+                size: info.size,
+                sha1: await fileId(vita.paramSfo, info.size, options.known),
+                systemId: 'psv',
+                title: meta.title ?? titleFrom(path.basename(full)),
+                region: meta.region,
+              });
+            } catch {
+              /* unreadable Vita folder: skip */
+            }
+          }
+          continue;
+        }
+
         const psp = await detectPspGame(full);
         if (psp) {
           if (seen >= maxFiles) return;

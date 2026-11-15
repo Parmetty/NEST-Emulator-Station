@@ -6,6 +6,7 @@
  * file-name title, and the user's manual rename always wins.
  */
 import { closeSync, existsSync, openSync, readFileSync, readSync, statSync } from 'node:fs';
+import { inflateRawSync } from 'node:zlib';
 import path from 'node:path';
 
 export interface GameInfo {
@@ -13,6 +14,8 @@ export interface GameInfo {
   title?: string;
   /** Human label such as "NTSC-U" / "NTSC-J" / "PAL" / "Region-Free". */
   region?: string;
+  /** Container title id (PS3/PSP/PSV SFO), when one exists. */
+  titleId?: string;
 }
 
 const NDS_REGION: Record<string, string> = {
@@ -140,7 +143,7 @@ function sfoBufferInfo(raw: Buffer): GameInfo {
   // PS3 discs use TITLE_ID, PSP discs use DISC_ID (ULUS-10563, ULES-01513...).
   const titleId = (values.get('TITLE_ID') ?? values.get('DISC_ID') ?? '').toUpperCase();
   const region = discRegion(titleId);
-  return { title, region };
+  return { title, region, titleId: titleId || undefined };
 }
 
 function sfoInfo(file: string): GameInfo {
@@ -174,10 +177,10 @@ function pbpInfo(file: string): GameInfo {
  */
 function discRegion(titleId: string): string | undefined {
   if (!titleId) return undefined;
-  if (/^(BLUS|SLUS|SCUS|NPUB|ULUS|NPUH)/.test(titleId)) return 'NTSC-U';
-  if (/^(BLES|SLES|SCES|NPEB|NPEH|ULES)/.test(titleId)) return 'PAL';
-  if (/^(BLJM|BLJS|BLPS|SLPS|SLPM|SCPS|NPJB|NPJH|ULJM|ULJS)/.test(titleId)) return 'NTSC-J';
-  if (/^(BLAS|SLAS|BLKS|SLKA|NPKH|NPKA|ULAS|ULKS)/.test(titleId)) return 'NTSC-Asia';
+  if (/^(BLUS|SLUS|SCUS|NPUB|ULUS|NPUH|PCSE)/.test(titleId)) return 'NTSC-U';
+  if (/^(BLES|SLES|SCES|NPEB|NPEH|ULES|PCSB)/.test(titleId)) return 'PAL';
+  if (/^(BLJM|BLJS|BLPS|SLPS|SLPM|SCPS|NPJB|NPJH|ULJM|ULJS|PCSG)/.test(titleId)) return 'NTSC-J';
+  if (/^(BLAS|SLAS|BLKS|SLKA|NPKH|NPKA|ULAS|ULKS|PCSD|PCSA)/.test(titleId)) return 'NTSC-Asia';
   if (titleId.startsWith('NP')) return 'PSN';
   return undefined;
 }
@@ -299,6 +302,93 @@ function stfsInfo(file: string): GameInfo {
   return { title: cleanTitle(best ?? '') };
 }
 
+/* ------------------------------------------------------------------ PS Vita */
+
+/** Minimal zip reader: finds one entry by name and inflates it (PKZIP store/deflate). */
+function readZipEntry(file: string, wanted: string): Buffer | null {
+  let size = 0;
+  try {
+    size = statSync(file).size;
+  } catch {
+    return null;
+  }
+  const tailLen = Math.min(size, 0x10000 + 0x22);
+  const tail = readAt(file, size - tailLen, tailLen);
+  if (!tail || tail.length < 0x16) return null;
+  let eocd = -1;
+  for (let i = tail.length - 0x16; i >= 0; i -= 1) {
+    if (tail.readUInt32LE(i) === 0x06054b50) {
+      eocd = i;
+      break;
+    }
+  }
+  if (eocd < 0) return null;
+  const count = tail.readUInt16LE(eocd + 0x0a);
+  const cdSize = tail.readUInt32LE(eocd + 0x0c);
+  const cdOffset = tail.readUInt32LE(eocd + 0x10);
+  const cd = readAt(file, cdOffset, Math.min(cdSize + 0x1000, 16 * 1024 * 1024));
+  if (!cd) return null;
+  let p = 0;
+  for (let i = 0; i < count && p + 0x2e <= cd.length; i += 1) {
+    if (cd.readUInt32LE(p) !== 0x02014b50) break;
+    const method = cd.readUInt16LE(p + 0x0a);
+    const compSize = cd.readUInt32LE(p + 0x14);
+    const nameLen = cd.readUInt16LE(p + 0x1c);
+    const extraLen = cd.readUInt16LE(p + 0x1e);
+    const commentLen = cd.readUInt16LE(p + 0x20);
+    const localOffset = cd.readUInt32LE(p + 0x2a);
+    const name = cd.toString("latin1", p + 0x2e, p + 0x2e + nameLen);
+    if (name === wanted) {
+      const local = readAt(file, localOffset, 0x1e);
+      if (!local || local.length < 0x1e) return null;
+      const lNameLen = local.readUInt16LE(0x1a);
+      const lExtraLen = local.readUInt16LE(0x1c);
+      const dataStart = localOffset + 0x1e + lNameLen + lExtraLen;
+      const data = readAt(file, dataStart, compSize);
+      if (!data) return null;
+      if (method === 0) return data;
+      if (method === 8) {
+        try {
+          return inflateRawSync(data);
+        } catch {
+          return null;
+        }
+      }
+      return null;
+    }
+    p += 0x2e + nameLen + extraLen + commentLen;
+  }
+  return null;
+}
+
+function readVitaSfo(file: string): Buffer | null {
+  if (!statSafeIsFile(file)) {
+    const inner = path.join(file, "sce_sys", "param.sfo");
+    if (!statSafeIsFile(inner)) return null;
+    try {
+      return readFileSync(inner);
+    } catch {
+      return null;
+    }
+  }
+  if (file.toLowerCase().endsWith(".vpk")) return readZipEntry(file, "sce_sys/param.sfo");
+  return null;
+}
+
+function vitaInfo(file: string): GameInfo {
+  const raw = readVitaSfo(file);
+  return raw ? sfoBufferInfo(raw) : {};
+}
+
+/** Title id used to launch/install the game through Vita3K. */
+export function readVitaTitleId(file: string): string | undefined {
+  try {
+    return vitaInfo(file).titleId;
+  } catch {
+    return undefined;
+  }
+}
+
 /* ---------------------------------------------------------------- dispatch */
 
 const INFO_READERS: Record<string, (file: string) => GameInfo> = {
@@ -310,6 +400,7 @@ const INFO_READERS: Record<string, (file: string) => GameInfo> = {
   ps3: (file) => (statSafeIsFile(path.join(file, 'PARAM.SFO')) ? sfoInfo(path.join(file, 'PARAM.SFO')) : sfoInfo(file)),
   xbox: xboxInfo,
   xbox360: stfsInfo,
+  psv: vitaInfo,
   psp: (file) => {
     // EBOOT.PBP (PSN/homebrew) stores its PARAM.SFO inside the PBP container.
     if (statSafeIsFile(file)) return pbpInfo(file);
