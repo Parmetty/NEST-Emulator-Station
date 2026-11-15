@@ -77,11 +77,13 @@ function cbcDecrypt(data: Buffer, key: Buffer, iv: Buffer): Buffer {
   return Buffer.concat([decipher.update(data), decipher.final()]);
 }
 
-export function prepareInstallableCia(opts: {
+const yieldTick = () => new Promise<void>((resolve) => setImmediate(resolve));
+
+export async function prepareInstallableCia(opts: {
   source: string;
   boot9: string;
   cacheDir: string;
-}): PrepareResult {
+}): Promise<PrepareResult> {
   const health = inspectCia(opts.source);
   if (health.issues.includes('uses-seed')) return { ok: false, error: 'cia-uses-seed' };
   if (!existsSync(opts.boot9)) return { ok: false, error: 'missing-3ds-boot9' };
@@ -176,7 +178,7 @@ export function prepareInstallableCia(opts: {
     for (const chunk of chunks) tmdOut.writeUInt16BE(chunk.flags & ~1, chunk.tmdBase + 6);
     writeSync(fdOut, tmdOut, 0, tmdOut.length, tmdOff);
 
-    const processChunk = (chunk: { index: number; flags: number; size: number; tmdBase: number; offset: number }): Buffer => {
+    const processChunk = async (chunk: { index: number; flags: number; size: number; tmdBase: number; offset: number }): Promise<Buffer> => {
       const srcStart = chunk.offset;
       const readRaw = (start: number, length: number) => readRange(fdIn, srcStart + start, length);
       const cbcLayer = (data: Buffer, start: number) => {
@@ -252,6 +254,7 @@ export function prepareInstallableCia(opts: {
             const encrypted = readPlain(section.off + done, length);
             const iv = ctrCounter(partition, section.section, BigInt(done >> 4));
             write(ctrDecrypt(encrypted, section.key, iv), section.off + done);
+            await yieldTick();
           }
         }
         current = section.off + section.size;
@@ -261,7 +264,8 @@ export function prepareInstallableCia(opts: {
     };
 
     for (const chunk of chunks) {
-      const digest = processChunk(chunk);
+      await yieldTick();
+      const digest = await processChunk(chunk);
       tmdOut.fill(0, chunk.tmdBase + 0x10, chunk.tmdBase + 0x30);
       digest.copy(tmdOut, chunk.tmdBase + 0x10);
     }

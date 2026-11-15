@@ -1449,7 +1449,7 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
       known.size === stat.size &&
       known.mtime === stat.mtimeMs;
     if (!upToDate) {
-      const prepared = prepareInstallableCia({
+      const prepared = await prepareInstallableCia({
         source: rom,
         boot9: threeDsBoot9Path(rom),
         cacheDir: path.join(app.getPath('userData'), '3ds-cache'),
@@ -1485,6 +1485,8 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
       if (prepared.decrypted) {
         try { unlinkSync(prepared.path); } catch { /* keep cache on failure */ }
       }
+      const nestWindow = BrowserWindow.getAllWindows()[0];
+      if (nestWindow && services.store.getSettings().minimizeOnLaunch) nestWindow.minimize();
     }
     spawn(exe, [], { env, cwd: path.dirname(exe), detached: true, stdio: 'ignore' }).unref();
     return { ok: true, warning: '已安装到 Azahar，正在打开游戏列表' };
