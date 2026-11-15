@@ -336,6 +336,8 @@ function ps1BiosFiles(): string[] {
 }
 
 /* ---------------------------------------------------------- 3ds boot9 */
+const THREE_DS_INSTALL_BUILD = 2;
+
 function threeDsBoot9Path(rom?: string): string {
   const stored = path.join(app.getPath('userData'), '3ds', 'boot9.bin');
   if (existsSync(stored) || !rom) return stored;
@@ -1407,7 +1409,7 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     if (!exe) return { ok: false, error: 'engine-not-installed' };
     const env = azaharProfileEnv();
     const markerPath = path.join(app.getPath('userData'), '3ds-installed.json');
-    let installed: Record<string, { source: string; size: number; mtime: number }> = {};
+    let installed: Record<string, { source: string; size: number; mtime: number; build: number }> = {};
     try {
       installed = JSON.parse(readFileSync(markerPath, 'utf8')) as typeof installed;
     } catch {
@@ -1416,7 +1418,12 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     const id = cia.titleId ?? path.basename(rom);
     const stat = statSync(rom);
     const known = installed[id];
-    const upToDate = known && known.source === rom && known.size === stat.size && known.mtime === stat.mtimeMs;
+    const upToDate =
+      known &&
+      known.build === THREE_DS_INSTALL_BUILD &&
+      known.source === rom &&
+      known.size === stat.size &&
+      known.mtime === stat.mtimeMs;
     if (!upToDate) {
       const prepared = prepareInstallableCia({
         source: rom,
@@ -1448,7 +1455,7 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
         });
         return { ok: false, error: '3ds-install-failed' };
       }
-      installed[id] = { source: rom, size: stat.size, mtime: stat.mtimeMs };
+      installed[id] = { source: rom, size: stat.size, mtime: stat.mtimeMs, build: THREE_DS_INSTALL_BUILD };
       mkdirSync(path.dirname(markerPath), { recursive: true });
       writeFileSync(markerPath, JSON.stringify(installed, null, 2));
       if (prepared.decrypted) {

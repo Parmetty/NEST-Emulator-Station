@@ -240,7 +240,7 @@ export function prepareInstallableCia(opts: {
               const entrySize = plain.readUInt32LE(entry * 0x10 + 12);
               if (name === 'icon' || name === 'banner') continue;
               const abs = 0x200 + entryOffset;
-              const slice = ctrDecrypt(plain.subarray(abs, abs + entrySize), extraKey, ctrCounter(partition, 2, BigInt(abs >> 4)));
+              const slice = ctrDecrypt(encrypted.subarray(abs, abs + entrySize), extraKey, ctrCounter(partition, 2, BigInt(abs >> 4)));
               slice.copy(plain, abs);
             }
           }
