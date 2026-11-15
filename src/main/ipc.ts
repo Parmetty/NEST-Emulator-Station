@@ -1632,10 +1632,12 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     const titleId = readVitaTitleId(rom);
     const appPath = titleId ? path.join(dataRoot, 'ux0', 'app', titleId) : '';
     if (titleId && existsSync(appPath)) {
-      args = ['--frontend', 'sdl', '-r', appPath];
+      // SDL frontend: plain window, exits with the game, so Nest can supervise it.
+      args = ['--frontend', 'sdl', '-r', titleId];
       console.log('[nest] vita3k run installed ' + titleId);
     } else {
-      args = ['--content-path', rom];
+      // First run: install the VPK and let the SDL frontend boot it in the same process.
+      args = ['--frontend', 'sdl', '--content-path', rom];
       console.log('[nest] vita3k install+boot ' + (titleId ?? 'unknown') + ' from ' + rom);
     }
   }

@@ -1957,7 +1957,7 @@ export default function App() {
                     </p>
 
                     {firmware
-                      .filter((item) => item.kind === 'ps1-bios' || item.kind === 'ps2-bios' || item.kind === 'psp-firmware')
+                      .filter((item) => item.kind === 'ps1-bios' || item.kind === 'ps2-bios' || item.kind === 'psp-firmware' || item.kind === 'psv-firmware')
                       .map((item) => (
                         <div className="fw-row" key={item.kind}>
                           <span>
