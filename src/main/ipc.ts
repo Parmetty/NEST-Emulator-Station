@@ -1261,6 +1261,11 @@ export function registerIpc(services: Services): void {
       root = picked.filePaths[0];
     }
 
+    // A manual folder scan is the recovery path: everything that matches a known
+    // format is added back, including games the player blacklisted earlier.
+    const cleared = await store.clearHidden();
+    if (cleared > 0) console.log('[nest] scan clears ' + cleared + ' blacklisted game(s)');
+
     try {
       const files = await scanFolder(root, { systemId: parsed.data.systemId, known: store.knownIds() });
       const { added, skipped } = await store.upsertGames(files);
@@ -1273,6 +1278,9 @@ export function registerIpc(services: Services): void {
   });
 
   ipcMain.handle(CH.rescan, async (): Promise<ScanResult> => {
+    // Manual "scan now" also doubles as the blacklist reset.
+    const cleared = await store.clearHidden();
+    if (cleared > 0) console.log('[nest] rescan clears ' + cleared + ' blacklisted game(s)');
     const result = await rescanRoots(store);
     return { ok: true, root: result.roots.join(';'), added: result.added, skipped: result.skipped, total: result.total };
   });

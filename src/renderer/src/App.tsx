@@ -364,7 +364,7 @@ export default function App() {
         say('这个文件已经不在磁盘上，只清除了移除记录');
         return;
       }
-      await rescanAll();
+      await refreshHome();
       say(result.added ? '已恢复 1 个游戏' : '已清除移除记录，重新扫描后加入');
     },
     [rescanAll, say],
@@ -1829,10 +1829,15 @@ export default function App() {
 
                         {hiddenGames.length > 0 ? (
                           <div>
+                            <h2>游戏扫描黑名单</h2>
+                            <p className="dlg-note">
+                              手动移除的游戏会进入这里：无论哪个主机的扫描都会跳过它，重启 / 自动扫描也不会加回。
+                              点「立即扫描」重新扫描文件夹时，会把符合格式的游戏全部加回（并清空黑名单）。
+                            </p>
                             <div className="scan-root">
-                              <span>{hiddenGames.length} 个游戏已从库中移除（自动扫描不会加回）</span>
+                              <span>{hiddenGames.length} 个游戏在扫描黑名单中</span>
                               <button className="ghost-btn" onClick={() => void restoreHidden()}>
-                                全部恢复
+                                全部解除
                               </button>
                             </div>
                             {hiddenGames.map((file) => {
@@ -1843,7 +1848,7 @@ export default function App() {
                                     {name}
                                   </span>
                                   <button className="ghost-btn" onClick={() => void restoreOne(file)}>
-                                    恢复
+                                    解除
                                   </button>
                                 </div>
                               );
