@@ -83,6 +83,8 @@ export async function prepareInstallableCia(opts: {
   source: string;
   boot9: string;
   cacheDir: string;
+  /** Write only the decrypted NCCH (game content 0) as a direct-load .app. */
+  asApp?: boolean;
 }): Promise<PrepareResult> {
   const health = inspectCia(opts.source);
   if (health.issues.includes('uses-seed')) return { ok: false, error: 'cia-uses-seed' };
@@ -158,7 +160,10 @@ export async function prepareInstallableCia(opts: {
     .update(path.resolve(source) + '|' + fileSize + '|' + statSync(source).mtimeMs)
     .digest('hex')
     .slice(0, 16);
-  const outPath = path.join(opts.cacheDir, key + '.cia');
+  const outPath = path.join(opts.cacheDir, key + (opts.asApp ? '.app' : '.cia'));
+  if (opts.asApp && existsSync(outPath) && statSync(outPath).size === chunks[0].size) {
+    return { ok: true, path: outPath, titleId: health.titleId, decrypted: true };
+  }
   const fdOut = openSync(outPath, 'w');
 
   const copyRange = (srcOff: number, length: number, dstOff: number) => {
@@ -173,10 +178,12 @@ export async function prepareInstallableCia(opts: {
   };
 
   try {
-    copyRange(0, tmdOff, 0);
+    if (!opts.asApp) {
+      copyRange(0, tmdOff, 0);
+    }
     const tmdOut = Buffer.from(tmd);
     for (const chunk of chunks) tmdOut.writeUInt16BE(chunk.flags & ~1, chunk.tmdBase + 6);
-    writeSync(fdOut, tmdOut, 0, tmdOut.length, tmdOff);
+    if (!opts.asApp) writeSync(fdOut, tmdOut, 0, tmdOut.length, tmdOff);
 
     const processChunk = async (chunk: { index: number; flags: number; size: number; tmdBase: number; offset: number }): Promise<Buffer> => {
       const srcStart = chunk.offset;
@@ -193,7 +200,7 @@ export async function prepareInstallableCia(opts: {
       const ncchHeader = readPlain(0, 0x200);
       const hash = createHash('sha256');
       const write = (data: Buffer, offset: number) => {
-        writeSync(fdOut, data, 0, data.length, srcStart + offset);
+        writeSync(fdOut, data, 0, data.length, opts.asApp ? offset : srcStart + offset);
         hash.update(data);
       };
 
@@ -264,19 +271,23 @@ export async function prepareInstallableCia(opts: {
     };
 
     for (const chunk of chunks) {
+      if (opts.asApp && chunk.index !== 0) continue;
       await yieldTick();
       const digest = await processChunk(chunk);
+      if (opts.asApp) continue;
       tmdOut.fill(0, chunk.tmdBase + 0x10, chunk.tmdBase + 0x30);
       digest.copy(tmdOut, chunk.tmdBase + 0x10);
     }
-    const chunkRecords = Buffer.alloc(chunkCount * 0x30);
-    for (let i = 0; i < chunkCount; i += 1) {
-      tmdOut.copy(chunkRecords, i * 0x30, tmdY + 0x9c4 + i * 0x30, tmdY + 0x9c4 + (i + 1) * 0x30);
-    }
-    createHash('sha256').update(chunkRecords).digest().copy(tmdOut, tmdY + 0xc4 + 4);
-    writeSync(fdOut, tmdOut, 0, tmdOut.length, tmdOff);
+    if (!opts.asApp) {
+      const chunkRecords = Buffer.alloc(chunkCount * 0x30);
+      for (let i = 0; i < chunkCount; i += 1) {
+        tmdOut.copy(chunkRecords, i * 0x30, tmdY + 0x9c4 + i * 0x30, tmdY + 0x9c4 + (i + 1) * 0x30);
+      }
+      createHash('sha256').update(chunkRecords).digest().copy(tmdOut, tmdY + 0xc4 + 4);
+      writeSync(fdOut, tmdOut, 0, tmdOut.length, tmdOff);
 
-    if (metaSize) copyRange(metaOff, metaSize, metaOff);
+      if (metaSize) copyRange(metaOff, metaSize, metaOff);
+    }
   } catch (error) {
     console.error('[nest] 3ds decrypt failed', error);
     return { ok: false, error: '3ds-decrypt-failed' };

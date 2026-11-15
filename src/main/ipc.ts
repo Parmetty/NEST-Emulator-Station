@@ -1418,78 +1418,37 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   if (!system) return { ok: false, error: 'unknown-system' };
   if (system.state === 'locked') return { ok: false, error: 'not-supported' };
 
-  // Azahar cannot load .cia files directly: they have to be installed. Chinese
-  // repacks are often titlekey-decrypted but still have encrypted NCCH content, so
-  // Nest decrypts the container, installs it through Azahar's own CLI, then opens
-  // Azahar's game list. A marker prevents re-installing on every launch.
+  // Azahar cannot load a .cia directly, but it CAN load a plaintext NCCH (.app).
+  // Nest decrypts the CIA once, caches the NCCH, and launches it directly: no
+  // install, no game list, no UI automation.
   if (systemId === '3ds' && rom && /\.cia$/i.test(rom)) {
     const cia = inspectCia(rom);
     if (!cia.ok && cia.issues.includes('uses-seed')) return { ok: false, error: 'cia-uses-seed' };
     if (!cia.ok && !cia.ncch?.present && !cia.contentEncrypted) {
       return { ok: false, error: 'cia-malformed' };
     }
-    const azahar = services.engines.get('azahar');
-    const exe = azahar ? services.engines.detect(azahar) : null;
-    if (!exe) return { ok: false, error: 'engine-not-installed' };
-    const env = azaharProfileEnv();
-    const markerPath = path.join(app.getPath('userData'), '3ds-installed.json');
-    let installed: Record<string, { source: string; size: number; mtime: number; build: number }> = {};
-    try {
-      installed = JSON.parse(readFileSync(markerPath, 'utf8')) as typeof installed;
-    } catch {
-      installed = {};
-    }
-    const id = cia.titleId ?? path.basename(rom);
-    const stat = statSync(rom);
-    const known = installed[id];
-    const upToDate =
-      known &&
-      known.build === THREE_DS_INSTALL_BUILD &&
-      known.source === rom &&
-      known.size === stat.size &&
-      known.mtime === stat.mtimeMs;
-    if (!upToDate) {
-      const prepared = await prepareInstallableCia({
-        source: rom,
-        boot9: threeDsBoot9Path(rom),
-        cacheDir: path.join(app.getPath('userData'), '3ds-cache'),
-      });
-      if (!prepared.ok || !prepared.path) {
-        console.error('[nest] 3ds CIA 解密失败：' + (prepared.error ?? 'unknown'));
-        if (prepared.error === 'missing-3ds-boot9' || prepared.error === 'bad-3ds-boot9') {
-          await dialog.showMessageBox({
-            type: 'warning',
-            title: '3DS 解密需要 boot9.bin',
-            message: 'Nest 找不到可用的 3DS boot9.bin',
-            detail:
-              '请到「设置 → 系统文件（自备）」导入你自己主机的 boot9.bin（64 KB）。' +
-              '如果游戏在 nest-assets/roms/3ds 下，也可以把 boot9 放到 nest-assets/firmware/3ds/。',
-          });
-        }
-        return { ok: false, error: prepared.error ?? '3ds-decrypt-failed' };
-      }
-      console.log('[nest] 3ds installing ' + prepared.path);
-      const ok = await installCiaWithAzahar(exe, prepared.path, env);
-      if (!ok) {
+    const prepared = await prepareInstallableCia({
+      source: rom,
+      boot9: threeDsBoot9Path(rom),
+      cacheDir: path.join(app.getPath('userData'), '3ds-cache'),
+      asApp: true,
+    });
+    if (!prepared.ok || !prepared.path) {
+      console.error('[nest] 3ds CIA 解密失败：' + (prepared.error ?? 'unknown'));
+      if (prepared.error === 'missing-3ds-boot9' || prepared.error === 'bad-3ds-boot9') {
         await dialog.showMessageBox({
-          type: 'error',
-          title: '3DS 安装失败',
-          message: 'Azahar 没有完成安装',
-          detail: '请查看 Azahar 的日志/弹窗；常见原因是磁盘空间不足或 CIA 不完整。',
+          type: 'warning',
+          title: '3DS 解密需要 boot9.bin',
+          message: 'Nest 找不到可用的 3DS boot9.bin',
+          detail:
+            '请到「设置 → 系统文件（自备）」导入你自己主机的 boot9.bin（64 KB）。' +
+            '如果游戏在 nest-assets/roms/3ds 下，也可以把 boot9 放到 nest-assets/firmware/3ds/。',
         });
-        return { ok: false, error: '3ds-install-failed' };
       }
-      installed[id] = { source: rom, size: stat.size, mtime: stat.mtimeMs, build: THREE_DS_INSTALL_BUILD };
-      mkdirSync(path.dirname(markerPath), { recursive: true });
-      writeFileSync(markerPath, JSON.stringify(installed, null, 2));
-      if (prepared.decrypted) {
-        try { unlinkSync(prepared.path); } catch { /* keep cache on failure */ }
-      }
-      const nestWindow = BrowserWindow.getAllWindows()[0];
-      if (nestWindow && services.store.getSettings().minimizeOnLaunch) nestWindow.minimize();
+      return { ok: false, error: prepared.error ?? '3ds-decrypt-failed' };
     }
-    spawn(exe, [], { env, cwd: path.dirname(exe), detached: true, stdio: 'ignore' }).unref();
-    return { ok: true, warning: '已安装到 Azahar，正在打开游戏列表' };
+    console.log('[nest] 3ds direct-play app: ' + prepared.path);
+    bootRom = prepared.path;
   }
 
   const preferred = services.engines.get(
