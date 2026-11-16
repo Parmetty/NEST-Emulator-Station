@@ -986,13 +986,24 @@ async function rememberScanRoot(store: Store, root: string): Promise<void> {
 export async function rescanRoots(
   store: Store,
 ): Promise<{ roots: string[]; added: number; skipped: number; total: number }> {
-  const roots = (store.getSettings().scanRoots ?? []).filter((root) => {
+  const existing = (store.getSettings().scanRoots ?? []).filter((root) => {
     try {
       return existsSync(root);
     } catch {
       return false;
     }
   });
+  // Nested roots are scanned twice (e.g. nest-assets plus its roms/psp child).
+  // Keep only the outermost folder so one boot walks the tree once.
+  const ordered = existing.map((root) => path.resolve(root)).sort((a, b) => a.length - b.length);
+  const roots: string[] = [];
+  for (const root of ordered) {
+    if (roots.some((kept) => root === kept || root.startsWith(kept + path.sep))) continue;
+    roots.push(root);
+  }
+  if (roots.length !== existing.length) {
+    console.log('[nest] auto-scan: ' + (existing.length - roots.length) + ' nested root(s) skipped');
+  }
   let added = 0;
   let skipped = 0;
   let total = 0;
@@ -1006,6 +1017,8 @@ export async function rescanRoots(
     } catch {
       /* one unreadable root must not block the rest */
     }
+    // Yield between roots so the window stays responsive while scanning.
+    await new Promise((resolve) => setImmediate(resolve));
   }
   return { roots, added, skipped, total };
 }

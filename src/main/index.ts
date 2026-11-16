@@ -531,7 +531,8 @@ async function boot(): Promise<void> {
   // paint so startup never blocks on a big folder.
   mainWindow.webContents.once('did-finish-load', () => {
     setTimeout(() => {
-      void autoScanOnBoot();
+      // Let the window paint and accept input first; scanning is background work.
+  setTimeout(() => void autoScanOnBoot(), 4000);
     }, 800);
   });
 
