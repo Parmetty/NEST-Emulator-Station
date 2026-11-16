@@ -9,7 +9,7 @@ import { PAD_ACTIONS, type KeyboardBindings, type PadAction } from '../../shared
 
 export const CONTROL_ENGINE_IDS = ['mgba', 'ares', 'dolphin', 'azahar', 'melonds', 'cemu', 'swanstation', 'pcsx2', 'ppsspp', 'xenia', 'xemu', 'rpcs3', 'vita3k'] as const;
 
-export const WRITABLE_ENGINE_IDS = ['mgba', 'ares', 'dolphin', 'azahar', 'melonds', 'cemu', 'swanstation', 'pcsx2', 'ppsspp', 'xenia', 'rpcs3'] as const;
+export const WRITABLE_ENGINE_IDS = ['mgba', 'ares', 'dolphin', 'azahar', 'melonds', 'cemu', 'swanstation', 'pcsx2', 'ppsspp', 'xenia', 'rpcs3', 'vita3k'] as const;
 export type ControlEngineId = (typeof CONTROL_ENGINE_IDS)[number];
 
 export function isPadAction(value: string): value is PadAction {

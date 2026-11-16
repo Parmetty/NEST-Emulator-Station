@@ -323,6 +323,7 @@ async function detectPspGame(
  * folder directly, so Nest stores the directory itself as the launch target.
  */
 async function detectVitaGame(dir: string): Promise<{ root: string; paramSfo: string } | null> {
+  if (/[\\/](vs0|os0|sa0|tm0|vd0|pd0)[\\/]/i.test(dir + path.sep)) return null;
   const paramSfo = path.join(dir, 'sce_sys', 'param.sfo');
   try {
     if (!(await stat(paramSfo)).isFile()) return null;
@@ -421,10 +422,12 @@ export async function scanFolder(root: string, options: ScanOptions = {}): Promi
         if (vita) {
           if (seen >= maxFiles) return;
           if (!options.systemId || options.systemId === 'psv') {
-            seen += 1;
             try {
               const info = await stat(vita.paramSfo);
               const meta = gameInfoFor(vita.root, 'psv');
+              // NPXS* are Vita system apps (settings, browser, ...), not games.
+              if (/^NP/i.test(meta.titleId ?? '')) continue;
+              seen += 1;
               found.push({
                 path: vita.root,
                 fileName: path.basename(full),

@@ -428,7 +428,11 @@ export function gameInfoFor(file: string, systemId: string): GameInfo {
   if (!reader) return {};
   try {
     const info = reader(file);
-    return { ...(info.title ? { title: info.title } : {}), ...(info.region ? { region: info.region } : {}) };
+    return {
+      ...(info.title ? { title: info.title } : {}),
+      ...(info.region ? { region: info.region } : {}),
+      ...(info.titleId ? { titleId: info.titleId } : {}),
+    };
   } catch {
     return {};
   }

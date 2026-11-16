@@ -17,6 +17,7 @@ import { applyPcsx2Controls, readPcsx2Controls } from './pcsx2';
 import { applyPpssppControls, readPpssppControls } from './ppsspp';
 import { applyXeniaControls, readXeniaControls } from './xenia';
 import { applyRpcs3Controls, readRpcs3Controls } from './rpcs3';
+import { applyVita3kControls, readVita3kControls } from './vita3k';
 import { CONTROL_ENGINE_IDS, WRITABLE_ENGINE_IDS } from './keymap';
 import type { ApplyResult } from './util';
 
@@ -79,6 +80,8 @@ function engineDirs(
       return { engineDir: engineDir ?? path.join(paths.enginesDir, 'xenia') };
     case 'rpcs3':
       return { engineDir: engineDir ?? path.join(paths.enginesDir, 'rpcs3') };
+    case 'vita3k':
+      return { engineDir: engineDir ?? path.join(paths.enginesDir, 'vita3k') };
     case 'swanstation':
       return { engineDir: engineDir ?? path.join(paths.enginesDir, 'swanstation') };
     default:
@@ -140,6 +143,9 @@ export function applyEngineControls(
     case 'rpcs3':
       result = applyRpcs3Controls(dirs.engineDir!, bindings, force);
       break;
+    case 'vita3k':
+      result = applyVita3kControls(dirs.engineDir!, bindings, force);
+      break;
     default:
       return unsupported;
   }
@@ -176,6 +182,8 @@ export function readEngineControls(
       return readXeniaControls(dirs.engineDir!);
     case 'rpcs3':
       return readRpcs3Controls(dirs.engineDir!);
+    case 'vita3k':
+      return readVita3kControls(dirs.engineDir!);
     default:
       return null;
   }

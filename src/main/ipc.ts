@@ -82,6 +82,7 @@ import { Store } from './store';
 import { Supervisor } from './supervisor';
 import { inspectCia } from './cia';
 import { readVitaTitleId } from './game-info';
+import { ensureVpkExtracted } from './vpk';
 import { prepareInstallableCia } from './three-ds-cia';
 import { freeTcpPort, insertUmd } from './ppsspp-umd';
 
@@ -1636,9 +1637,19 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
       args = ['--frontend', 'sdl', '-r', titleId];
       console.log('[nest] vita3k run installed ' + titleId);
     } else {
-      // First run: install the VPK and let the SDL frontend boot it in the same process.
-      args = ['--frontend', 'sdl', '--content-path', rom];
-      console.log('[nest] vita3k install+boot ' + (titleId ?? 'unknown') + ' from ' + rom);
+      // First run: install the content and let the SDL frontend boot it in the
+      // same process. VPK files are unzipped first: Vita3K's folder installer is
+      // far more forgiving than its VPK installer (many dumps only work this way).
+      let contentPath = rom;
+      if (/\.vpk$/i.test(rom)) {
+        const extracted = ensureVpkExtracted(rom, path.join(app.getPath('userData'), 'psv-extract'));
+        if (extracted) {
+          contentPath = extracted;
+          console.log('[nest] vita3k vpk extracted -> ' + extracted);
+        }
+      }
+      args = ['--frontend', 'sdl', '--content-path', contentPath];
+      console.log('[nest] vita3k install+boot ' + (titleId ?? 'unknown') + ' from ' + contentPath);
     }
   }
 
