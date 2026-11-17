@@ -10,7 +10,7 @@
 // Run:  node tools/clean-engines.mjs [--check]
 //   --check  only report problems, exit 1 if anything would change.
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync, rmSync, readdirSync, statSync, lstatSync, unlinkSync, rmdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, rmSync, readdirSync, statSync, lstatSync, unlinkSync, rmdirSync, renameSync, cpSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -167,17 +167,38 @@ scrubPpsspp();
 function scrubXeniaRuntime() {
   const engineDir = join(enginesDir, 'xenia');
   if (!existsSync(engineDir)) return;
-  for (const name of ['cache', 'cache0', 'cache1', 'cache_host', 'content']) {
+  // Caches are safe to drop: Xenia regenerates them.
+  for (const name of ['cache', 'cache0', 'cache1', 'cache_host']) {
     const full = join(engineDir, name);
     if (!existsSync(full)) continue;
     removed.push(relative(root, full));
     if (!checkOnly) rmSync(full, { recursive: true, force: true });
   }
-  for (const name of ['xconfig.settings', 'xenia.log', 'recent.toml', 'xenia-canary.config.toml', 'xenia-canary.config.toml.before-headless']) {
+  // Saves/profiles and the config are user data: never delete them. A package
+  // must not ship them, so move them to a backup outside the engine folder.
+  const backupRoot = join(
+    process.env.LOCALAPPDATA ?? process.env.APPDATA ?? process.env.TMPDIR ?? '.',
+    'Nest',
+    'xenia-backup',
+    new Date().toISOString().replace(/[:.]/g, '-'),
+  );
+  for (const name of ['content', 'xconfig.settings', 'xenia-canary.config.toml', 'xenia-canary.config.toml.before-nest', 'recent.toml', 'xenia.log']) {
     const full = join(engineDir, name);
     if (!existsSync(full)) continue;
-    removed.push(relative(root, full));
-    if (!checkOnly) rmSync(full, { force: true });
+    if (!checkOnly) {
+      mkdirSync(backupRoot, { recursive: true });
+      const dest = join(backupRoot, name);
+      try {
+        renameSync(full, dest);
+      } catch {
+        // Different volume: copy, then remove the original.
+        cpSync(full, dest, { recursive: true });
+        rmSync(full, { recursive: true, force: true });
+      }
+      removed.push('moved ' + relative(root, full) + ' -> ' + dest);
+    } else {
+      removed.push('would move ' + relative(root, full));
+    }
   }
 }
 

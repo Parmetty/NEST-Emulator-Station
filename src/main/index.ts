@@ -187,7 +187,13 @@ function watchXeniaWindow(sessionId: string, pid: number): void {
   const watcher = spawn(exe, args, { windowsHide: true, stdio: 'ignore' });
   watcher.once('exit', (code) => {
     console.log('[nest] xenia window watcher finished (code ' + code + ') pid=' + pid);
-    if (code === 0 && services?.supervisor.has(sessionId)) services.supervisor.stop(sessionId);
+    if (code === 0) {
+      // The render window can close while Xenia is still flushing saves; give it
+      // a few seconds before force-stopping the process.
+      setTimeout(() => {
+        if (services?.supervisor.has(sessionId)) services.supervisor.stop(sessionId);
+      }, 5000);
+    }
   });
 }
 
