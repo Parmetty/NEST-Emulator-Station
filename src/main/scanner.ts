@@ -356,6 +356,33 @@ export async function scanFolder(root: string, options: ScanOptions = {}): Promi
   const found: ScannedFile[] = [];
   let seen = 0;
 
+  // The user may pick the title folder itself (ux0/app/PCSG00074). The walker
+  // below only inspects children, so check the root before descending.
+  {
+    const rootVita = await detectVitaGame(root);
+    if (rootVita) {
+      const meta = gameInfoFor(rootVita.root, 'psv');
+      if (!/^NP/i.test(meta.titleId ?? '')) {
+        try {
+          const info = await stat(rootVita.paramSfo);
+          found.push({
+            path: rootVita.root,
+            fileName: path.basename(rootVita.root),
+            size: info.size,
+            sha1: await fileId(rootVita.paramSfo, info.size, options.known),
+            systemId: 'psv',
+            title: meta.title ?? titleFrom(path.basename(rootVita.root)),
+            region: meta.region,
+          });
+          seen += 1;
+        } catch {
+          /* unreadable folder */
+        }
+      }
+      if (found.length > 0) return found;
+    }
+  }
+
   async function walk(dir: string, depth: number): Promise<void> {
     if (depth > maxDepth || seen >= maxFiles) return;
     let entries;
