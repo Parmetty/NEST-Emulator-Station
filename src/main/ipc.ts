@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
-import { copyFileSync, cpSync, mkdirSync, existsSync, readFileSync, readdirSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
-import { mkdir } from 'node:fs/promises';
+import { copyFileSync, cpSync, mkdirSync, existsSync, readFileSync, readdirSync, renameSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
+import { cp, mkdir, rename, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain, nativeImage, shell } from 'electron';
 import {
@@ -1499,6 +1499,7 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   const { systemId, mode, rom, insertDisc } = parsed.data;
   // xemu needs a space-free disc image; other engines use the path as-is.
   let bootRom = rom;
+  let launchWarning: string | undefined;
 
   const system = systemById.get(systemId as SystemId);
   if (!system) return { ok: false, error: 'unknown-system' };
@@ -1635,8 +1636,10 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
   if (azaharHomeMenu) args = [azaharHomeMenu];
 
   if (engine.id === 'vita3k' && mode === 'game' && rom) {
+    applyControls(services, 'vita3k', false);
     const engineDir = path.dirname(command);
     const dataRoot = path.join(engineDir, 'data');
+    const appRoot = path.join(dataRoot, 'ux0', 'app');
     const firmwarePup = path.join(app.getPath('userData'), 'psv', 'PSVUPDAT.PUP');
     if (!existsSync(path.join(dataRoot, 'ux0')) && existsSync(firmwarePup)) {
       console.log('[nest] vita3k: installing firmware ' + firmwarePup);
@@ -1644,7 +1647,46 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
       console.log('[nest] vita3k firmware install ' + (ok ? 'done' : 'failed'));
     }
     const titleId = readVitaTitleId(rom);
-    const appPath = titleId ? path.join(dataRoot, 'ux0', 'app', titleId) : '';
+    const appPath = titleId ? path.join(appRoot, titleId) : '';
+    let isFolder = false;
+    try {
+      isFolder = statSync(rom).isDirectory();
+    } catch {
+      isFolder = false;
+    }
+    // A loose game folder can be moved into ux0 instead of copied: Vita3K only
+    // lists titles that live in its own ux0/app, and a copy would double the
+    // disk usage. The library entry is repointed to the new path.
+    if (
+      titleId &&
+      isFolder &&
+      !existsSync(appPath) &&
+      !path.resolve(rom).startsWith(path.resolve(path.join(dataRoot, 'ux0')) + path.sep)
+    ) {
+      await mkdir(path.dirname(appPath), { recursive: true });
+      let moved = false;
+      try {
+        await rename(rom, appPath);
+        moved = true;
+      } catch {
+        try {
+          await cp(rom, appPath, { recursive: true });
+          await rm(rom, { recursive: true, force: true });
+          moved = true;
+        } catch (error) {
+          console.error('[nest] vita3k move failed', error);
+        }
+      }
+      if (moved) {
+        console.log('[nest] vita3k moved ' + rom + ' -> ' + appPath);
+        const record = services.store
+          .games()
+          .find((game) => Store.pathKey(game.path) === Store.pathKey(rom));
+        if (record) await services.store.updateGame(record.id, { path: appPath });
+        bootRom = appPath;
+        launchWarning = '已把游戏移动到 Vita3K 的 ux0/app：' + appPath;
+      }
+    }
     if (titleId && existsSync(appPath)) {
       // SDL frontend: plain window, exits with the game, so Nest can supervise it.
       args = ['--frontend', 'sdl', '-r', titleId];
@@ -1998,7 +2040,7 @@ export async function startLaunch(services: Services, raw: unknown): Promise<Lau
     }
   }
 
-  return { ok: true, sessionId };
+  return { ok: true, sessionId, warning: launchWarning };
 }
 
 /**

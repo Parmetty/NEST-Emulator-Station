@@ -72,7 +72,7 @@ export const SYSTEMS: SystemDef[] = [
   { id: 'ps2', name: 'PlayStation 2',        short: 'PS2', year: 2000, kind: '家用机', family: 'playstation', engine: 'pcsx2',       image: 'consoles/ps2.webp', state: 'ready', systemMode: 'PS2 浏览器（BIOS）', note: '直读与系统浏览器均可用；需自备 PS2 BIOS' },
   { id: 'psp', name: 'PlayStation Portable', short: 'PSP', year: 2004, kind: '掌机',   family: 'playstation', engine: 'ppsspp',      image: 'consoles/psp.webp', state: 'ready', systemMode: 'PSP XMB（需固件）', note: 'PPSSPP 直读；XMB 需 PPSSPP 1.21+ 与自备 PSP 固件（PPSSPP 内安装）' },
   { id: 'ps3', name: 'PlayStation 3',        short: 'PS3', year: 2006, kind: '家用机', family: 'playstation', engine: 'rpcs3',       image: 'consoles/ps3.webp', state: 'ready', note: 'RPCS3 直读；需自备 PS3 固件；无 XMB / 系统菜单；默认窗口化' },
-  { id: 'psv', name: 'PlayStation Vita', short: 'PSV', year: 2011, kind: '掌机', family: 'playstation', engine: 'vita3k', image: 'consoles/psv.webp', state: 'ready', note: 'Vita3K 直读：VPK 首次安装后直接启动；需自备 PS Vita 固件（PUP）' },
+  { id: 'psv', name: 'PlayStation Vita', short: 'PSV', year: 2011, kind: '掌机', family: 'playstation', engine: 'vita3k', image: 'consoles/psv.webp', state: 'ready', note: 'Vita3K 直读：游戏文件夹首次启动会剪切到 Vita3K 的 data/ux0/app 后直接运行；VPK 会先解压再安装；需自备 PS Vita 固件（PUP）' },
 ];
 
 export const FAMILIES: { id: FamilyId; name: string; locked: boolean }[] = [
