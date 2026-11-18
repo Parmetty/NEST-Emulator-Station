@@ -4,6 +4,7 @@ import { appendFileSync, existsSync } from 'node:fs';
 import { copyFile, mkdir, readdir, stat, unlink, writeFile } from 'node:fs/promises';
 import { app, BrowserWindow, nativeImage, shell } from 'electron';
 import { CH, type LaunchEvent } from '../shared/contract';
+import { activeTheme, applyThemeToWindow, resolveThemeRoots } from './themes';
 import { systemById, type SystemId } from '../shared/systems';
 import {
   coversDir,

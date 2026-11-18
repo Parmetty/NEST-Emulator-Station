@@ -189,6 +189,9 @@ export function installMockApi(): void {
       return { ok: true };
     },
     hiddenGames: async () => [],
+  themeList: async () => [],
+  themeGet: async () => null,
+  themeSet: async () => ({ ok: true }),
     clearHidden: async () => ({ ok: true, removed: 0 }),
   unhideGame: async () => ({ ok: true, added: 0, fileExists: true }),
     stop: async () => ({ ok: true }),

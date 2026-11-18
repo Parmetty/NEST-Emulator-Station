@@ -1,0 +1,192 @@
+{
+  "$schema": "../../../schemas/theme.schema.json",
+  "schemaVersion": 1,
+  "id": "default",
+  "name": "Default Dark",
+  "version": "1.0.0",
+  "author": "Nest",
+  "description": "The stock Nest look: near-black stage, soft glass panels, Nunito typography.",
+  "license": "CC0-1.0",
+  "colors": {
+    "bg": "#08080a",
+    "ink": "#f4f4f6",
+    "muted": "rgba(255, 255, 255, 0.44)",
+    "hair": "rgba(255, 255, 255, 0.08)",
+    "accent": "#f4f4f6",
+    "accentInk": "#08080a",
+    "danger": "#ff5a5a",
+    "success": "#61d095",
+    "warning": "#f5c451",
+    "overlay": "rgba(0, 0, 0, 0.55)",
+    "selection": "rgba(255, 255, 255, 0.16)",
+    "panel": "rgba(255, 255, 255, 0.04)",
+    "panelStrong": "rgba(255, 255, 255, 0.06)",
+    "menu": "rgba(18, 18, 21, 0.94)",
+    "shelf": "rgba(10, 10, 12, 0.55)",
+    "toast": "rgba(28, 28, 32, 0.96)",
+    "dialog": "rgba(16, 16, 19, 0.97)"
+  },
+  "fonts": {
+    "ui": {
+      "family": "Nunito",
+      "fallback": [
+        "Microsoft YaHei UI",
+        "PingFang SC",
+        "system-ui",
+        "sans-serif"
+      ]
+    },
+    "display": {
+      "family": "Nunito",
+      "fallback": [
+        "Microsoft YaHei UI",
+        "PingFang SC",
+        "system-ui",
+        "sans-serif"
+      ]
+    },
+    "mono": {
+      "family": "Cascadia Mono",
+      "fallback": [
+        "Consolas",
+        "monospace"
+      ]
+    }
+  },
+  "typography": {
+    "body": {
+      "font": "ui",
+      "size": "15px",
+      "weight": 500,
+      "lineHeight": 1.4,
+      "letterSpacing": "0"
+    },
+    "title": {
+      "font": "display",
+      "size": "20px",
+      "weight": 700,
+      "lineHeight": 1.2,
+      "letterSpacing": "0"
+    },
+    "h1": {
+      "font": "display",
+      "size": "28px",
+      "weight": 800,
+      "lineHeight": 1.1,
+      "letterSpacing": "0"
+    },
+    "label": {
+      "font": "ui",
+      "size": "11px",
+      "weight": 700,
+      "lineHeight": 1.2,
+      "letterSpacing": "0.08em"
+    }
+  },
+  "shape": {
+    "radiusSmall": "10px",
+    "radius": "16px",
+    "radiusLarge": "24px",
+    "borderWidth": "1px"
+  },
+  "effects": {
+    "panelBlur": "18px",
+    "photoBlur": "4.5px",
+    "grain": 0.5,
+    "shadow": "0 24px 60px rgba(0, 0, 0, 0.45)",
+    "glow": "0 0 24px rgba(255, 255, 255, 0.08)"
+  },
+  "background": {
+    "type": "gradient",
+    "gradient": [
+      "#08080a",
+      "#08080a"
+    ],
+    "fit": "cover",
+    "dim": 0,
+    "blur": "0px",
+    "grain": 0.5,
+    "parallax": 1
+  },
+  "window": {
+    "titleBar": {
+      "height": 38,
+      "background": "#08080a",
+      "symbolColor": "#f4f4f6",
+      "border": "rgba(255,255,255,0.08)"
+    },
+    "roundedCorners": false
+  },
+  "surfaces": {
+    "panel": {
+      "background": "rgba(255,255,255,0.04)",
+      "blur": "18px",
+      "border": "rgba(255,255,255,0.08)",
+      "radius": "16px",
+      "shadow": "0 24px 60px rgba(0,0,0,0.45)"
+    },
+    "menu": {
+      "background": "rgba(18,18,21,0.94)",
+      "blur": "18px",
+      "border": "rgba(255,255,255,0.08)",
+      "radius": "16px",
+      "shadow": "0 24px 60px rgba(0,0,0,0.55)"
+    },
+    "shelf": {
+      "background": "rgba(10,10,12,0.55)",
+      "blur": "12px",
+      "border": "rgba(255,255,255,0.06)",
+      "radius": "20px",
+      "shadow": "0 18px 48px rgba(0,0,0,0.4)"
+    },
+    "toast": {
+      "background": "rgba(28,28,32,0.96)",
+      "blur": "10px",
+      "border": "rgba(255,255,255,0.08)",
+      "radius": "12px",
+      "shadow": "0 12px 32px rgba(0,0,0,0.45)"
+    },
+    "dialog": {
+      "background": "rgba(16,16,19,0.97)",
+      "blur": "20px",
+      "border": "rgba(255,255,255,0.08)",
+      "radius": "18px",
+      "shadow": "0 32px 80px rgba(0,0,0,0.6)"
+    }
+  },
+  "components": {
+    "button": {
+      "background": "rgba(255,255,255,0.06)",
+      "hover": "rgba(255,255,255,0.12)",
+      "text": "#f4f4f6",
+      "radius": "10px"
+    },
+    "card": {
+      "background": "rgba(255,255,255,0.04)",
+      "border": "rgba(255,255,255,0.08)",
+      "radius": "16px",
+      "shadow": "0 24px 60px rgba(0,0,0,0.45)"
+    },
+    "input": {
+      "background": "rgba(255,255,255,0.05)",
+      "border": "rgba(255,255,255,0.1)",
+      "radius": "10px"
+    },
+    "scrollbar": {
+      "thumb": "rgba(255,255,255,0.18)",
+      "track": "transparent"
+    },
+    "focusRing": {
+      "color": "rgba(255,255,255,0.6)",
+      "width": "2px"
+    }
+  },
+  "motion": {
+    "easing": "cubic-bezier(0.2, 0.75, 0.25, 1)",
+    "fast": "120ms",
+    "normal": "240ms",
+    "slow": "420ms",
+    "parallax": 1
+  },
+  "assets": {}
+}

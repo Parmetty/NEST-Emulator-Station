@@ -82,6 +82,8 @@ import { Store } from './store';
 import { Supervisor } from './supervisor';
 import { inspectCia } from './cia';
 import { readVitaTitleId } from './game-info';
+import { activeTheme, applyThemeToWindow, listThemes, loadTheme, resolveThemeRoots, type ThemeRoots } from './themes';
+import { themeToCssVars } from '../shared/theme';
 import { ensureVpkExtracted } from './vpk';
 import { prepareInstallableCia } from './three-ds-cia';
 import { freeTcpPort, insertUmd } from './ppsspp-umd';
@@ -1159,6 +1161,10 @@ function controlsPayload(services: Services): ControlsPayload {
   return { engines };
 }
 
+function currentThemeRoots(): ThemeRoots {
+  return resolveThemeRoots(app.getAppPath(), process.resourcesPath, app.getPath('userData'));
+}
+
 export function registerIpc(services: Services): void {
   const { store, engines } = services;
 
@@ -1202,6 +1208,33 @@ export function registerIpc(services: Services): void {
     const parsed = gamesRequestSchema.safeParse(raw);
     if (!parsed.success) return [];
     return store.games(parsed.data.systemId).map(withCover);
+  });
+
+  ipcMain.handle(CH.themeList, () =>
+    listThemes(currentThemeRoots()).map((entry) => ({
+      id: entry.id,
+      name: entry.name,
+      version: entry.version,
+      author: entry.author,
+      description: entry.description,
+      builtin: entry.builtin,
+      hasPreview: Boolean(entry.preview),
+    })),
+  );
+
+  ipcMain.handle(CH.themeGet, () => {
+    const theme = activeTheme(currentThemeRoots(), store.getSettings().themeId);
+    return theme ? { theme, cssVars: themeToCssVars(theme) } : null;
+  });
+
+  ipcMain.handle(CH.themeSet, async (_event, raw) => {
+    const id = String((raw as { id?: unknown })?.id ?? '');
+    if (!id) return { ok: false, error: 'bad-request' };
+    const theme = loadTheme(currentThemeRoots(), id);
+    if (!theme) return { ok: false, error: 'theme-not-found' };
+    await store.setSettings({ themeId: id });
+    applyThemeToWindow(BrowserWindow.getAllWindows()[0] ?? null, theme);
+    return { ok: true, theme, cssVars: themeToCssVars(theme) };
   });
 
   ipcMain.handle(CH.hiddenGames, () => store.hiddenGames());

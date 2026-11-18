@@ -1,0 +1,1011 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://nest.local/schemas/theme.schema.json",
+  "title": "Nest theme pack",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "name",
+    "version",
+    "colors",
+    "fonts",
+    "typography",
+    "shape",
+    "effects",
+    "background",
+    "window",
+    "surfaces",
+    "components",
+    "motion"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{1,48}$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 60
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+([-+][0-9A-Za-z.-]+)?$"
+    },
+    "author": {
+      "type": "string",
+      "maxLength": 80
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 400
+    },
+    "license": {
+      "type": "string",
+      "maxLength": 80
+    },
+    "preview": {
+      "type": "string",
+      "maxLength": 260
+    },
+    "colors": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bg",
+        "ink",
+        "muted",
+        "hair",
+        "accent",
+        "accentInk",
+        "danger",
+        "success",
+        "warning",
+        "overlay",
+        "selection",
+        "panel",
+        "panelStrong",
+        "menu",
+        "shelf",
+        "toast",
+        "dialog"
+      ],
+      "properties": {
+        "bg": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 80
+        },
+        "ink": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 80
+        },
+        "muted": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 80
+        },
+        "hair": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 80
+        },
+        "accent": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 80
+        },
+        "accentInk": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 80
+        },
+        "danger": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 80
+        },
+        "success": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 80
+        },
+        "warning": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 80
+        },
+        "overlay": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 80
+        },
+        "selection": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 80
+        },
+        "panel": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 80
+        },
+        "panelStrong": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 80
+        },
+        "menu": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 80
+        },
+        "shelf": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 80
+        },
+        "toast": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 80
+        },
+        "dialog": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 80
+        }
+      }
+    },
+    "fonts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ui",
+        "display",
+        "mono"
+      ],
+      "properties": {
+        "ui": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "family"
+          ],
+          "properties": {
+            "family": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "fallback": {
+              "type": "array",
+              "maxItems": 8,
+              "items": {
+                "type": "string",
+                "maxLength": 80
+              }
+            },
+            "files": {
+              "type": "array",
+              "maxItems": 8,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "src"
+                ],
+                "properties": {
+                  "src": {
+                    "type": "string",
+                    "pattern": "^(?!/)(?!.*\\.\\.)[^:]+$",
+                    "maxLength": 200
+                  },
+                  "weight": {
+                    "type": "string",
+                    "maxLength": 20
+                  },
+                  "style": {
+                    "enum": [
+                      "normal",
+                      "italic"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "display": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "family"
+          ],
+          "properties": {
+            "family": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "fallback": {
+              "type": "array",
+              "maxItems": 8,
+              "items": {
+                "type": "string",
+                "maxLength": 80
+              }
+            },
+            "files": {
+              "type": "array",
+              "maxItems": 8,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "src"
+                ],
+                "properties": {
+                  "src": {
+                    "type": "string",
+                    "pattern": "^(?!/)(?!.*\\.\\.)[^:]+$",
+                    "maxLength": 200
+                  },
+                  "weight": {
+                    "type": "string",
+                    "maxLength": 20
+                  },
+                  "style": {
+                    "enum": [
+                      "normal",
+                      "italic"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "mono": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "family"
+          ],
+          "properties": {
+            "family": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "fallback": {
+              "type": "array",
+              "maxItems": 8,
+              "items": {
+                "type": "string",
+                "maxLength": 80
+              }
+            },
+            "files": {
+              "type": "array",
+              "maxItems": 8,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "src"
+                ],
+                "properties": {
+                  "src": {
+                    "type": "string",
+                    "pattern": "^(?!/)(?!.*\\.\\.)[^:]+$",
+                    "maxLength": 200
+                  },
+                  "weight": {
+                    "type": "string",
+                    "maxLength": 20
+                  },
+                  "style": {
+                    "enum": [
+                      "normal",
+                      "italic"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "typography": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "body",
+        "title",
+        "h1",
+        "label"
+      ],
+      "properties": {
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "size",
+            "weight",
+            "lineHeight",
+            "letterSpacing"
+          ],
+          "properties": {
+            "font": {
+              "enum": [
+                "ui",
+                "display",
+                "mono"
+              ]
+            },
+            "size": {
+              "type": "string",
+              "maxLength": 16
+            },
+            "weight": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 900
+            },
+            "lineHeight": {
+              "type": "number",
+              "minimum": 0.8,
+              "maximum": 3
+            },
+            "letterSpacing": {
+              "type": "string",
+              "maxLength": 16
+            }
+          }
+        },
+        "title": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "size",
+            "weight",
+            "lineHeight",
+            "letterSpacing"
+          ],
+          "properties": {
+            "font": {
+              "enum": [
+                "ui",
+                "display",
+                "mono"
+              ]
+            },
+            "size": {
+              "type": "string",
+              "maxLength": 16
+            },
+            "weight": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 900
+            },
+            "lineHeight": {
+              "type": "number",
+              "minimum": 0.8,
+              "maximum": 3
+            },
+            "letterSpacing": {
+              "type": "string",
+              "maxLength": 16
+            }
+          }
+        },
+        "h1": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "size",
+            "weight",
+            "lineHeight",
+            "letterSpacing"
+          ],
+          "properties": {
+            "font": {
+              "enum": [
+                "ui",
+                "display",
+                "mono"
+              ]
+            },
+            "size": {
+              "type": "string",
+              "maxLength": 16
+            },
+            "weight": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 900
+            },
+            "lineHeight": {
+              "type": "number",
+              "minimum": 0.8,
+              "maximum": 3
+            },
+            "letterSpacing": {
+              "type": "string",
+              "maxLength": 16
+            }
+          }
+        },
+        "label": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "size",
+            "weight",
+            "lineHeight",
+            "letterSpacing"
+          ],
+          "properties": {
+            "font": {
+              "enum": [
+                "ui",
+                "display",
+                "mono"
+              ]
+            },
+            "size": {
+              "type": "string",
+              "maxLength": 16
+            },
+            "weight": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 900
+            },
+            "lineHeight": {
+              "type": "number",
+              "minimum": 0.8,
+              "maximum": 3
+            },
+            "letterSpacing": {
+              "type": "string",
+              "maxLength": 16
+            }
+          }
+        }
+      }
+    },
+    "shape": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "radiusSmall",
+        "radius",
+        "radiusLarge",
+        "borderWidth"
+      ],
+      "properties": {
+        "radiusSmall": {
+          "type": "string",
+          "maxLength": 16
+        },
+        "radius": {
+          "type": "string",
+          "maxLength": 16
+        },
+        "radiusLarge": {
+          "type": "string",
+          "maxLength": 16
+        },
+        "borderWidth": {
+          "type": "string",
+          "maxLength": 16
+        }
+      }
+    },
+    "effects": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "panelBlur",
+        "photoBlur",
+        "grain",
+        "shadow",
+        "glow"
+      ],
+      "properties": {
+        "panelBlur": {
+          "type": "string",
+          "maxLength": 16
+        },
+        "photoBlur": {
+          "type": "string",
+          "maxLength": 16
+        },
+        "grain": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "shadow": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "glow": {
+          "type": "string",
+          "maxLength": 160
+        }
+      }
+    },
+    "background": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "fit",
+        "dim",
+        "blur",
+        "grain",
+        "parallax"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "solid",
+            "gradient",
+            "image"
+          ]
+        },
+        "color": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "gradient": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 4,
+          "items": {
+            "type": "string",
+            "maxLength": 80
+          }
+        },
+        "image": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*\\.\\.)[^:]+$",
+          "maxLength": 200
+        },
+        "fit": {
+          "enum": [
+            "cover",
+            "contain",
+            "fill"
+          ]
+        },
+        "dim": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "blur": {
+          "type": "string",
+          "maxLength": 16
+        },
+        "grain": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "parallax": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2
+        }
+      }
+    },
+    "window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "titleBar",
+        "roundedCorners"
+      ],
+      "properties": {
+        "titleBar": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "height",
+            "background",
+            "symbolColor",
+            "border"
+          ],
+          "properties": {
+            "height": {
+              "type": "integer",
+              "minimum": 24,
+              "maximum": 64
+            },
+            "background": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "symbolColor": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "border": {
+              "type": "string",
+              "maxLength": 80
+            }
+          }
+        },
+        "roundedCorners": {
+          "type": "boolean"
+        }
+      }
+    },
+    "surfaces": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "panel",
+        "menu",
+        "shelf",
+        "toast",
+        "dialog"
+      ],
+      "properties": {
+        "panel": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "background",
+            "blur",
+            "border",
+            "radius",
+            "shadow"
+          ],
+          "properties": {
+            "background": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "blur": {
+              "type": "string",
+              "maxLength": 16
+            },
+            "border": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "radius": {
+              "type": "string",
+              "maxLength": 16
+            },
+            "shadow": {
+              "type": "string",
+              "maxLength": 160
+            }
+          }
+        },
+        "menu": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "background",
+            "blur",
+            "border",
+            "radius",
+            "shadow"
+          ],
+          "properties": {
+            "background": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "blur": {
+              "type": "string",
+              "maxLength": 16
+            },
+            "border": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "radius": {
+              "type": "string",
+              "maxLength": 16
+            },
+            "shadow": {
+              "type": "string",
+              "maxLength": 160
+            }
+          }
+        },
+        "shelf": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "background",
+            "blur",
+            "border",
+            "radius",
+            "shadow"
+          ],
+          "properties": {
+            "background": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "blur": {
+              "type": "string",
+              "maxLength": 16
+            },
+            "border": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "radius": {
+              "type": "string",
+              "maxLength": 16
+            },
+            "shadow": {
+              "type": "string",
+              "maxLength": 160
+            }
+          }
+        },
+        "toast": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "background",
+            "blur",
+            "border",
+            "radius",
+            "shadow"
+          ],
+          "properties": {
+            "background": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "blur": {
+              "type": "string",
+              "maxLength": 16
+            },
+            "border": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "radius": {
+              "type": "string",
+              "maxLength": 16
+            },
+            "shadow": {
+              "type": "string",
+              "maxLength": 160
+            }
+          }
+        },
+        "dialog": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "background",
+            "blur",
+            "border",
+            "radius",
+            "shadow"
+          ],
+          "properties": {
+            "background": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "blur": {
+              "type": "string",
+              "maxLength": 16
+            },
+            "border": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "radius": {
+              "type": "string",
+              "maxLength": 16
+            },
+            "shadow": {
+              "type": "string",
+              "maxLength": 160
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "button",
+        "card",
+        "input",
+        "scrollbar",
+        "focusRing"
+      ],
+      "properties": {
+        "button": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "background",
+            "hover",
+            "text",
+            "radius"
+          ],
+          "properties": {
+            "background": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "hover": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "radius": {
+              "type": "string",
+              "maxLength": 16
+            }
+          }
+        },
+        "card": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "background",
+            "border",
+            "radius",
+            "shadow"
+          ],
+          "properties": {
+            "background": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "border": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "radius": {
+              "type": "string",
+              "maxLength": 16
+            },
+            "shadow": {
+              "type": "string",
+              "maxLength": 160
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "background",
+            "border",
+            "radius"
+          ],
+          "properties": {
+            "background": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "border": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "radius": {
+              "type": "string",
+              "maxLength": 16
+            }
+          }
+        },
+        "scrollbar": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "thumb",
+            "track"
+          ],
+          "properties": {
+            "thumb": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "track": {
+              "type": "string",
+              "maxLength": 80
+            }
+          }
+        },
+        "focusRing": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "color",
+            "width"
+          ],
+          "properties": {
+            "color": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "width": {
+              "type": "string",
+              "maxLength": 16
+            }
+          }
+        }
+      }
+    },
+    "motion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "easing",
+        "fast",
+        "normal",
+        "slow",
+        "parallax"
+      ],
+      "properties": {
+        "easing": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "fast": {
+          "type": "string",
+          "maxLength": 16
+        },
+        "normal": {
+          "type": "string",
+          "maxLength": 16
+        },
+        "slow": {
+          "type": "string",
+          "maxLength": 16
+        },
+        "parallax": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2
+        }
+      }
+    },
+    "assets": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "logo": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*\\.\\.)[^:]+$",
+          "maxLength": 200
+        }
+      }
+    }
+  }
+}

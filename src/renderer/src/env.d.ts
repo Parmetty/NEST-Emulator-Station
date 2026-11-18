@@ -20,6 +20,9 @@ export interface NestApi {
   scan(systemId?: string, path?: string): Promise<ScanResult>;
   removeGame(gameId: string): Promise<{ ok: boolean; error?: string }>;
   hiddenGames(): Promise<string[]>;
+  themeList(): Promise<Array<{ id: string; name: string; version: string; author?: string; description?: string; builtin: boolean; hasPreview: boolean }>>;
+  themeGet(): Promise<{ theme: { id: string; name: string }; cssVars: Record<string, string> } | null>;
+  themeSet(id: string): Promise<{ ok: boolean; cssVars?: Record<string, string>; error?: string }>;
   clearHidden(): Promise<{ ok: boolean; removed?: number }>;
   unhideGame(file: string): Promise<{ ok: boolean; added?: number; fileExists?: boolean; error?: string }>;
   renameGame(gameId: string, title: string): Promise<{ ok: boolean; error?: string; game?: GameRecord }>;

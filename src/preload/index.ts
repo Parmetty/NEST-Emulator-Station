@@ -30,6 +30,15 @@ const api = {
     ipcRenderer.invoke(CH.removeGame, { gameId }),
 
   hiddenGames: (): Promise<string[]> => ipcRenderer.invoke(CH.hiddenGames),
+  themeList: (): Promise<
+    Array<{ id: string; name: string; version: string; author?: string; description?: string; builtin: boolean; hasPreview: boolean }>
+  > => ipcRenderer.invoke(CH.themeList),
+  themeGet: (): Promise<{ theme: { id: string; name: string }; cssVars: Record<string, string> } | null> =>
+    ipcRenderer.invoke(CH.themeGet),
+  themeSet: (
+    id: string,
+  ): Promise<{ ok: boolean; cssVars?: Record<string, string>; error?: string }> =>
+    ipcRenderer.invoke(CH.themeSet, { id }),
 
   clearHidden: (): Promise<{ ok: boolean; removed?: number }> => ipcRenderer.invoke(CH.clearHidden),
   unhideGame: (

@@ -31,7 +31,7 @@ body,
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: 'Nunito', 'Microsoft YaHei UI', 'PingFang SC', system-ui, sans-serif;
+  font-family: var(--font-ui);
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
   user-select: none;

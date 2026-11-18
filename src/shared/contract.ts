@@ -11,6 +11,9 @@ export const CH = {
   removeGame: 'nest:remove-game',
   hiddenGames: 'nest:hidden-games',
   clearHidden: 'nest:clear-hidden',
+  themeList: 'nest:theme-list',
+  themeGet: 'nest:theme-get',
+  themeSet: 'nest:theme-set',
   unhideGame: 'nest:unhide-game',
   renameGame: 'nest:rename-game',
   settings: 'nest:settings',
@@ -115,6 +118,7 @@ export const settingsSchema = z.object({
   xboxHdd: z.string().min(1).max(4096).optional(),
   /** RPCS3 video renderer; switching only rewrites config, never removes caches. */
   ps3Renderer: z.enum(['vulkan', 'opengl']).optional(),
+  themeId: z.string().min(1).max(64).optional(),
   controls: z
     .record(
       z.string().max(32),
@@ -386,6 +390,8 @@ export interface Settings {
   xboxHdd?: string;
   /** RPCS3 video renderer (default OpenGL: Crysis 3 aborts on Vulkan). */
   ps3Renderer?: 'vulkan' | 'opengl';
+  /** Active theme pack id (see docs/themes/THEME-PACK.md). */
+  themeId?: string;
 }
 
 export interface LaunchEvent {
