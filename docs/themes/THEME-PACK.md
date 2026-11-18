@@ -272,8 +272,8 @@ result with `tools/validate-theme.mjs`.
 
 ## 7. Roadmap
 
-- **P0 (landed)**: schema, default pack, validator, loader + CSS-variable apply,
-  window title bar apply. No picker UI yet.
-- **P1**: Settings → Appearance (list/preview/apply), zip import, font asset
-  serving, live reload.
-- **P2**: video backgrounds, per-system variants, theme-scoped cover treatment.
+- **P0/P1 (landed)**: schema, default pack, validator, loader + CSS-variable
+  apply, window title bar apply, Settings → Nest → 外观主题 (list/preview/apply),
+  zip import, font/image asset loading (data URLs), user override of built-ins.
+- **P2**: video backgrounds, per-system variants, theme-scoped cover treatment,
+  live reload while editing a pack.

@@ -31,14 +31,45 @@ const api = {
 
   hiddenGames: (): Promise<string[]> => ipcRenderer.invoke(CH.hiddenGames),
   themeList: (): Promise<
-    Array<{ id: string; name: string; version: string; author?: string; description?: string; builtin: boolean; hasPreview: boolean }>
+    Array<{
+      id: string;
+      name: string;
+      version: string;
+      author?: string;
+      description?: string;
+      builtin: boolean;
+      hasPreview: boolean;
+      previewUrl?: string;
+    }>
   > => ipcRenderer.invoke(CH.themeList),
+  themeAsset: (id: string, file: string): Promise<{ ok: boolean; dataUrl?: string; error?: string }> =>
+    ipcRenderer.invoke(CH.themeAsset, { id, file }),
+  themeImport: (): Promise<{
+    ok: boolean;
+    canceled?: boolean;
+    error?: string;
+    id?: string;
+    themes?: Array<{
+      id: string;
+      name: string;
+      version: string;
+      author?: string;
+      description?: string;
+      builtin: boolean;
+      hasPreview: boolean;
+      previewUrl?: string;
+    }>;
+  }> => ipcRenderer.invoke(CH.themeImport),
   themeGet: (): Promise<{ theme: { id: string; name: string }; cssVars: Record<string, string> } | null> =>
     ipcRenderer.invoke(CH.themeGet),
   themeSet: (
     id: string,
-  ): Promise<{ ok: boolean; cssVars?: Record<string, string>; error?: string }> =>
-    ipcRenderer.invoke(CH.themeSet, { id }),
+  ): Promise<{
+    ok: boolean;
+    error?: string;
+    theme?: { id: string; name: string; fonts?: unknown; background?: unknown };
+    cssVars?: Record<string, string>;
+  }> => ipcRenderer.invoke(CH.themeSet, { id }),
 
   clearHidden: (): Promise<{ ok: boolean; removed?: number }> => ipcRenderer.invoke(CH.clearHidden),
   unhideGame: (

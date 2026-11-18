@@ -14,6 +14,8 @@ export const CH = {
   themeList: 'nest:theme-list',
   themeGet: 'nest:theme-get',
   themeSet: 'nest:theme-set',
+  themeAsset: 'nest:theme-asset',
+  themeImport: 'nest:theme-import',
   unhideGame: 'nest:unhide-game',
   renameGame: 'nest:rename-game',
   settings: 'nest:settings',

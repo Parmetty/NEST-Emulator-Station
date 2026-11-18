@@ -82,7 +82,7 @@ import { Store } from './store';
 import { Supervisor } from './supervisor';
 import { inspectCia } from './cia';
 import { readVitaTitleId } from './game-info';
-import { activeTheme, applyThemeToWindow, listThemes, loadTheme, resolveThemeRoots, type ThemeRoots } from './themes';
+import { activeTheme, applyThemeToWindow, importThemePack, listThemes, loadTheme, resolveThemeRoots, themeAsset, type ThemeEntry, type ThemeRoots } from './themes';
 import { themeToCssVars } from '../shared/theme';
 import { ensureVpkExtracted } from './vpk';
 import { prepareInstallableCia } from './three-ds-cia';
@@ -1161,6 +1161,41 @@ function controlsPayload(services: Services): ControlsPayload {
   return { engines };
 }
 
+function mimeFor(file: string): string {
+  const ext = path.extname(file).toLowerCase();
+  if (ext === '.webp') return 'image/webp';
+  if (ext === '.png') return 'image/png';
+  if (ext === '.jpg' || ext === '.jpeg') return 'image/jpeg';
+  if (ext === '.svg') return 'image/svg+xml';
+  if (ext === '.woff2') return 'font/woff2';
+  if (ext === '.woff') return 'font/woff';
+  if (ext === '.ttf') return 'font/ttf';
+  if (ext === '.otf') return 'font/otf';
+  return 'application/octet-stream';
+}
+
+function fileDataUrl(file: string, limit = 32 * 1024 * 1024): string | undefined {
+  try {
+    if (statSync(file).size > limit) return undefined;
+    return 'data:' + mimeFor(file) + ';base64,' + readFileSync(file).toString('base64');
+  } catch {
+    return undefined;
+  }
+}
+
+function entryView(entry: ThemeEntry) {
+  return {
+    id: entry.id,
+    name: entry.name,
+    version: entry.version,
+    author: entry.author,
+    description: entry.description,
+    builtin: entry.builtin,
+    hasPreview: Boolean(entry.preview),
+    previewUrl: entry.preview ? fileDataUrl(entry.preview, 3 * 1024 * 1024) : undefined,
+  };
+}
+
 function currentThemeRoots(): ThemeRoots {
   return resolveThemeRoots(app.getAppPath(), process.resourcesPath, app.getPath('userData'));
 }
@@ -1210,17 +1245,30 @@ export function registerIpc(services: Services): void {
     return store.games(parsed.data.systemId).map(withCover);
   });
 
-  ipcMain.handle(CH.themeList, () =>
-    listThemes(currentThemeRoots()).map((entry) => ({
-      id: entry.id,
-      name: entry.name,
-      version: entry.version,
-      author: entry.author,
-      description: entry.description,
-      builtin: entry.builtin,
-      hasPreview: Boolean(entry.preview),
-    })),
-  );
+  ipcMain.handle(CH.themeList, () => listThemes(currentThemeRoots()).map(entryView));
+
+  ipcMain.handle(CH.themeAsset, (_event, raw) => {
+    const id = String((raw as { id?: unknown })?.id ?? '');
+    const file = String((raw as { file?: unknown })?.file ?? '');
+    if (!id || !file) return { ok: false, error: 'bad-request' };
+    const entry = listThemes(currentThemeRoots()).find((item) => item.id === id);
+    if (!entry) return { ok: false, error: 'theme-not-found' };
+    const resolved = themeAsset(entry, file);
+    if (!resolved) return { ok: false, error: 'asset-not-found' };
+    const dataUrl = fileDataUrl(resolved);
+    return dataUrl ? { ok: true, dataUrl } : { ok: false, error: 'asset-too-large' };
+  });
+
+  ipcMain.handle(CH.themeImport, async (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    const picked = win
+      ? await dialog.showOpenDialog(win, { title: '导入主题包（.zip）', properties: ['openFile'], filters: [{ name: '主题包', extensions: ['zip'] }] })
+      : await dialog.showOpenDialog({ title: '导入主题包（.zip）', properties: ['openFile'], filters: [{ name: '主题包', extensions: ['zip'] }] });
+    if (picked.canceled || !picked.filePaths[0]) return { ok: true, canceled: true };
+    const result = importThemePack(picked.filePaths[0], currentThemeRoots().user);
+    if (!result.ok) return { ok: false, error: result.error };
+    return { ok: true, id: result.id, themes: listThemes(currentThemeRoots()).map(entryView) };
+  });
 
   ipcMain.handle(CH.themeGet, () => {
     const theme = activeTheme(currentThemeRoots(), store.getSettings().themeId);

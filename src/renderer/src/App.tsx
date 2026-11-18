@@ -323,6 +323,103 @@ export default function App() {
       .catch(() => undefined);
   }, []);
 
+
+  /* ------------------------------------------------------------ themes */
+  const [themes, setThemes] = useState<
+    Array<{
+      id: string;
+      name: string;
+      version: string;
+      author?: string;
+      description?: string;
+      builtin: boolean;
+      hasPreview: boolean;
+      previewUrl?: string;
+    }>
+  >([]);
+  const [themeId, setThemeId] = useState('default');
+
+  const applyThemePayload = useCallback(
+    async (payload: {
+      theme: { id: string; name: string; fonts?: unknown; background?: unknown };
+      cssVars: Record<string, string>;
+    }) => {
+      const rootEl = document.documentElement;
+      for (const [name, value] of Object.entries(payload.cssVars)) rootEl.style.setProperty(name, value);
+      rootEl.dataset.theme = payload.theme.id;
+      const fonts = payload.theme.fonts as
+        | Record<string, { family: string; files?: Array<{ src: string; weight?: string; style?: string }> }>
+        | undefined;
+      if (fonts) {
+        for (const font of Object.values(fonts)) {
+          for (const file of font.files ?? []) {
+            const asset = await window.nest.themeAsset(payload.theme.id, file.src).catch(() => null);
+            if (!asset?.ok || !asset.dataUrl) continue;
+            try {
+              const face = new FontFace(font.family, 'url(' + asset.dataUrl + ')', {
+                weight: file.weight ?? 'normal',
+                style: file.style ?? 'normal',
+              });
+              await face.load();
+              document.fonts.add(face);
+            } catch {
+              /* keep the installed fallback font */
+            }
+          }
+        }
+      }
+      const background = payload.theme.background as { type?: string; image?: string } | undefined;
+      if (background?.type === 'image' && background.image) {
+        const asset = await window.nest.themeAsset(payload.theme.id, background.image).catch(() => null);
+        if (asset?.ok && asset.dataUrl) rootEl.style.setProperty('--theme-bg-image', 'url("' + asset.dataUrl + '")');
+      } else {
+        rootEl.style.removeProperty('--theme-bg-image');
+      }
+    },
+    [],
+  );
+
+  const chooseTheme = useCallback(
+    async (id: string) => {
+      const result = await window.nest.themeSet(id).catch(() => null);
+      if (!result?.ok || !result.theme || !result.cssVars) {
+        say('切换主题失败');
+        return;
+      }
+      setThemeId(id);
+      await applyThemePayload({ theme: result.theme, cssVars: result.cssVars });
+      say('已切换主题：' + result.theme.name);
+    },
+    [applyThemePayload, say],
+  );
+
+  const importTheme = useCallback(async () => {
+    const result = await window.nest.themeImport().catch(() => null);
+    if (!result) {
+      say('导入失败');
+      return;
+    }
+    if (result.canceled) return;
+    if (!result.ok) {
+      say(result.error === 'theme-json-missing' ? '这个 zip 里没有 theme.json' : '主题包无效，已拒绝导入');
+      return;
+    }
+    setThemes(result.themes ?? (await window.nest.themeList().catch(() => [])));
+    if (result.id) await chooseTheme(result.id);
+    else say('主题包已导入');
+  }, [chooseTheme, say]);
+
+  useEffect(() => {
+    void (async () => {
+      const payload = await window.nest.themeGet().catch(() => null);
+      if (payload) {
+        setThemeId(payload.theme.id);
+        await applyThemePayload(payload);
+      }
+      setThemes(await window.nest.themeList().catch(() => []));
+    })();
+  }, [applyThemePayload]);
+
   const rescanAll = useCallback(async () => {
     setRescanning(true);
     try {
@@ -1787,6 +1884,32 @@ export default function App() {
                           <i className="switch" />
                         </label>
 
+
+              <h2>外观主题</h2>
+              <p className="dlg-note">
+                主题包只改样式，不改布局。支持放在 themes/&lt;id&gt;/theme.json，也可以直接导入 zip。
+              </p>
+              <div className="theme-grid">
+                {themes.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={'theme-card' + (item.id === themeId ? ' on' : '')}
+                    onClick={() => void chooseTheme(item.id)}
+                    title={item.description}
+                  >
+                    {item.previewUrl ? <img src={item.previewUrl} alt="" /> : <span className="theme-blank" />}
+                    <strong>{item.name}</strong>
+                    <small>{(item.builtin ? '内置' : '用户') + ' · v' + item.version}</small>
+                  </button>
+                ))}
+              </div>
+              <div className="scan-root">
+                <span>导入的主题包会复制到用户主题目录</span>
+                <button className="ghost-btn" onClick={() => void importTheme()}>
+                  导入主题包…
+                </button>
+              </div>
 
               <h2>游戏文件夹（自动扫描）</h2>
                         <p className="dlg-note">

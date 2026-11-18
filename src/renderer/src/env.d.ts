@@ -20,9 +20,37 @@ export interface NestApi {
   scan(systemId?: string, path?: string): Promise<ScanResult>;
   removeGame(gameId: string): Promise<{ ok: boolean; error?: string }>;
   hiddenGames(): Promise<string[]>;
-  themeList(): Promise<Array<{ id: string; name: string; version: string; author?: string; description?: string; builtin: boolean; hasPreview: boolean }>>;
+  themeList(): Promise<
+    Array<{
+      id: string;
+      name: string;
+      version: string;
+      author?: string;
+      description?: string;
+      builtin: boolean;
+      hasPreview: boolean;
+      previewUrl?: string;
+    }>
+  >;
+  themeAsset(id: string, file: string): Promise<{ ok: boolean; dataUrl?: string; error?: string }>;
+  themeImport(): Promise<{
+    ok: boolean;
+    canceled?: boolean;
+    error?: string;
+    id?: string;
+    themes?: Array<{
+      id: string;
+      name: string;
+      version: string;
+      author?: string;
+      description?: string;
+      builtin: boolean;
+      hasPreview: boolean;
+      previewUrl?: string;
+    }>;
+  }>;
   themeGet(): Promise<{ theme: { id: string; name: string }; cssVars: Record<string, string> } | null>;
-  themeSet(id: string): Promise<{ ok: boolean; cssVars?: Record<string, string>; error?: string }>;
+  themeSet(id: string): Promise<{ ok: boolean; error?: string; theme?: { id: string; name: string; fonts?: unknown; background?: unknown }; cssVars?: Record<string, string> }>;
   clearHidden(): Promise<{ ok: boolean; removed?: number }>;
   unhideGame(file: string): Promise<{ ok: boolean; added?: number; fileExists?: boolean; error?: string }>;
   renameGame(gameId: string, title: string): Promise<{ ok: boolean; error?: string; game?: GameRecord }>;

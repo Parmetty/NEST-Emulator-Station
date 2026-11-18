@@ -1,4 +1,6 @@
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { extractZip } from './zip';
 import path from 'node:path';
 import type { BrowserWindow } from 'electron';
 import { themeWindowChrome } from '../shared/theme';
@@ -117,5 +119,34 @@ export function applyThemeToWindow(win: BrowserWindow | null, theme: Theme): voi
     });
   } catch (error) {
     console.error('[nest] title bar theme failed', error);
+  }
+}
+
+/** Import a theme pack zip into the user themes folder. Returns the pack id. */
+export function importThemePack(zipFile: string, userRoot: string): { ok: boolean; id?: string; error?: string } {
+  const tmp = mkdtempSync(path.join(tmpdir(), 'nest-theme-'));
+  try {
+    if (!extractZip(zipFile, tmp)) return { ok: false, error: 'invalid-zip' };
+    let dir = tmp;
+    if (!existsSync(path.join(dir, 'theme.json'))) {
+      const nested = readdirSync(tmp).filter((name) => {
+        try {
+          return statSync(path.join(tmp, name)).isDirectory() && existsSync(path.join(tmp, name, 'theme.json'));
+        } catch {
+          return false;
+        }
+      })[0];
+      if (!nested) return { ok: false, error: 'theme-json-missing' };
+      dir = path.join(tmp, nested);
+    }
+    const theme = readTheme(dir);
+    if (!theme) return { ok: false, error: 'theme-invalid' };
+    const dest = path.join(userRoot, theme.id);
+    rmSync(dest, { recursive: true, force: true });
+    mkdirSync(userRoot, { recursive: true });
+    cpSync(dir, dest, { recursive: true });
+    return { ok: true, id: theme.id };
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
   }
 }
