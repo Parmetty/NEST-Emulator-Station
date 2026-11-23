@@ -5,18 +5,18 @@
 
 ![Nest 首页](shots/app.png)
 
-> 当前：**0.6.0-beta.1**（GitHub **最新版**）—— Windows 桌面版 · 九台任天堂主机 · PS1 / PS2 / PSP / **PS3** 直读 · Xbox 家族两台全通：**Xbox 360**、**初代 Xbox**（xemu）直读 · 十二个内置引擎 + 自写 libretro 宿主 · 免安装携带版
+> 当前：**0.6.2**（GitHub 最新版）—— Windows 桌面版 · 九台任天堂主机 · PS1 / PS2 / PSP / **PS3** / **PS Vita** 直读 · Xbox 家族两台全通：**Xbox 360**、**初代 Xbox**（xemu）直读 · 十三个内置引擎 + 自写 libretro 宿主 · 免安装携带版
 
 ## 下载
 
 直接下免安装版，解压双击即可用，不需要安装 Node 或任何依赖：
 
-**[Nest-0.6.0-beta.1-portable.zip](https://github.com/Parmetty/NEST-Emulator-Station/releases/download/v0.6.0-beta.1/Nest-0.6.0-beta.1-portable.zip)** · [Release 页面](https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.6.0-beta.1)
+**[Nest-0.6.2-portable.zip](https://github.com/Parmetty/NEST-Emulator-Station/releases/download/v0.6.2/Nest-0.6.2-portable.zip)** · [Release 页面](https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.6.2)
 
 ```
-SHA256  7613E1F5F46F2092337C5F853F4532CB645EE591B4DD700B101ED952B72EC00E
-大小    402.4 MB（421,930,148 字节）
-解压    992.2 MB / 3864 个文件
+SHA256  0C5AB86AB369E33AAAB138E9FB3920F566BA4F83D4A3DBE388F533B716AF1400
+大小    439.9 MB（461,229,610 字节）
+解压    1,147,804,819 字节 / 4,073 个文件
 ```
 
 1. 解压到任意目录（可放 U 盘）
@@ -216,7 +216,7 @@ xbox/             MCPX、BIOS、eeprom、HDD 路径记录（HDD 本体留在你�
 | P6 | PlayStation 家族：PS1 / PS2 / PSP / PS3 直读 | ✅（PS3 无系统菜单） |
 | P7 | Xbox 家族：Xbox 360 直读（Xenia）+ 初代 Xbox 直读（xemu，XISO） | ✅（两台均无 Dashboard，只做直读） |
 
-总路线见 [ROADMAP.md](docs/ROADMAP.md)；发布级变化见 [CHANGELOG.md](docs/nintendo/CHANGELOG.md) 与最新发布说明 [RELEASE-0.6.0-beta.1.md](docs/nintendo/RELEASE-0.6.0-beta.1.md)（`STATE.md` / `PROGRESS.md` 是 0.4.2 时期的历史快照）。功能编年史为内部文档，不随仓库发布。
+总路线见 [ROADMAP.md](docs/ROADMAP.md)；发布级变化见 [CHANGELOG.md](docs/nintendo/CHANGELOG.md) 与最新发布说明 [RELEASE-0.6.2.md](docs/nintendo/RELEASE-0.6.2.md)（`STATE.md` / `PROGRESS.md` 是 0.4.2 时期的历史快照）。功能编年史为内部文档，不随仓库发布。
 
 ## 法律
 

@@ -2,6 +2,18 @@
 
 本文件记录每次发布的可见变化。技术细节在 `docs/nintendo/STATE.md`，决策理由在 `docs/nintendo/DECISIONS.md`，待办在 `docs/nintendo/PROGRESS.md`。
 
+## 0.6.2 — 2026-11-24 · PS Vita 接入 + 主题包系统
+
+便携包：Nest-0.6.2-portable.zip 461,229,610 字节（约 439.9 MiB），SHA256 `0C5AB86AB369E33AAAB138E9FB3920F566BA4F83D4A3DBE388F533B716AF1400`。
+
+- **PS Vita**：Vita3K 引擎、VPK 扫描、固件 PUP、SDL 直启、VPK 解压安装、游戏文件夹剪切进 `ux0/app`、键位适配
+- **主题包**：规范/Schema/默认主题/校验工具、设置内外观主题、zip 导入、字体与背景图
+- **3DS**：CIA 解密安装、ExeFS `.code` 修复、NCCH 直读、boot9 提示
+- **扫描**：大文件指纹、嵌套根目录去重、启动扫描延后、黑名单恢复
+- **PSP**：VSH 就绪后插 UMD、拒绝加密 CIA
+- **Xenia**：清理时备份存档、关闭窗口后延迟停止
+- **打包**：修复 Cemu NAND 泄漏，发布前强制 `verify-package`
+
 ## 0.6.0-beta.1 — 2026-11-12 · Xbox 初代接入 + 库增强
 
 > **安全更正（2026-11-12）**：本版本首次上传的便携包误带开发机的 Wii U NAND（`cemu/portable/mlc01`），
