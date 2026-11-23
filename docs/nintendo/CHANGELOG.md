@@ -6,6 +6,8 @@
 
 便携包：Nest-0.6.2-portable.zip 461,229,610 字节（约 439.9 MiB），SHA256 `0C5AB86AB369E33AAAB138E9FB3920F566BA4F83D4A3DBE388F533B716AF1400`。
 
+Release：https://github.com/Parmetty/NEST-Emulator-Station/releases/tag/v0.6.2
+
 - **PS Vita**：Vita3K 引擎、VPK 扫描、固件 PUP、SDL 直启、VPK 解压安装、游戏文件夹剪切进 `ux0/app`、键位适配
 - **主题包**：规范/Schema/默认主题/校验工具、设置内外观主题、zip 导入、字体与背景图
 - **3DS**：CIA 解密安装、ExeFS `.code` 修复、NCCH 直读、boot9 提示

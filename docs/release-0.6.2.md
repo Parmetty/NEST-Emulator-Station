@@ -4,7 +4,7 @@
 
 ## 下载
 
-- 便携包：`Nest-0.6.2-portable.zip`
+- 便携包：[`Nest-0.6.2-portable.zip`](https://github.com/Parmetty/NEST-Emulator-Station/releases/download/v0.6.2/Nest-0.6.2-portable.zip)
 - 解压后运行 `启动 Nest.bat`（便携数据模式）或 `Nest.exe`
 
 SHA256：`0C5AB86AB369E33AAAB138E9FB3920F566BA4F83D4A3DBE388F533B716AF1400`
